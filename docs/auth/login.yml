@@ -1,0 +1,40 @@
+tags:
+  - Auth
+
+description: Login a user. Email must exist in the system. Password must match the stored password
+
+parameters:
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: test@mail.com
+        password:
+          type: string
+          format: password
+          example: 123456Yy.
+responses:
+  200:
+    description: Login successful (returns user or token)
+  400:
+    description: Bad request (missing or invalid fields)
+  401:
+    description: Authentication required (email not verified)
+  404:
+    description: User not found
+  422:
+    description: Validation error (invalid email format)
+  429:
+    description: Too many login attempts
+  500:
+    description: Internal server error
+  503:
+    description: Service unavailable (database or email service down)

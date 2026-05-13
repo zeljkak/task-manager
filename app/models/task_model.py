@@ -1,0 +1,35 @@
+from sqlalchemy.engine import default
+
+from app.extensions.db import db
+from sqlalchemy.sql import func
+
+
+class Task(db.Model):
+    __tablename__ = "tasks"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    created_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    updated_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+
+    assigned_to_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+
+    ## status will always initially be to do if not specified
+    status_id = db.Column(db.Integer, db.ForeignKey("task_status.id"), nullable=False, default=2)
+    priority_id = db.Column(db.Integer, db.ForeignKey("priorities.id"))
+    project_id = db.Column(db.Integer, db.ForeignKey("projects.id"))
+
+    due_date = db.Column(db.DateTime(timezone=True))
+    estimated_hours = db.Column(db.Integer)
+
+    created_by = db.relationship("User", foreign_keys=[created_by_id], backref="created_tasks")
+    updated_by = db.relationship("User", foreign_keys=[updated_by_id], backref="updated_tasks")
+    assigned_to = db.relationship("User", foreign_keys=[assigned_to_id], backref="assigned_tasks")
+    status = db.relationship("TaskStatus", backref="tasks")
+    priority = db.relationship("Priority", backref="tasks")
+    project = db.relationship("Project", backref="tasks")

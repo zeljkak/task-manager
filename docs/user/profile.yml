@@ -1,0 +1,27 @@
+tags:
+  - User
+
+description:
+  Get current user's profile. Requires a valid JWT token in Authorizeation header. Format: Bearer <token>
+
+security:
+  - BearerAuth: []
+
+responses:
+  200:
+    description: User profile retrieved successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: This is protected data
+        user:
+          type: string
+          example: test@mail.com
+  401:
+    description: Unauthorized (missing or invalid token)
+  422:
+    description: Invalid token format
+  500:
+    description: Internal server error

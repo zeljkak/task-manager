@@ -1,0 +1,31 @@
+from sqlalchemy.orm import backref
+from sqlalchemy.sql import func
+from app.extensions.db import db
+
+class User(db.Model):
+    __tablename__ = "users"
+
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(30), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    email_verified = db.Column(db.Boolean, default=False, nullable=False)
+    verification_token = db.Column(db.String(255))
+
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    role_id = db.Column(db.Integer, db.ForeignKey("roles.id"), nullable=False, default="2")
+    role = db.relationship("Role", backref="users")
+
+    #simplest way to return user data, use Marshmallow later
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "firstName": self.first_name,
+            "lastName": self.last_name,
+            "email": self.email,
+            "email_verified": self.email_verified,
+            "role_id": self.role_id,
+        }
