@@ -1,5 +1,5 @@
-from app.extensions.db import db
 from app.models.role_model import Role
+from app.repositories.role_repository import RoleRepository
 
 
 def seed_roles():
@@ -9,7 +9,7 @@ def seed_roles():
     ]
 
     for role_data in roles:
-        existing_role = Role.query.get(role_data["id"])
+        existing_role = RoleRepository.get_by_id(role_data["id"])
 
         if not existing_role:
             role = Role(
@@ -17,6 +17,4 @@ def seed_roles():
                 role_name=role_data["role_name"]
             )
 
-            db.session.add(role)
-
-    db.session.commit()
+            RoleRepository.create(role)

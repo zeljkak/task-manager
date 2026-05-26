@@ -1,5 +1,5 @@
-from app.extensions.db import db
 from app.models.priority_model import Priority
+from app.repositories.priority_repository import PriorityRepository
 
 
 def seed_priorities():
@@ -10,7 +10,7 @@ def seed_priorities():
     ]
 
     for priority_data in priorities:
-        existing_priority = Priority.query.get(priority_data["id"])
+        existing_priority = PriorityRepository.get_by_id(priority_data["id"])
 
         if not existing_priority:
             priority = Priority(
@@ -18,6 +18,4 @@ def seed_priorities():
                 level=priority_data["level"]
             )
 
-            db.session.add(priority)
-
-    db.session.commit()
+            PriorityRepository.create(priority)

@@ -2,6 +2,9 @@ from flask import jsonify
 from app.exceptions.http_exceptions import HTTPException
 from flask_limiter.errors import RateLimitExceeded
 from marshmallow import ValidationError as MarshmallowValidationError
+import logging
+
+logger = logging.getLogger(__name__)
 
 def register_error_handlers(app):
 
@@ -40,8 +43,9 @@ def register_error_handlers(app):
 
     @app.errorhandler(Exception)
     def handle_generic_exception(error):
-        print("err: ", error)
+        logger.exception(error)
+
         return jsonify({
             "error": str(error)
         }), 500
-#"Internal server error" instead of str(error) and remove the print function
+#"Internal server error" instead of str(error)

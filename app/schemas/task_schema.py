@@ -12,7 +12,7 @@ class TaskSchema(Schema):
 
     assigned_to_id = fields.Int(allow_none=True, data_key="assignedToId")
 
-    due_date = fields.DateTime(allow_none=True, data_key="dueDate")
+    due_date = fields.Date(allow_none=True, data_key="dueDate")
     estimated_hours = fields.Int(allow_none=True, data_key="estimatedHours")
 
     @validates("title")

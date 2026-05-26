@@ -1,0 +1,41 @@
+from app.extensions.db import db
+from app.models.task_model import Task
+from app.exceptions.http_exceptions import ServiceUnavailableError
+
+class TaskRepository:
+    @staticmethod
+    def get_by_id(task_id):
+        try:
+            return Task.query.get(task_id)
+        except Exception as e:
+            raise ServiceUnavailableError("Database unavailable") from e
+
+    @staticmethod
+    def get_all():
+        try:
+            return Task.query.all()
+        except Exception as e:
+            raise ServiceUnavailableError("Database unavailable") from e
+
+    @staticmethod
+    def create(task):
+        try:
+            db.session.add(task)
+            db.session.commit()
+            return task
+        except Exception as e:
+            db.session.rollback()
+            raise ServiceUnavailableError("Database unavailable") from e
+
+    @staticmethod
+    def delete(task_id):
+        try:
+            task = TaskRepository.get_by_id(task_id)
+            if not task:
+                return None
+            db.session.delete(task)
+            db.session.commit()
+
+        except Exception as e:
+            db.session.rollback()
+            raise ServiceUnavailableError("Database unavailable") from e

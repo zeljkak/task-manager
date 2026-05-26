@@ -1,7 +1,14 @@
 from app.extensions.db import db
 from app.utils.diff import get_changed_fields
+
 from app.models.task_model import Task
 from app.models.activity_log_model import ActivityLog
+
+from app.repositories.task_repository import TaskRepository
+from app.repositories.user_repository import UserRepository
+from app.repositories.project_repository import ProjectRepository
+from app.repositories.priority_repository import PriorityRepository
+from app.repositories.task_status_repository import TaskStatusRepository
 
 from app.exceptions.http_exceptions import (
     NotFoundError,
@@ -27,6 +34,22 @@ class TaskService:
         #assigned to will always be the user who created the task if left empty
         assigned_to_id = data.get("assigned_to_id") or current_user_id
 
+        assigned_user = UserRepository.get_by_id(assigned_to_id)
+        if not assigned_user:
+            raise NotFoundError("Assigned user not found")
+
+        if data.get("project_id"):
+            if not ProjectRepository.get_by_id(data["project_id"]):
+                raise NotFoundError("Project not found")
+
+        if data.get("priority_id"):
+            if not PriorityRepository.get_by_id(data["priority_id"]):
+                raise NotFoundError("Priority not found")
+
+        if data.get("status_id"):
+            if not TaskStatusRepository.get_by_id(data["status_id"]):
+                raise NotFoundError("Status not found")
+
         task = Task(
             title=data["title"],
             description=data.get("description"),
@@ -39,14 +62,7 @@ class TaskService:
             estimated_hours=data.get("estimated_hours")
         )
 
-        try:
-            db.session.add(task)
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
-            raise ServiceUnavailableError("Database unavailable")
-
-        return task
+        return TaskRepository.create(task)
 
 
     @staticmethod
@@ -73,29 +89,24 @@ class TaskService:
                 setattr(task, key, value)
         task.updated_by_id = current_user_id
 
-        try:
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
-            raise ServiceUnavailableError("Database unavailable")
-
         # detect changes
         changes = get_changed_fields(old_task, task, TaskService.TRACKED_FIELDS)
 
         # log changes
+        for change in changes:
+            log = ActivityLog(
+                user_id=current_user_id,
+                task_id=task.id,
+                action="TASK_UPDATED",
+                field=change["field"],
+                old_value=change["old"],
+                new_value=change["new"]
+            )
+            db.session.add(log)
+
         try:
-            for change in changes:
-                log = ActivityLog(
-                    user_id=current_user_id,
-                    task_id=task.id,
-                    action="TASK_UPDATED",
-                    field=change["field"],
-                    old_value=change["old"],
-                    new_value=change["new"]
-                )
-                db.session.add(log)
             db.session.commit()
-        except Exception:
+        except Exception as e:
             db.session.rollback()
             raise ServiceUnavailableError("Database unavailable")
 
@@ -104,11 +115,7 @@ class TaskService:
 
     @staticmethod
     def get_task_by_id(task_id):
-
-        try:
-            task = Task.query.get(task_id)
-        except Exception:
-            raise ServiceUnavailableError("Database unavailable")
+        task = TaskRepository.get_by_id(task_id)
 
         if not task:
             raise NotFoundError("Task not found")
@@ -118,17 +125,13 @@ class TaskService:
 
     @staticmethod
     def get_all_tasks():
-        try:
-            return Task.query.all()
-        except Exception:
-            raise ServiceUnavailableError("Database unavailable")
+        tasks = TaskRepository.get_all()
 
+        if not tasks:
+            raise NotFoundError("Tasks not found")
+
+        return tasks
 
     @staticmethod
     def delete_task(task):
-        try:
-            db.session.delete(task)
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
-            raise ServiceUnavailableError("Database unavailable")
+        TaskRepository.delete(task)

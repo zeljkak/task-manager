@@ -10,6 +10,7 @@ from app.extensions.mail import mail
 
 from app.routes.auth import auth_bp
 from app.routes.user import user_bp
+from app.routes.task import task_bp
 
 from app import models
 
@@ -55,15 +56,9 @@ def create_app():
     #Register blueprint
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
+    app.register_blueprint(task_bp)
+    #print(app.url_map)
 
     register_error_handlers(app)
-
-    """from app import seeds
-    with app.app_context():
-        seeds.seed_roles()
-        seeds.seed_projects()
-        seeds.seed_priorities()
-        seeds.seed_task_status()
-        seeds.seed_admin_user()"""
 
     return app

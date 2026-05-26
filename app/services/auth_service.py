@@ -9,15 +9,15 @@ from app.exceptions.http_exceptions import (
     ServiceUnavailableError
 )
 
+from app.repositories.user_repository import UserRepository
+
+
 class AuthService:
 
     @staticmethod
     def login_user(email, password):
 
-        try:
-            user = User.query.filter_by(email=email).first()
-        except Exception:
-            raise ServiceUnavailableError("Database unavailable")
+        user = UserRepository.get_by_email(email)
 
         # if the user doesn't exist respond with invalid credentials
         if not user:
@@ -29,16 +29,13 @@ class AuthService:
         if not check_password_hash(user.password, password):
             raise AuthenticationError("Invalid credentials")
 
-        token = create_access_token(identity=user.email)
+        token = create_access_token(identity=str(user.id))
 
         return token
 
     @staticmethod
     def verify_email(token):
-        try:
-            user = User.query.filter_by(verification_token=token).first()
-        except Exception:
-            raise ServiceUnavailableError("Database unavailable")
+        user = UserRepository.get_by_token(token)
 
         if not user:
             raise BadRequestError("Invalid verification token")

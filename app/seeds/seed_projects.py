@@ -1,5 +1,5 @@
-from app.extensions.db import db
 from app.models.project_model import Project
+from app.repositories.project_repository import ProjectRepository
 
 
 def seed_projects():
@@ -8,7 +8,7 @@ def seed_projects():
     ]
 
     for project_data in projects:
-        existing_project = Project.query.get(project_data["id"])
+        existing_project = ProjectRepository.get_by_id(project_data["id"])
 
         if not existing_project:
             project = Project(
@@ -17,6 +17,4 @@ def seed_projects():
                 project_description=project_data["project_description"]
             )
 
-            db.session.add(project)
-
-    db.session.commit()
+            ProjectRepository.create(project)

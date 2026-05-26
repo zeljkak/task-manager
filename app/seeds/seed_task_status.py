@@ -1,5 +1,5 @@
-from app.extensions.db import db
 from app.models.task_status_model import TaskStatus
+from app.repositories.task_status_repository import TaskStatusRepository
 
 
 def seed_task_status():
@@ -12,7 +12,7 @@ def seed_task_status():
     ]
 
     for task_status_data in task_status:
-        existing_task_status = TaskStatus.query.get(task_status_data["id"])
+        existing_task_status = TaskStatusRepository.get_by_id(task_status_data["id"])
 
         if not existing_task_status:
             task_status = TaskStatus(
@@ -20,6 +20,4 @@ def seed_task_status():
                 status=task_status_data["status"]
             )
 
-            db.session.add(task_status)
-
-    db.session.commit()
+            TaskStatusRepository.create(task_status)

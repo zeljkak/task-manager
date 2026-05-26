@@ -2,6 +2,8 @@ from app.extensions.db import db
 from app.models.user_model import User
 from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
+
+from app.repositories.user_repository import UserRepository
 from app.services.email_service import EmailService
 
 from app.exceptions.http_exceptions import (
@@ -14,12 +16,17 @@ class UserService:
     DEFAULT_ROLE_ID = 2
 
     @staticmethod
-    def create_user(data):
+    def get_user_by_id(user_id):
+        return UserRepository.get_by_id(user_id)
 
-        try:
-            existing_user = User.query.filter_by(email=data["email"]).first()
-        except Exception:
-            raise ServiceUnavailableError("Database unavailable")
+    @staticmethod
+    def get_user_by_email(email):
+        return UserRepository.get_by_email(email)
+
+
+    @staticmethod
+    def create_user(data):
+        existing_user = UserService.get_user_by_email(data["email"])
 
         if existing_user:
             raise DuplicatesError('User already exists')
@@ -36,27 +43,13 @@ class UserService:
             role_id = UserService.DEFAULT_ROLE_ID
         )
 
-        try:
-            db.session.add(user)
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
-            raise ServiceUnavailableError("Database unavailable")
+        UserRepository.create(user)
 
         try:
             EmailService.send_verification_email(user)
         except Exception:
             # add resend link option
             raise ServiceUnavailableError("Email service unavailable")
-        return user
-
-    @staticmethod
-    def get_user_by_email(email):
-        try:
-            user = User.query.filter_by(email=email).first()
-        except Exception:
-            raise ServiceUnavailableError("Database unavailable")
-
         return user
 
 
