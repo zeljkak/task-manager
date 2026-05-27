@@ -42,6 +42,25 @@ class UserRepository:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
+    def update(user_id, data):
+        try:
+            user = UserRepository.get_by_id(user_id)
+
+            if not user:
+                return None
+
+            for key, value in data.items():
+                if hasattr(user, key):
+                    setattr(user, key, value)
+
+            db.session.commit()
+            return user
+
+        except Exception as e:
+            db.session.rollback()
+            raise ServiceUnavailableError("Database unavailable") from e
+
+    @staticmethod
     def delete(user_id):
         try:
             user = UserRepository.get_by_id(user_id)

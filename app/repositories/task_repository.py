@@ -28,6 +28,25 @@ class TaskRepository:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
+    def update(task_id, data):
+        try:
+            task = TaskRepository.get_by_id(task_id)
+            if not task:
+                return None
+
+            for key, value in data.items():
+                if hasattr(task, key):
+                    setattr(task, key, value)
+
+            db.session.commit()
+            return task
+
+        except Exception as e:
+            db.session.rollback()
+            raise ServiceUnavailableError("Database unavailable") from e
+
+
+    @staticmethod
     def delete(task_id):
         try:
             task = TaskRepository.get_by_id(task_id)

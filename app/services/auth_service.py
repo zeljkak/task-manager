@@ -1,5 +1,4 @@
 from flask_jwt_extended import create_access_token
-from app.models.user_model import User
 from werkzeug.security import check_password_hash
 from app.extensions.db import db
 

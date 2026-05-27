@@ -1,48 +1,47 @@
-from app.models.role_model import Role
 from app.extensions.db import db
+from app.models.comment_model import Comment
 from app.exceptions.http_exceptions import ServiceUnavailableError
 
-
-class RoleRepository:
+class CommentRepository:
     @staticmethod
-    def get_by_id(role_id):
+    def get_by_id(comment_id):
         try:
-            return Role.query.get(role_id)
+            return Comment.query.get(comment_id)
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
-    def get_by_name(name):
+    def get_by_task_id(task_id):
         try:
-            return Role.query.filter_by(role_name=name).first()
+            return Comment.query.filter_by(task_id=task_id).all()
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
     def get_all():
         try:
-            return Role.query.all()
+            return Comment.query.all()
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
-    def create(role):
+    def create(comment):
         try:
-            db.session.add(role)
+            db.session.add(comment)
             db.session.commit()
-            return role
+            return comment
         except Exception as e:
             db.session.rollback()
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
-    def update(role_id, role_name):
+    def update(comment_id, new_comment):
         try:
-            role = RoleRepository.get_by_id(role_id)
-            if not role:
+            comment = CommentRepository.get_by_id(comment_id)
+            if not comment:
                 return None
 
-            role.role_name = role_name
+            comment.comment = new_comment
             db.session.commit()
             return comment
 
@@ -50,14 +49,13 @@ class RoleRepository:
             db.session.rollback()
             raise ServiceUnavailableError("Database unavailable") from e
 
-
     @staticmethod
-    def delete(role_id):
+    def delete(comment_id):
         try:
-            role = RoleRepository.get_by_id(role_id)
-            if not role:
+            comment = CommentRepository.get_by_id(comment_id)
+            if not comment:
                 return None
-            db.session.delete(role)
+            db.session.delete(comment)
             db.session.commit()
 
         except Exception as e:

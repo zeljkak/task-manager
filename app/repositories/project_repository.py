@@ -29,6 +29,25 @@ class ProjectRepository:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
+    def update(project_id, data):
+        try:
+            project = ProjectRepository.get_by_id(project_id)
+            if not project:
+                return None
+
+            for key, value in data.items():
+                if hasattr(project, key):
+                    setattr(project, key, value)
+
+            db.session.commit()
+            return task
+
+        except Exception as e:
+            db.session.rollback()
+            raise ServiceUnavailableError("Database unavailable") from e
+
+
+    @staticmethod
     def delete(project_id):
         try:
             project = ProjectRepository.get_by_id(project_id)

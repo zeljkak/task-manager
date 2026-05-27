@@ -1,5 +1,3 @@
-from sqlalchemy.engine import default
-
 from app.extensions.db import db
 from sqlalchemy.sql import func
 
@@ -24,7 +22,6 @@ class Task(db.Model):
     priority_id = db.Column(db.Integer, db.ForeignKey("priorities.id"))
     project_id = db.Column(db.Integer, db.ForeignKey("projects.id"))
 
-    #due_date = db.Column(db.DateTime(timezone=True))
     due_date = db.Column(db.Date)
     estimated_hours = db.Column(db.Integer)
 

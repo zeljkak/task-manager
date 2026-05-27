@@ -29,6 +29,22 @@ class PriorityRepository:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
+    def update(priority_id, level):
+        try:
+            priority = PriorityRepository.get_by_id(priority_id)
+            if not priority:
+                return None
+
+            priority.level = level
+            db.session.commit()
+            return comment
+
+        except Exception as e:
+            db.session.rollback()
+            raise ServiceUnavailableError("Database unavailable") from e
+
+
+    @staticmethod
     def delete(priority_id):
         try:
             priority = PriorityRepository.get_by_id(priority_id)

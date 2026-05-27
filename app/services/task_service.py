@@ -108,7 +108,7 @@ class TaskService:
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            raise ServiceUnavailableError("Database unavailable")
+            raise ServiceUnavailableError("Database unavailable") from e
 
         return task
 
