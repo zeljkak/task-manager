@@ -24,6 +24,14 @@ parameters:
 responses:
   200:
     description: Login successful (returns user or token)
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Login successful
+        accessToken:
+          type: string
   400:
     description: Bad request (missing or invalid fields)
   401:

@@ -26,7 +26,7 @@ def register():
     user = UserService.create_user(data)
 
     return jsonify({
-        "message": "User registered successfully,",
+        "message": "User registered successfully",
         "user": user_schema.dump(user)
     }), 201
 
@@ -47,5 +47,5 @@ def login():
 
     return jsonify({
         "message": "Login successful",
-        "access_token": token
+        "accessToken": token
     }), 200

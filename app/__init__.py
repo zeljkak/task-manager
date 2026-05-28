@@ -11,6 +11,7 @@ from app.extensions.mail import mail
 from app.routes.auth import auth_bp
 from app.routes.user import user_bp
 from app.routes.task import task_bp
+from app.routes.priority import priority_bp
 
 from app import models
 
@@ -57,6 +58,7 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(task_bp)
+    app.register_blueprint(priority_bp)
     #print(app.url_map)
 
     register_error_handlers(app)

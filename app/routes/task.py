@@ -17,7 +17,7 @@ task_schema = TaskSchema()
 
 @task_bp.route('/create_task', methods=['POST'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/task/create_task.yml"))
-@limiter.limit("5 per minute")
+@limiter.limit("10 per minute")
 @jwt_required()
 
 def create_task():
@@ -27,6 +27,6 @@ def create_task():
     task = TaskService.create_task(data, current_user)
 
     return jsonify({
-        "message": "Task created successfully,",
+        "message": "Task created successfully",
         "task": task_schema.dump(task)
     }), 201

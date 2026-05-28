@@ -1,0 +1,43 @@
+tags:
+  - Priority
+
+description:
+  Get a specific priority that matches the id. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+
+security:
+  - BearerAuth: []
+
+parameters:
+  - name: priorityId
+    in: path
+    required: true
+    type: integer
+    example: 1
+    description: ID of the priority to retrieve
+
+responses:
+  200:
+    description: Priority retrieved successfully
+    schema:
+      type: object
+      properties:
+        priority:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            level:
+              type: string
+              example: low
+
+  401:
+    description: Unauthorized (missing or invalid token)
+  404:
+    description: Priority not found
+  422:
+    description: Invalid token format
+  500:
+    description: Internal server error
+  503:
+    description: Service unavailable (database or email service down)

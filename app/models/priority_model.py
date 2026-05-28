@@ -1,5 +1,3 @@
-from enum import unique
-
 from app.extensions.db import db
 
 class Priority(db.Model):

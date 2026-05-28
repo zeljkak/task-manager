@@ -2,7 +2,7 @@ tags:
   - User
 
 description:
-  Get current user's profile. Requires a valid JWT token in Authorizeation header. Format: Bearer <token>
+  Get current user's profile. Requires a valid JWT token in Authorization header. Format: Bearer <token>
 
 security:
   - BearerAuth: []
@@ -17,8 +17,27 @@ responses:
           type: string
           example: This is protected data
         user:
-          type: string
-          example: test@mail.com
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            email:
+              type: string
+              example: test@mail.com
+            emailVerified:
+              type: boolean
+              example: false
+            firstName:
+              type: string
+              example: Anna
+            lastName:
+              type: string
+              example: Smith
+            createdAt:
+              type: string
+              format: datetime
+              example: "2026-05-28T13:54:55.729333+02:00"
   401:
     description: Unauthorized (missing or invalid token)
   422:
