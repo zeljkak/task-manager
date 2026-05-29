@@ -13,6 +13,9 @@ class AuthenticationError(HTTPException):
     def __init__(self, message="Invalid credentials"):
         super().__init__(message, 401)
 
+class ForbiddenError(HTTPException):
+    def __init__(self, message="Forbidden"):
+        super().__init__(message, 403)
 
 class NotFoundError(HTTPException):
     def __init__(self, message="Not found"):

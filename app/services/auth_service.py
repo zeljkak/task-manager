@@ -7,6 +7,7 @@ from app.exceptions.http_exceptions import (
     AuthenticationError,
     ServiceUnavailableError
 )
+from app.models import Role
 
 from app.repositories.user_repository import UserRepository
 
@@ -28,7 +29,7 @@ class AuthService:
         if not check_password_hash(user.password, password):
             raise AuthenticationError("Invalid credentials")
 
-        token = create_access_token(identity=str(user.id))
+        token = create_access_token(identity=str(user.id), additional_claims={"role": user.role.role_name})
 
         return token
 
