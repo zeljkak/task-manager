@@ -8,8 +8,11 @@ from app.services.email_service import EmailService
 
 from app.exceptions.http_exceptions import (
     DuplicatesError,
-    ServiceUnavailableError
+    ServiceUnavailableError,
+    NotFoundError
 )
+from app.services.role_service import RoleService
+
 
 class UserService:
 
@@ -17,11 +20,42 @@ class UserService:
 
     @staticmethod
     def get_user_by_id(user_id):
-        return UserRepository.get_by_id(user_id)
+        user = UserRepository.get_by_id(user_id)
+
+        if not user:
+            raise NotFoundError('User not found')
+
+        return user
+
 
     @staticmethod
     def get_user_by_email(email):
-        return UserRepository.get_by_email(email)
+        user = UserRepository.get_by_email(email)
+
+        if not user:
+            return NotFoundError("User not found")
+
+        return user
+
+
+    @staticmethod
+    def get_user_by_token(token):
+        user = UserRepository.get_by_token(token)
+
+        if not user:
+            return NotFoundError("User not found")
+
+        return user
+
+
+    @staticmethod
+    def get_all_users():
+        users = UserRepository.get_all()
+
+        if not users:
+            return NotFoundError("Users not found")
+
+        return users
 
 
     @staticmethod
@@ -51,6 +85,19 @@ class UserService:
             # add resend link option
             raise ServiceUnavailableError("Email service unavailable")
         return user
+
+
+    @staticmethod
+    def update_user_role(user_id, role_id):
+        try:
+            user = UserService.get_user_by_id(user_id)
+            role = RoleService.get_role_by_id(role_id)
+
+            user.role_id = role_id
+            return user
+
+        except Exception as e:
+            raise ServiceUnavailableError("Database unavailable") from e
 
 
     @staticmethod

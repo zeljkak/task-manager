@@ -29,6 +29,24 @@ class TaskService:
 
 
     @staticmethod
+    def get_task_by_id(task_id):
+        task = TaskRepository.get_by_id(task_id)
+
+        if not task:
+            raise NotFoundError("Task not found")
+
+        return task
+
+    @staticmethod
+    def get_all_tasks():
+        tasks = TaskRepository.get_all()
+
+        if not tasks:
+            raise NotFoundError("Tasks not found")
+
+        return tasks
+
+    @staticmethod
     def create_task(data, current_user_id):
 
         #assigned to will always be the user who created the task if left empty
@@ -64,7 +82,7 @@ class TaskService:
 
         return TaskRepository.create(task)
 
-
+"""
     @staticmethod
     def copy_task(task):
         class Temp:
@@ -75,8 +93,9 @@ class TaskService:
             setattr(temp, attr, getattr(task, attr))
 
         return temp
+"""
 
-
+"""
     @staticmethod
     def update_task(task, data, current_user_id):
 
@@ -103,7 +122,7 @@ class TaskService:
                 new_value=change["new"]
             )
             db.session.add(log)
-
+# move add log and code below to activity log repository later
         try:
             db.session.commit()
         except Exception as e:
@@ -111,27 +130,10 @@ class TaskService:
             raise ServiceUnavailableError("Database unavailable") from e
 
         return task
+"""
 
-
-    @staticmethod
-    def get_task_by_id(task_id):
-        task = TaskRepository.get_by_id(task_id)
-
-        if not task:
-            raise NotFoundError("Task not found")
-
-        return task
-
-
-    @staticmethod
-    def get_all_tasks():
-        tasks = TaskRepository.get_all()
-
-        if not tasks:
-            raise NotFoundError("Tasks not found")
-
-        return tasks
-
+"""
     @staticmethod
     def delete_task(task):
         TaskRepository.delete(task)
+"""

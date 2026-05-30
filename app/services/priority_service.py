@@ -1,3 +1,4 @@
+from app.exceptions.http_exceptions import NotFoundError
 from app.repositories.priority_repository import PriorityRepository
 
 class PriorityService:
@@ -6,19 +7,39 @@ class PriorityService:
     def get_priority_by_id(priority_id):
         priority = PriorityRepository.get_by_id(priority_id)
 
-        return priority
+        if not priority:
+            raise NotFoundError("Priority not found")
+
+        return {
+        'id': priority.id,
+        'level': priority.level
+        }
 
     @staticmethod
     def get_priority_by_name(priority_name):
         priority = PriorityRepository.get_by_name(priority_name)
 
-        return priority
+        if not priority:
+            raise NotFoundError("Priority not found")
+
+        return {
+        'id': priority.id,
+        'level': priority.level
+        }
 
     @staticmethod
     def get_all_priorities():
         priorities = PriorityRepository.get_all()
 
-        return priorities
+        if not priorities:
+            raise NotFoundError("Priorities not found")
 
-# There are create, update and delete functions in priority_repository
-# for possible expanding of Priority model
+        result = []
+
+        for priority in priorities:
+            result.append({
+                'id': priority.id,
+                'level': priority.level
+            })
+
+        return result

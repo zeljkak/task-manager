@@ -46,6 +46,7 @@ class AuthService:
         user.email_verified = True
         user.verification_token = None
 
+#maybe move this part to repository layer
         try:
             db.session.commit()
         except Exception:

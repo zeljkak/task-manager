@@ -6,14 +6,20 @@ class TaskRepository:
     @staticmethod
     def get_by_id(task_id):
         try:
-            return Task.query.get(task_id)
+            task = Task.query.get(task_id)
+            if not task:
+                return None
+            return task
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
     def get_all():
         try:
-            return Task.query.all()
+            tasks = Task.query.all()
+            if not tasks:
+                return None
+            return tasks
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 

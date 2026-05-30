@@ -8,16 +8,9 @@ class PriorityRepository:
     def get_by_id(priority_id):
         try:
             priority = Priority.query.get(priority_id)
-
             if not priority:
-                raise NotFoundError("Priority not found")
-
-            return {
-                'id': priority.id,
-                'level': priority.level
-            }
-        except Exception:
-            raise
+                return None
+            return priority
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 
@@ -25,16 +18,9 @@ class PriorityRepository:
     def get_by_name(priority_name):
         try:
             priority = Priority.query.filter_by(name=priority_name).first()
-
             if not priority:
-                raise NotFoundError("Priority not found")
-
-            return {
-                'id': priority.id,
-                'level': priority.level
-            }
-        except Exception:
-            raise
+                return None
+            return priority
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 
@@ -42,21 +28,9 @@ class PriorityRepository:
     def get_all():
         try:
             priorities = Priority.query.all()
-
             if not priorities:
-                raise NotFoundError("Priorities not found")
-
-            result = []
-
-            for priority in priorities:
-                result.append({
-                    'id': priority.id,
-                    'level': priority.level
-                })
-            return result
-
-        except Exception:
-            raise
+                return None
+            return priorities
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 
@@ -70,6 +44,7 @@ class PriorityRepository:
             db.session.rollback()
             raise ServiceUnavailableError("Database unavailable") from e
 
+"""
     @staticmethod
     def update(priority_id, level):
         try:
@@ -84,8 +59,9 @@ class PriorityRepository:
         except Exception as e:
             db.session.rollback()
             raise ServiceUnavailableError("Database unavailable") from e
+"""
 
-
+"""
     @staticmethod
     def delete(priority_id):
         try:
@@ -98,3 +74,4 @@ class PriorityRepository:
         except Exception as e:
             db.session.rollback()
             raise ServiceUnavailableError("Database unavailable") from e
+"""
