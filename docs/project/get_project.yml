@@ -1,0 +1,47 @@
+tags:
+  - Project
+
+description:
+  Get a specific project that matches the id. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+
+security:
+  - BearerAuth: []
+
+parameters:
+  - name: projectId
+    in: path
+    required: true
+    type: integer
+    example: 1
+    description: ID of the project to retrieve
+
+responses:
+  200:
+    description: Project retrieved successfully
+    schema:
+      type: object
+      properties:
+        project:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 2
+            projectName:
+              type: string
+              example: Second project
+            projectDescription:
+              type: string
+              example: This project can be used as a client dashboard. All tasks relating to the specific client are connected to it.
+
+
+  401:
+    description: Unauthorized (missing or invalid token)
+  404:
+    description: Priority not found
+  422:
+    description: Invalid token format
+  500:
+    description: Internal server error
+  503:
+    description: Service unavailable (database or email service down)

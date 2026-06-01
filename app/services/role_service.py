@@ -12,7 +12,7 @@ class RoleService:
 
         return {
         'id': role.id,
-        'level': role.role_name
+        'name': role.role_name
         }
 
     @staticmethod
@@ -24,7 +24,7 @@ class RoleService:
 
         return {
             'id': role.id,
-            'level': role.role_name
+            'name': role.role_name
         }
 
     @staticmethod
@@ -39,7 +39,7 @@ class RoleService:
         for role in roles:
             result.append({
                 'id': role.id,
-                'level': role.role_name
+                'name': role.role_name
             })
 
         return result

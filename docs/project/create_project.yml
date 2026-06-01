@@ -1,0 +1,57 @@
+tags:
+  - Project
+
+description: Create a new project.
+
+security:
+  - BearerAuth: []
+
+parameters:
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - project_name
+      properties:
+        projectName:
+          type: string
+          example: Second project
+        projectDescription:
+          type: string
+          example: This project can be used as a client dashboard. All tasks relating to the specific client are connected to it.
+
+responses:
+  201:
+    description: Project created successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Project created successfully
+        project:
+          type: object
+          properties:
+            projectName:
+              type: string
+              example: Second project
+            projectDescription:
+              type: string
+              example: This project can be used as a client dashboard. All tasks relating to the specific client are connected to it.
+
+  400:
+    description: Bad request (missing or invalid fields)
+  401:
+    description: Authentication required
+  404:
+    description: Related resource not found
+  422:
+    description: Validation error
+  429:
+    description: Too many requests
+  500:
+    description: Internal server error
+  503:
+    description: Service unavailable (database or email service down)
