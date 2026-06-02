@@ -4,6 +4,7 @@ import os
 
 from flask_jwt_extended import jwt_required
 
+from app.schemas.priority_schema import PriorityResponseSchema
 from app.services.priority_service import PriorityService
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -18,7 +19,7 @@ def get_priorities():
     priorities = PriorityService.get_all_priorities()
 
     return jsonify({
-        "priorities": priorities
+        "priorities": PriorityResponseSchema(many=True).dump(priorities)
     }), 200
 
 @priority_bp.route('/<int:priorityId>', methods=['GET'])
@@ -29,5 +30,5 @@ def get_priority(priorityId):
     priority = PriorityService.get_priority_by_id(priorityId)
 
     return jsonify({
-        "priority": priority
+        "priority": PriorityResponseSchema().dump(priority)
     }), 200

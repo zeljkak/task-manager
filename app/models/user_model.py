@@ -1,4 +1,3 @@
-from sqlalchemy.orm import backref
 from sqlalchemy.sql import func
 from app.extensions.db import db
 
@@ -18,14 +17,3 @@ class User(db.Model):
 
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"), nullable=False, default="2")
     role = db.relationship("Role", backref="users")
-
-    #simplest way to return user data, use Marshmallow later
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "firstName": self.first_name,
-            "lastName": self.last_name,
-            "email": self.email,
-            "email_verified": self.email_verified,
-            "role_id": self.role_id,
-        }

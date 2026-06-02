@@ -4,6 +4,7 @@ import os
 
 from flask_jwt_extended import jwt_required
 from app.decorators.roles_required import roles_required
+from app.schemas.role_schema import RoleResponseSchema
 
 from app.services.role_service import RoleService
 
@@ -20,7 +21,7 @@ def get_roles():
     roles = RoleService.get_all_roles()
 
     return jsonify({
-        "roles": roles
+        "roles": RoleResponseSchema(many=True).dump(roles)
     }), 200
 
 @role_bp.route('/<int:roleId>', methods=['GET'])
@@ -32,5 +33,5 @@ def get_role(roleId):
     role = RoleService.get_role_by_id(roleId)
 
     return jsonify({
-        "role": role
+        "role": RoleResponseSchema().dump(role)
     }), 200

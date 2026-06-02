@@ -21,7 +21,7 @@ responses:
               id:
                 type: integer
                 example: 2
-              name:
+              roleName:
                 type: string
                 example: user
 

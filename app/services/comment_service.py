@@ -11,7 +11,6 @@ class CommentService:
             raise NotFoundError("Comment not found")
 
         return comment
-    #change the output
 
     @staticmethod
     def get_all_comments_for_task(task_id):
@@ -20,12 +19,7 @@ class CommentService:
         if not comments:
             raise NotFoundError("Role not found")
 
-        result = []
-
-        for comment in comments:
-            result.append({comment})
-            #change the output, all the values of comment
-        return result
+        return comments
 
     @staticmethod
     def get_all_comments():
@@ -34,10 +28,4 @@ class CommentService:
         if not comments:
             raise NotFoundError("Comments not found")
 
-        result = []
-
-        for comment in comments:
-            result.append({comment})
-            #change the output, all the values of comment
-
-        return result
+        return comments

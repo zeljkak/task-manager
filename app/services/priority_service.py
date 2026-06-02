@@ -10,10 +10,7 @@ class PriorityService:
         if not priority:
             raise NotFoundError("Priority not found")
 
-        return {
-        'id': priority.id,
-        'level': priority.level
-        }
+        return priority
 
     @staticmethod
     def get_priority_by_name(priority_name):
@@ -22,10 +19,7 @@ class PriorityService:
         if not priority:
             raise NotFoundError("Priority not found")
 
-        return {
-        'id': priority.id,
-        'level': priority.level
-        }
+        return priority
 
     @staticmethod
     def get_all_priorities():
@@ -34,12 +28,4 @@ class PriorityService:
         if not priorities:
             raise NotFoundError("Priorities not found")
 
-        result = []
-
-        for priority in priorities:
-            result.append({
-                'id': priority.id,
-                'level': priority.level
-            })
-
-        return result
+        return priorities

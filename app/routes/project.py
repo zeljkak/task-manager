@@ -6,7 +6,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.decorators.roles_required import roles_required
 
 from app.services.project_service import ProjectService
-from app.schemas.project_schema import ProjectSchema
+from app.schemas.project_schema import ProjectSchema, ProjectSummarySchema, ProjectResponseSchema
 
 from app.extensions.limiter import limiter
 
@@ -24,7 +24,7 @@ def get_projects():
     projects = ProjectService.get_all_projects()
 
     return jsonify({
-        "projects": projects
+        "projects": ProjectResponseSchema(many=True).dump(projects)
     }), 200
 
 @project_bp.route('/<int:projectId>', methods=['GET'])
@@ -35,7 +35,7 @@ def get_project(projectId):
     project = ProjectService.get_project_by_id(projectId)
 
     return jsonify({
-        "project": project
+        "project": ProjectResponseSchema().dump(project)
     }), 200
 
 @project_bp.route('/create_project', methods=['POST'])
@@ -53,5 +53,5 @@ def create_project():
 
     return jsonify({
         "message": "Project created successfully",
-        "project": project_schema.dump(project)
+        "project": ProjectResponseSchema().dump(project)
     }), 201

@@ -33,7 +33,38 @@ responses:
             projectDescription:
               type: string
               example: This project can be used as a client dashboard. All tasks relating to the specific client are connected to it.
-
+            createdBy:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                firstName:
+                  type: string
+                  example: Anna
+                lastName:
+                  type: string
+                  example: Smith
+            updatedBy:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                firstName:
+                  type: string
+                  example: Anna
+                lastName:
+                  type: string
+                  example: Smith
+            createdAt:
+              type: string
+              format: datetime
+              example: "2026-05-28T13:54:55.729333+02:00"
+            updatedAt:
+              type: string
+              format: datetime
+              example: "2026-05-28T13:54:55.729333+02:00"
 
   401:
     description: Unauthorized (missing or invalid token)

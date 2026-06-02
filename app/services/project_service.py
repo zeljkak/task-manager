@@ -2,6 +2,7 @@ from app.exceptions.http_exceptions import NotFoundError
 
 from app.repositories.project_repository import ProjectRepository
 from app.models.project_model import Project
+from app.schemas.project_schema import ProjectSummarySchema
 
 
 class ProjectService:
@@ -13,11 +14,8 @@ class ProjectService:
         if not project:
             raise NotFoundError("Project not found")
 
-        return {
-            'id': project.id,
-            'projectName': project.project_name,
-            'projectDescription': project.project_description
-        }
+        return project
+
 
     @staticmethod
     def get_project_by_name(project_name):
@@ -26,11 +24,7 @@ class ProjectService:
         if not project:
             raise NotFoundError("Project not found")
 
-        return {
-            'id': project.id,
-            'projectNname': project.project_name,
-            'projectDescription': project.project_description
-        }
+        return project
 
 
     @staticmethod
@@ -40,16 +34,7 @@ class ProjectService:
         if not projects:
             raise NotFoundError("Projects not found")
 
-        result = []
-
-        for project in projects:
-            result.append({
-                'id': project.id,
-                'projectName': project.project_name,
-                'projectDescription': project.project_description
-            })
-
-        return result
+        return projects
 
     @staticmethod
     def create_project(data, current_user_id):

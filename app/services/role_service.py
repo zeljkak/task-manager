@@ -10,10 +10,7 @@ class RoleService:
         if not role:
             raise NotFoundError("Role not found")
 
-        return {
-        'id': role.id,
-        'name': role.role_name
-        }
+        return role
 
     @staticmethod
     def get_role_by_name(role_name):
@@ -22,10 +19,7 @@ class RoleService:
         if not role:
             raise NotFoundError("Role not found")
 
-        return {
-            'id': role.id,
-            'name': role.role_name
-        }
+        return role
 
     @staticmethod
     def get_all_roles():
@@ -34,12 +28,4 @@ class RoleService:
         if not roles:
             raise NotFoundError("Roles not found")
 
-        result = []
-
-        for role in roles:
-            result.append({
-                'id': role.id,
-                'name': role.role_name
-            })
-
-        return result
+        return roles
