@@ -45,7 +45,7 @@ class CommentRepository:
             db.session.rollback()
             raise ServiceUnavailableError("Database unavailable") from e
 
-"""
+
     @staticmethod
     def update(comment_id, new_comment):
         try:
@@ -60,9 +60,8 @@ class CommentRepository:
         except Exception as e:
             db.session.rollback()
             raise ServiceUnavailableError("Database unavailable") from e
-"""
 
-"""
+
     @staticmethod
     def delete(comment_id):
         try:
@@ -75,4 +74,3 @@ class CommentRepository:
         except Exception as e:
             db.session.rollback()
             raise ServiceUnavailableError("Database unavailable") from e
-"""

@@ -59,7 +59,7 @@ responses:
               type: string
               example: Smith
             createdAt:
-              type: string
+              type: datetime
               example: "2026-05-28T13:54:55.729333+02:00"
   400:
     description: Bad request (missing or invalid fields)

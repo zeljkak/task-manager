@@ -1,61 +1,52 @@
 tags:
-  - Project
+  - Task
 
-description: Create a new project.
+description: Create a new comment on a task.
 
 security:
   - BearerAuth: []
 
 parameters:
+  - name: taskId
+    in: path
+    required: true
+    type: integer
+    example: 1
+    description: ID of the task to comment on
   - name: body
     in: body
     required: true
     schema:
       type: object
       required:
-        - project_name
+        - comment
       properties:
-        projectName:
+        comment:
           type: string
-          example: Second project
-        projectDescription:
-          type: string
-          example: This project can be used as a client dashboard. All tasks relating to the specific client are connected to it.
+          example: Implemented login endpoint
 
 responses:
   201:
-    description: Project created successfully
+    description: Comment created successfully
     schema:
       type: object
       properties:
         message:
           type: string
-          example: Project created successfully
-        project:
+          example: Comment created successfully
+        comment:
           type: object
           properties:
             id:
               type: integer
               example: 1
-            projectName:
+            comment:
               type: string
-              example: Second project
-            projectDescription:
-              type: string
-              example: This project can be used as a client dashboard. All tasks relating to the specific client are connected to it.
-            createdBy:
-              type: object
-              properties:
-                id:
-                  type: integer
-                  example: 1
-                firstName:
-                  type: string
-                  example: Anna
-                lastName:
-                  type: string
-                  example: Smith
-            updatedBy:
+              example: Finished creating task routes
+            taskId:
+              type: integer
+              example: 3
+            user:
               type: object
               properties:
                 id:
@@ -73,7 +64,6 @@ responses:
             updatedAt:
               type: datetime
               example: "2026-05-28T13:54:55.729333+02:00"
-
   400:
     description: Bad request (missing or invalid fields)
   401:

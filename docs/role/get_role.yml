@@ -34,7 +34,7 @@ responses:
   401:
     description: Unauthorized (missing or invalid token)
   404:
-    description: Priority not found
+    description: Related resource not found
   422:
     description: Invalid token format
   500:

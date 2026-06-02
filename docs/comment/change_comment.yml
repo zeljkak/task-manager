@@ -1,51 +1,53 @@
 tags:
-  - Project
+  - Comment
 
 description:
-  Get a specific project that matches the id. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+  Update a specific comment that matches the id. Requires a valid JWT token in Authorization header. Format: Bearer <token>
 
 security:
   - BearerAuth: []
 
 parameters:
-  - name: projectId
+  - name: commentId
     in: path
     required: true
     type: integer
     example: 1
-    description: ID of the project to retrieve
+    description: ID of the comment to update
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - comment
+      properties:
+        comment:
+          type: string
+          example: Implemented login endpoint successfully
 
 responses:
   200:
-    description: Project retrieved successfully
+    description: Comment updated successfully
     schema:
       type: object
       properties:
-        project:
+        message:
+          type: string
+          example: Comment updated successfully
+        comment:
           type: object
           properties:
             id:
               type: integer
-              example: 2
-            projectName:
+              example: 1
+            comment:
               type: string
-              example: Second project
-            projectDescription:
-              type: string
-              example: This project can be used as a client dashboard. All tasks relating to the specific client are connected to it.
-            createdBy:
-              type: object
-              properties:
-                id:
-                  type: integer
-                  example: 1
-                firstName:
-                  type: string
-                  example: Anna
-                lastName:
-                  type: string
-                  example: Smith
-            updatedBy:
+              example: Finished creating task routes successfully
+            taskId:
+              type: integer
+              example: 3
+            user:
               type: object
               properties:
                 id:
@@ -62,14 +64,17 @@ responses:
               example: "2026-05-28T13:54:55.729333+02:00"
             updatedAt:
               type: datetime
-              example: "2026-05-28T13:54:55.729333+02:00"
-
+              example: "2026-05-29T13:54:55.729333+02:00"
+  400:
+    description: Bad request (unallowed update)
   401:
     description: Unauthorized (missing or invalid token)
   404:
     description: Related resource not found
   422:
     description: Invalid token format
+  429:
+    description: Too many requests
   500:
     description: Internal server error
   503:

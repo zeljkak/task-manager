@@ -6,8 +6,6 @@ from app.schemas.user_schema import UserSummarySchema
 
 class CommentSchema(Schema):
     comment = fields.Str(required=True)
-    user_id = fields.Int(required=True, data_key="userId")
-    task_id = fields.Int(required=True, data_key="taskId")
 
     @validates("comment")
     def validate_role_name(self, value, **kwargs):

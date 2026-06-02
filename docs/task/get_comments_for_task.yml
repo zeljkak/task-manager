@@ -1,45 +1,41 @@
 tags:
-  - Project
+  - Task
 
 description:
-  Get all projects. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+  Get comments for a specific task that matches the id. Requires a valid JWT token in Authorization header. Format: Bearer <token>
 
 security:
   - BearerAuth: []
 
+parameters:
+  - name: taskId
+    in: path
+    required: true
+    type: integer
+    example: 1
+    description: ID of the task to retrieve the comments for
+
 responses:
   200:
-    description: Projects retrieved successfully
+    description: Comments retrieved successfully
     schema:
       type: object
       properties:
-        projects:
+        comments:
           type: array
           items:
             type: object
             properties:
               id:
                 type: integer
-                example: 2
-              projectName:
+                example: 1
+              comment:
                 type: string
-                example: Second project
-              projectDescription:
-                type: string
-                example: This project can be used as a client dashboard. All tasks relating to the specific client are connected to it.
-              createdBy:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                    example: 1
-                  firstName:
-                    type: string
-                    example: Anna
-                  lastName:
-                    type: string
-                    example: Smith
-              updatedBy:
+                example: Finished creating task routes
+              taskId:
+                type: integer
+                example: 3
+              user:
                 type: object
                 properties:
                   id:
@@ -57,9 +53,10 @@ responses:
               updatedAt:
                 type: datetime
                 example: "2026-05-28T13:54:55.729333+02:00"
-
   401:
     description: Unauthorized (missing or invalid token)
+  404:
+    description: Related resource not found
   422:
     description: Invalid token format
   500:

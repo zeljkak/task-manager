@@ -78,7 +78,7 @@ responses:
               example: 6
             createdAt:
               type: datetime
-              example: "2026-05-12 11:30:30.97232+02"
+              example: "2026-05-28T13:54:55.729333+02:00"
             createdBy:
               type: object
               properties:
@@ -94,7 +94,7 @@ responses:
   401:
     description: Unauthorized (missing or invalid token)
   404:
-    description: Priority not found
+    description: Related resource not found
   422:
     description: Invalid token format
   500:

@@ -35,8 +35,7 @@ responses:
               type: string
               example: Smith
             createdAt:
-              type: string
-              format: datetime
+              type: datetime
               example: "2026-05-28T13:54:55.729333+02:00"
   401:
     description: Unauthorized (missing or invalid token)
