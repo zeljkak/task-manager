@@ -1,0 +1,94 @@
+tags:
+  - Project
+
+description:
+  Update a specific project that matches the id. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+
+security:
+  - BearerAuth: []
+
+parameters:
+  - name: projectId
+    in: path
+    required: true
+    type: integer
+    example: 1
+    description: ID of the project to update
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - projectName
+      properties:
+        projectName:
+          type: string
+          example: Second project
+        projectDescription:
+          type: string
+          example: Important - This project can be used as a client dashboard. All tasks relating to the specific client are connected to it.
+
+
+responses:
+  200:
+    description: Project updated successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Project updated successfully
+        project:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 2
+            projectName:
+              type: string
+              example: Second project
+            projectDescription:
+              type: string
+              example: Important - This project can be used as a client dashboard. All tasks relating to the specific client are connected to it.
+            createdBy:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                firstName:
+                  type: string
+                  example: Anna
+                lastName:
+                  type: string
+                  example: Smith
+            updatedBy:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                firstName:
+                  type: string
+                  example: Anna
+                lastName:
+                  type: string
+                  example: Smith
+            createdAt:
+              type: datetime
+              example: "2026-05-28T13:54:55.729333+02:00"
+            updatedAt:
+              type: datetime
+              example: "2026-05-30T13:54:55.729333+02:00"
+
+  401:
+    description: Unauthorized (missing or invalid token)
+  404:
+    description: Related resource not found
+  422:
+    description: Invalid token format
+  500:
+    description: Internal server error
+  503:
+    description: Service unavailable (database or email service down)

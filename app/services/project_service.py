@@ -7,6 +7,11 @@ from app.schemas.project_schema import ProjectSummarySchema
 
 class ProjectService:
 
+    UPDATABLE_FIELDS = [
+        "project_name",
+        "project_description"
+    ]
+
     @staticmethod
     def get_project_by_id(project_id):
         project = ProjectRepository.get_by_id(project_id)
@@ -47,3 +52,21 @@ class ProjectService:
         )
 
         return ProjectRepository.create(project)
+
+    @staticmethod
+    def update_project(project_id, data, current_user_id):
+        project = ProjectService.get_project_by_id(project_id)
+
+        for key, value in data.items():
+            if key in ProjectService.UPDATABLE_FIELDS:
+                setattr(project, key, value)
+
+        project.updated_by_id = current_user_id
+
+        return ProjectRepository.update(project)
+
+    @staticmethod
+    def delete_project(project_id):
+        project = ProjectService.get_project_by_id(project_id)
+
+        return ProjectRepository.delete(project)

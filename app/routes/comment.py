@@ -14,7 +14,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 comment_bp = Blueprint('comment', __name__, url_prefix='/comments')
 
 @comment_bp.route('/<int:commentId>', methods=['PATCH'])
-@swag_from(os.path.join(BASE_DIR, "../../docs/comment/change_comment.yml"))
+@swag_from(os.path.join(BASE_DIR, "../../docs/comment/update_comment.yml"))
 @limiter.limit("10 per minute")
 @jwt_required()
 
@@ -24,6 +24,7 @@ def change_comment(commentId):
     comment = CommentService.update_comment(data, commentId, current_user)
 
     return jsonify({
+        "message": "Comment updated successfully",
         "comment": CommentResponseSchema().dump(comment)
     }), 200
 

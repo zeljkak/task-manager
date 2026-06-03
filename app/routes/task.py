@@ -77,5 +77,6 @@ def create_comment(taskId):
     comment = CommentService.create_comment(data, current_user, taskId)
 
     return jsonify({
+        "message": "Comment created successfully",
         "comment": CommentResponseSchema().dump(comment)
     }), 200

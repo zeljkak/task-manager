@@ -44,7 +44,6 @@ def get_project(projectId):
 @jwt_required()
 @roles_required("admin")
 
-
 def create_project():
     current_user = int(get_jwt_identity())
 
@@ -55,3 +54,31 @@ def create_project():
         "message": "Project created successfully",
         "project": ProjectResponseSchema().dump(project)
     }), 201
+
+@project_bp.route('<int:projectId>', methods=['PATCH'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/project/update_project.yml"))
+@limiter.limit("10 per minute")
+@jwt_required()
+@roles_required("admin")
+
+def update_project(projectId):
+    current_user = int(get_jwt_identity())
+
+    data = project_schema.load(request.get_json())
+    project = ProjectService.update_project(projectId, data, current_user)
+
+    return jsonify({
+        "message": "Project updated successfully",
+        "project": ProjectResponseSchema().dump(project)
+    }), 201
+
+@project_bp.route('/<int:projectId>', methods=['DELETE'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/project/delete_project.yml"))
+@limiter.limit("2 per minute")
+@jwt_required()
+@roles_required("admin")
+
+def delete_project(projectId):
+    ProjectService.delete_project(projectId)
+
+    return "", 204
