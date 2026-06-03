@@ -28,6 +28,7 @@ class TaskStatusRepository:
             db.session.rollback()
             raise ServiceUnavailableError("Database unavailable") from e
 
+"""
     @staticmethod
     def update(task_status_id, status):
         try:
@@ -37,12 +38,14 @@ class TaskStatusRepository:
 
             task_status.status = status
             db.session.commit()
-            return comment
+            return task_status
 
         except Exception as e:
             db.session.rollback()
             raise ServiceUnavailableError("Database unavailable") from e
+"""
 
+"""
     @staticmethod
     def delete(task_status_id):
         try:
@@ -55,3 +58,4 @@ class TaskStatusRepository:
         except Exception as e:
             db.session.rollback()
             raise ServiceUnavailableError("Database unavailable") from e
+"""

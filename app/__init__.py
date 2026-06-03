@@ -15,6 +15,7 @@ from app.routes.priority import priority_bp
 from app.routes.role import role_bp
 from app.routes.project import project_bp
 from app.routes.comment import comment_bp
+from app.routes.task_status import task_status_bp
 
 from app import models
 
@@ -65,6 +66,7 @@ def create_app():
     app.register_blueprint(role_bp)
     app.register_blueprint(project_bp)
     app.register_blueprint(comment_bp)
+    app.register_blueprint(task_status_bp)
     #print(app.url_map)
 
     register_error_handlers(app)

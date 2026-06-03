@@ -1,0 +1,35 @@
+tags:
+  - Task Status
+
+description:
+  Get all task statuses. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+
+security:
+  - BearerAuth: []
+
+responses:
+  200:
+    description: Task statuses retrieved successfully
+    schema:
+      type: object
+      properties:
+        taskStatuses:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 2
+              status:
+                type: string
+                example: To Do
+
+  401:
+    description: Unauthorized (missing or invalid token)
+  422:
+    description: Invalid token format
+  500:
+    description: Internal server error
+  503:
+    description: Service unavailable (database or email service down)
