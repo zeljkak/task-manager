@@ -7,7 +7,7 @@ def get_changed_fields(old_obj, new_obj, fields):
         old_value = getattr(old_obj, field, None)
         new_value = getattr(new_obj, field, None)
 
-        # normalize datetimes for cleaner comparison/logging
+        # normalize datetimes
         if hasattr(old_value, "isoformat"):
             old_value = old_value.isoformat()
 

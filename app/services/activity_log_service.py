@@ -24,8 +24,6 @@ class ActivityLogService:
             old_val = bool(1)
             new_val = bool(0)
 
-        print(old_val)
-
         log = ActivityLog(
             user_id=current_user_id,
             task_id=task_id,

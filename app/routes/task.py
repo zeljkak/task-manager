@@ -108,15 +108,3 @@ def delete_task(taskId):
     TaskService.delete_task(taskId, current_user)
 
     return "", 204
-
-@task_bp.route('/<int:taskId>/deleted', methods=['GET'])
-@swag_from(os.path.join(BASE_DIR, "../../docs/task/get_task.yml"))
-@jwt_required()
-@roles_required("admin")
-
-def get_deleted_task(taskId):
-    task = TaskService.get_deleted_task_by_id(taskId)
-    print("works")
-    return jsonify({
-        "task": TaskResponseSchema().dump(task)
-    }), 200
