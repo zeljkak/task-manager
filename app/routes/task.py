@@ -4,6 +4,8 @@ import os
 
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
+from app.decorators.roles_required import roles_required
+
 from app.schemas.comment_schema import CommentSchema, CommentResponseSchema
 from app.services.comment_service import CommentService
 from app.services.task_service import TaskService
@@ -79,4 +81,42 @@ def create_comment(taskId):
     return jsonify({
         "message": "Comment created successfully",
         "comment": CommentResponseSchema().dump(comment)
+    }), 200
+
+@task_bp.route('/<int:taskId>', methods=['PATCH'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/task/update_task.yml"))
+@jwt_required()
+
+def update_task(taskId):
+    current_user = int(get_jwt_identity())
+    data = TaskSchema().load(request.get_json())
+
+    task = TaskService.update_task(taskId, data, current_user)
+
+    return jsonify({
+        "message": "Task updated successfully",
+        "task": TaskResponseSchema().dump(task)
+    }), 200
+
+@task_bp.route('/<int:taskId>', methods=['DELETE'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/task/delete_task.yml"))
+@limiter.limit("2 per minute")
+@jwt_required()
+
+def delete_task(taskId):
+    current_user = int(get_jwt_identity())
+    TaskService.delete_task(taskId, current_user)
+
+    return "", 204
+
+@task_bp.route('/<int:taskId>/deleted', methods=['GET'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/task/get_task.yml"))
+@jwt_required()
+@roles_required("admin")
+
+def get_deleted_task(taskId):
+    task = TaskService.get_deleted_task_by_id(taskId)
+    print("works")
+    return jsonify({
+        "task": TaskResponseSchema().dump(task)
     }), 200

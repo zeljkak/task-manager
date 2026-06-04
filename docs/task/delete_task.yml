@@ -1,23 +1,23 @@
 tags:
-  - Comment
+  - Task
 
 description:
-  Delete a specific comment that matches the id. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+  Delete a specific task that matches the id. Requires a valid JWT token in Authorization header. Format: Bearer <token>
 
 security:
   - BearerAuth: []
 
 parameters:
-  - name: commentId
+  - name: taskId
     in: path
     required: true
     type: integer
     example: 1
-    description: ID of the comment to delete
+    description: ID of the task to delete
 
 responses:
   204:
-    description: Comment deleted successfully
+    description: Task deleted successfully
   401:
     description: Unauthorized (missing or invalid token)
   403:

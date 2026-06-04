@@ -1,4 +1,4 @@
-from app.exceptions.http_exceptions import NotFoundError, BadRequestError
+from app.exceptions.http_exceptions import NotFoundError, ForbiddenError
 from app.models.comment_model import Comment
 from app.repositories.comment_repository import CommentRepository
 
@@ -44,17 +44,18 @@ class CommentService:
     @staticmethod
     def update_comment(data, comment_id, current_user_id):
         comment = CommentService.get_comment_by_id(comment_id)
+
         if comment.user_id != current_user_id:
-            raise BadRequestError("Cannot update comment")
+            raise ForbiddenError("Cannot update comment")
 
         new_comment = data["comment"]
 
-        return CommentRepository.update(comment_id, new_comment)
+        return CommentRepository.update(comment, new_comment)
 
     @staticmethod
     def delete_comment(comment_id, current_user_id):
         comment = CommentService.get_comment_by_id(comment_id)
         if comment.user_id != current_user_id:
-            raise BadRequestError("Cannot delete comment")
+            raise ForbiddenError("Cannot delete comment")
 
-        return CommentRepository.delete(comment_id)
+        return CommentRepository.delete(comment)

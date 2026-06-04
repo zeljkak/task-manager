@@ -25,6 +25,8 @@ class Task(db.Model):
     due_date = db.Column(db.Date)
     estimated_hours = db.Column(db.Integer)
 
+    is_deleted = db.Column(db.Boolean, server_default="false", nullable=False)
+
     created_by = db.relationship("User", foreign_keys=[created_by_id], backref="created_tasks")
     updated_by = db.relationship("User", foreign_keys=[updated_by_id], backref="updated_tasks")
     assigned_to = db.relationship("User", foreign_keys=[assigned_to_id], backref="assigned_tasks")

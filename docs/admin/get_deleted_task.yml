@@ -1,0 +1,103 @@
+tags:
+  - Admin
+
+description:
+  Get a specific deleted task that matches the id. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+
+security:
+  - BearerAuth: []
+
+parameters:
+  - name: taskId
+    in: path
+    required: true
+    type: integer
+    example: 1
+    description: ID of the deleted task to retrieve
+
+responses:
+  200:
+    description: Task retrieved successfully
+    schema:
+      type: object
+      properties:
+        task:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            title:
+              type: string
+              example: Implement login endpoint
+            description:
+              type: string
+              example: Create JWT authentication and validation.
+            assignedTo:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                firstName:
+                  type: string
+                  example: Anna
+                lastName:
+                  type: string
+                  example: Smith
+            statusId:
+              type: integer
+              example: 2
+            priority:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 2
+                level:
+                  type: string
+                  example: medium
+            project:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                projectName:
+                  type: string
+                  example: Example Project
+                projectDescription:
+                  type: string
+                  example: This is an example of a project. It can be renamed or deleted.
+            dueDate:
+              type: string
+              format: date
+              example: "2027-05-20"
+            estimatedHours:
+              type: integer
+              example: 6
+            createdAt:
+              type: datetime
+              example: "2026-05-28T13:54:55.729333+02:00"
+            createdBy:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                firstName:
+                  type: string
+                  example: Anna
+                lastName:
+                  type: string
+                  example: Smith
+  401:
+    description: Unauthorized (missing or invalid token)
+  404:
+    description: Related resource not found
+  422:
+    description: Invalid token format
+  500:
+    description: Internal server error
+  503:
+    description: Service unavailable (database or email service down)

@@ -1,0 +1,143 @@
+tags:
+  - Task
+
+description:
+  Update a specific task that matches the id. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+
+security:
+  - BearerAuth: []
+
+parameters:
+  - name: taskId
+    in: path
+    required: true
+    type: integer
+    example: 2
+    description: ID of the task to update
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          example: Implement login endpoint urgently
+        description:
+          type: string
+          example: Create JWT authentication and validation.
+        assignedToId:
+          type: integer
+          example: 3
+          description: Defaults to the authenticated user if not provided.
+        statusId:
+          type: integer
+          example: 2
+        priorityId:
+          type: integer
+          example: 3
+        projectId:
+          type: integer
+          example: 1
+        dueDate:
+          type: string
+          format: date
+          example: "2027-05-20"
+        estimatedHours:
+          type: integer
+          example: 6
+responses:
+  200:
+    description: Task updated successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Task updated successfully
+        task:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            title:
+              type: string
+              example: Implement login endpoint urgently
+            description:
+              type: string
+              example: Create JWT authentication and validation.
+            assignedTo:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                firstName:
+                  type: string
+                  example: Anna
+                lastName:
+                  type: string
+                  example: Smith
+            statusId:
+              type: integer
+              example: 2
+            priority:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 3
+                level:
+                  type: string
+                  example: high
+            project:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                projectName:
+                  type: string
+                  example: Example Project
+                projectDescription:
+                  type: string
+                  example: This is an example of a project. It can be renamed or deleted.
+            dueDate:
+              type: string
+              format: date
+              example: "2027-05-20"
+            estimatedHours:
+              type: integer
+              example: 6
+            createdAt:
+              type: datetime
+              example: "2026-05-12 11:30:30.97232+02"
+            createdBy:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                firstName:
+                  type: string
+                  example: Anna
+                lastName:
+                  type: string
+                  example: Smith
+  401:
+    description: Unauthorized (missing or invalid token)
+  403:
+    description: Forbidden (unallowed action)
+  404:
+    description: Related resource not found
+  422:
+    description: Invalid token format
+  429:
+    description: Too many requests
+  500:
+    description: Internal server error
+  503:
+    description: Service unavailable (database or email service down)

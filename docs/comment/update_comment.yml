@@ -65,10 +65,10 @@ responses:
             updatedAt:
               type: datetime
               example: "2026-05-29T13:54:55.729333+02:00"
-  400:
-    description: Bad request (unallowed update)
   401:
     description: Unauthorized (missing or invalid token)
+  403:
+    description: Forbidden (unallowed action)
   404:
     description: Related resource not found
   422:
