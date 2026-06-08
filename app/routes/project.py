@@ -70,7 +70,7 @@ def update_project(projectId):
     return jsonify({
         "message": "Project updated successfully",
         "project": ProjectResponseSchema().dump(project)
-    }), 201
+    }), 200
 
 @project_bp.route('/<int:projectId>', methods=['DELETE'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/project/delete_project.yml"))

@@ -81,7 +81,7 @@ def create_comment(taskId):
     return jsonify({
         "message": "Comment created successfully",
         "comment": CommentResponseSchema().dump(comment)
-    }), 200
+    }), 201
 
 @task_bp.route('/<int:taskId>', methods=['PATCH'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/task/update_task.yml"))
@@ -108,3 +108,41 @@ def delete_task(taskId):
     TaskService.delete_task(taskId, current_user)
 
     return "", 204
+
+@task_bp.route('/deleted', methods=['GET'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/task/get_deleted_tasks.yml"))
+@jwt_required()
+@roles_required("admin")
+
+def get_deleted_tasks():
+    tasks = TaskService.get_deleted_tasks()
+
+    return jsonify({
+        "tasks": TaskResponseSchema(many=True).dump(tasks)
+    }), 200
+
+@task_bp.route('/deleted/<int:taskId>', methods=['GET'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/task/get_deleted_task.yml"))
+@jwt_required()
+@roles_required("admin")
+
+def get_deleted_task(taskId):
+    task = TaskService.get_deleted_task_by_id(taskId)
+
+    return jsonify({
+        "task": TaskResponseSchema().dump(task)
+    }), 200
+
+@task_bp.route('/restore/<int:taskId>', methods=['PATCH'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/task/restore_task.yml"))
+@jwt_required()
+@roles_required("admin")
+
+def restore_task(taskId):
+    current_user = int(get_jwt_identity())
+    task = TaskService.restore_task(taskId, current_user)
+
+    return jsonify({
+        "message": "Task updated successfully",
+        "task": TaskResponseSchema().dump(task)
+    }), 200

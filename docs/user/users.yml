@@ -1,0 +1,50 @@
+tags:
+  - User
+
+description:
+  Get all users. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+
+security:
+  - BearerAuth: []
+
+responses:
+  200:
+    description: Users retrieved successfully
+    schema:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              email:
+                type: string
+                example: test@mail.com
+              emailVerified:
+                type: boolean
+                example: false
+              firstName:
+                type: string
+                example: Anna
+              lastName:
+                type: string
+                example: Smith
+              createdAt:
+                type: datetime
+                example: "2026-05-28T13:54:55.729333+02:00"
+              roleId:
+                type: integer
+                example: 2
+
+  401:
+    description: Unauthorized (missing or invalid token)
+  422:
+    description: Invalid token format
+  500:
+    description: Internal server error
+  503:
+    description: Service unavailable (database or email service down)

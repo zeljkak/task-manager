@@ -109,12 +109,14 @@ class UserService:
 
 
     @staticmethod
-    def update_user_role(user_id, role_id):
+    def update_user_role(user_id, data):
         try:
+            role_name = data["role_name"].lower()
+            print(role_name)
             user = UserService.get_user_by_id(user_id)
-            role = RoleService.get_role_by_id(role_id)
+            role = RoleService.get_role_by_name(role_name)
 
-            user.role_id = role_id
+            user.role_id = role.id
             return UserRepository.update(user)
 
         except Exception as e:

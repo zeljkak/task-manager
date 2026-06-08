@@ -61,6 +61,9 @@ responses:
             createdAt:
               type: datetime
               example: "2026-05-28T13:54:55.729333+02:00"
+            roleId:
+              type: integer
+              example: 2
   400:
     description: Bad request (missing or invalid fields)
   409:

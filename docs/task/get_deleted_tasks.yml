@@ -1,5 +1,5 @@
 tags:
-  - Admin
+  - Task
 
 description:
   Get all deleted tasks. Requires a valid JWT token in Authorization header. Format: Bearer <token>
