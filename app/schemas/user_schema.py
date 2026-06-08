@@ -18,3 +18,9 @@ class UserSummarySchema(Schema):
     id = fields.Int()
     first_name = fields.Str(data_key="firstName")
     last_name = fields.Str(data_key="lastName")
+
+class UserUpdateSchema(Schema):
+    first_name = fields.Str(data_key="firstName")
+    last_name = fields.Str(data_key="lastName")
+    password = fields.Str(data_key="password")
+    password_repeated = fields.Str(data_key="passwordRepeated")

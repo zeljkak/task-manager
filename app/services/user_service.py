@@ -9,7 +9,7 @@ from app.services.email_service import EmailService
 from app.exceptions.http_exceptions import (
     DuplicatesError,
     ServiceUnavailableError,
-    NotFoundError
+    NotFoundError, BadRequestError
 )
 from app.services.role_service import RoleService
 
@@ -17,6 +17,12 @@ from app.services.role_service import RoleService
 class UserService:
 
     DEFAULT_ROLE_ID = 2
+
+    TRACKED_FIELDS = [
+        "password",
+        "first_name",
+        "last_name"
+    ]
 
     @staticmethod
     def get_user_by_id(user_id):
@@ -33,7 +39,7 @@ class UserService:
         user = UserRepository.get_by_email(email)
 
         if not user:
-            return NotFoundError("User not found")
+            raise NotFoundError("User not found")
 
         return user
 
@@ -43,7 +49,7 @@ class UserService:
         user = UserRepository.get_by_token(token)
 
         if not user:
-            return NotFoundError("User not found")
+            raise NotFoundError("User not found")
 
         return user
 
@@ -53,15 +59,14 @@ class UserService:
         users = UserRepository.get_all()
 
         if not users:
-            return NotFoundError("Users not found")
+            raise NotFoundError("Users not found")
 
         return users
 
 
     @staticmethod
     def create_user(data):
-        existing_user = UserService.get_user_by_email(data["email"])
-
+        existing_user = UserRepository.get_by_email(data["email"])
         if existing_user:
             raise DuplicatesError('User already exists')
 
@@ -88,13 +93,29 @@ class UserService:
 
 
     @staticmethod
+    def update_user(current_user_id, data):
+        user = UserService.get_user_by_id(current_user_id)
+
+        if(data['password'] != data['password_repeated']):
+            raise BadRequestError("Passwords do not match")
+
+        data['password'] = generate_password_hash(data['password'])
+
+        for key, value in data.items():
+            if key in UserService.TRACKED_FIELDS:
+                setattr(user, key, value)
+
+        return UserRepository.update(user)
+
+
+    @staticmethod
     def update_user_role(user_id, role_id):
         try:
             user = UserService.get_user_by_id(user_id)
             role = RoleService.get_role_by_id(role_id)
 
             user.role_id = role_id
-            return user
+            return UserRepository.update(user)
 
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e

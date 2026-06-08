@@ -55,11 +55,9 @@ class TaskRepository:
 
     @staticmethod
     def update(task):
-        print(task)
         try:
             db.session.commit()
             return task
-
         except Exception as e:
             db.session.rollback()
             raise ServiceUnavailableError("Database unavailable") from e
