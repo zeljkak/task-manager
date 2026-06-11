@@ -6,6 +6,7 @@ import os
 from backend.app.decorators.roles_required import roles_required
 
 from backend.app.extensions.limiter import limiter
+from backend.app.schemas.auth_schema import EnterEmailSchema
 from backend.app.schemas.role_schema import RoleSchema
 from backend.app.schemas.user_schema import UserSchema, UserUpdateSchema
 from backend.app.services.user_service import UserService
@@ -54,6 +55,26 @@ def delete_profile():
     user = UserService.delete_user(current_user)
 
     return "", 204
+
+@user_bp.route('/restore-request', methods=['POST'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/user/restore_request.yml"))
+@limiter.limit("1 per day")
+
+def send_restore_email():
+    data = EnterEmailSchema().load(request.get_json())
+    UserService.restore_request(data["email"])
+    return jsonify({
+        "message": "Restore account email sent"
+    }), 200
+
+@user_bp.route('/restore/<token>', methods=['GET'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/user/validate_token.yml"))
+
+def restore(token):
+    user = UserService.restore_user(token)
+    return jsonify({
+        "message": "User account restored"
+    }), 200
 
 @user_bp.route('', methods=['GET'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/user/users.yml"))

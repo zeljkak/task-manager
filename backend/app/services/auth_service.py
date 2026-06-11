@@ -1,6 +1,7 @@
 from flask_jwt_extended import create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from backend.app.routes import user
 from backend.app.services.user_service import UserService
 from backend.app.services.email_service import EmailService
 
@@ -18,11 +19,14 @@ class AuthService:
     @staticmethod
     def login_user(email, password):
 
-        user = UserRepository.get_by_email(email)
+        user = UserService.get_user_by_email_including_deleted(email)
 
         # if the user doesn't exist respond with invalid credentials
         if not user:
             raise AuthenticationError("Invalid credentials")
+
+        if user.is_deleted:
+            raise AuthenticationError("Account deleted, restore available")
 
         if not user.email_verified:
             raise AuthenticationError("Please verify your email first")
@@ -51,13 +55,11 @@ class AuthService:
 
     @staticmethod
     def request_password_reset(email):
+        user_existence = UserService.get_user_by_email(email)
         user = UserService.set_verification_token(email)
 
-        try:
-            EmailService.send_password_reset_email(user)
-        except Exception:
-            # add resend link option
-            raise ServiceUnavailableError("Email service unavailable")
+        EmailService.send_password_reset_email(user)
+
         return user
 
     @staticmethod
@@ -65,7 +67,7 @@ class AuthService:
         user = UserRepository.get_by_token(token)
 
         if not user:
-            raise BadRequestError("Invalid verification token")
+            raise AuthenticationError("Invalid verification token")
 
         data['password'] = generate_password_hash(data['password'])
 

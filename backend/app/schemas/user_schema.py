@@ -1,5 +1,5 @@
 from backend.app.extensions.ma import ma
-from marshmallow import Schema, fields, validates
+from marshmallow import Schema, fields, validates, ValidationError
 from backend.app.models.user_model import User
 
 class UserSchema(ma.SQLAlchemyAutoSchema):

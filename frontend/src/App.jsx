@@ -4,7 +4,9 @@ import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
 import { Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
+import RestoreAccount from "./pages/RestoreAccount";
 
 function App() {
   const [count, setCount] = useState(0)
@@ -39,7 +41,9 @@ function App() {
         }
       />
 
+      <Route path="/login" element={<Login />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
+      <Route path="/restore-account/:token" element={<RestoreAccount />} />
         <Route path="*" element={<div>404 Not Found</div>} />
     </Routes>
   )

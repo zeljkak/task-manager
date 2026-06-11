@@ -1,0 +1,27 @@
+tags:
+  - Auth
+
+description: Validate a password reset token before allowing password reset.
+
+parameters:
+  - name: token
+    in: path
+    required: true
+    type: string
+    description: Password reset token sent via email
+
+responses:
+  200:
+    description: Token is valid
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: User token valid
+  404:
+    description: Invalid or expired token
+  500:
+    description: Internal server error
+  503:
+    description: Service unavailable (database or email service down)

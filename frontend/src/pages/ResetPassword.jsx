@@ -1,7 +1,6 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { resetPassword } from "../services/authService";
+import { resetPassword, checkTokenForResetPassword } from "../services/authService";
 
 export default function ResetPassword() {
   const { token } = useParams();
@@ -9,26 +8,50 @@ export default function ResetPassword() {
 
   const [password, setPassword] = useState("");
   const [passwordRepeated, setPasswordRepeated] = useState("");
+
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [tokenValid, setTokenValid] = useState(false);
+
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    const validateToken = async () => {
+      try {
+        await checkTokenForResetPassword(token);
+        setTokenValid(true);
+      } catch (err) {
+        setError(
+          err.response?.data?.error || "Invalid or expired token"
+        );
+        setTokenValid(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    validateToken();
+  }, [token]);
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
     setMessage("");
 
     if (password !== passwordRepeated) {
       setError("Passwords do not match");
-      setLoading(false);
       return;
     }
+
+    setSubmitting(true);
 
     try {
       await resetPassword(token, {
         password,
-        passwordRepeated: passwordRepeated,
+        passwordRepeated,
       });
 
       setMessage("Password updated successfully. Redirecting to login...");
@@ -38,12 +61,29 @@ export default function ResetPassword() {
       }, 2000);
     } catch (err) {
       setError(
-        err.response?.data?.message || "Something went wrong"
+        err.response?.data?.error || "Something went wrong"
       );
+    } finally {
+      setSubmitting(false);
     }
-
-    setLoading(false);
   };
+
+  if (loading) {
+    return (
+      <div style={{ maxWidth: "400px", margin: "50px auto" }}>
+        <p>Checking reset link...</p>
+      </div>
+    );
+  }
+
+  if (!tokenValid) {
+    return (
+      <div style={{ maxWidth: "400px", margin: "50px auto" }}>
+        <h2>Reset Password</h2>
+        <p style={{ color: "red" }}>{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: "400px", margin: "50px auto" }}>
@@ -68,8 +108,8 @@ export default function ResetPassword() {
           />
         </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Updating..." : "Reset Password"}
+        <button type="submit" disabled={submitting}>
+          {submitting ? "Updating..." : "Reset Password"}
         </button>
       </form>
 

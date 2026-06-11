@@ -4,7 +4,7 @@ import os
 
 from backend.app.services.auth_service import AuthService
 from backend.app.services.user_service import UserService
-from backend.app.schemas.auth_schema import RegisterSchema, LoginSchema, ForgotPasswordSchema, PasswordResetSchema
+from backend.app.schemas.auth_schema import RegisterSchema, LoginSchema, EnterEmailSchema, PasswordResetSchema
 from backend.app.schemas.user_schema import UserSchema
 
 from backend.app.extensions.limiter import limiter
@@ -39,18 +39,28 @@ def verify_email(token):
 
 @auth_bp.route('/forgot-password', methods=['POST'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/auth/forgot_password.yml"))
-#@limiter.limit("1 per day")
+@limiter.limit("1 per day")
 
 def send_email():
-    data = ForgotPasswordSchema().load(request.get_json())
+    data = EnterEmailSchema().load(request.get_json())
+    user = UserService.get_user_by_email(data["email"])
     AuthService.request_password_reset(data["email"])
     return jsonify({
         "message": "Reset password email sent"
     }), 200
 
+@auth_bp.route('/reset-password/<token>', methods=['GET'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/auth/validate_token.yml"))
+
+def check_token(token):
+    user = UserService.get_user_by_token(token)
+    return jsonify({
+        "message": "User token valid"
+    }), 200
+
 @auth_bp.route('/reset-password/<token>', methods=['POST'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/auth/reset_password.yml"))
-#@limiter.limit("3 per day")
+@limiter.limit("3 per day")
 
 def change_password(token):
     data = PasswordResetSchema().load(request.get_json())
@@ -64,7 +74,6 @@ def change_password(token):
 @limiter.limit("2 per minute")
 
 def login():
-    print("ROUTE HIT")
     data = login_schema.load(request.get_json())
     token = AuthService.login_user(data["email"], data["password"])
 

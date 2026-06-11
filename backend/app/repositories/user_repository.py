@@ -6,7 +6,7 @@ class UserRepository:
     @staticmethod
     def get_by_id(user_id):
         try:
-            user = User.query.get(user_id)
+            user = User.query.filter_by(id=user_id, is_deleted=False).first()
             if not user:
                 return None
             return user
@@ -16,7 +16,7 @@ class UserRepository:
     @staticmethod
     def get_by_email(user_email):
         try:
-            user = User.query.filter_by(email=user_email).first()
+            user = User.query.filter_by(email=user_email, is_deleted=False).first()
             if not user:
                 return None
             return user
@@ -26,7 +26,7 @@ class UserRepository:
     @staticmethod
     def get_by_token(token):
         try:
-            user = User.query.filter_by(verification_token=token).first()
+            user = User.query.filter_by(verification_token=token, is_deleted=False).first()
             if not user:
                 return None
             return user
@@ -36,10 +36,70 @@ class UserRepository:
     @staticmethod
     def get_all():
         try:
-            users = User.query.all()
+            users = User.query.filter_by(is_deleted=False).all()
             if not users:
                 return None
             return users
+        except Exception as e:
+            raise ServiceUnavailableError("Database unavailable") from e
+
+    @staticmethod
+    def get_deleted_by_id(user_id):
+        try:
+            user = User.query.filter_by(id=user_id, is_deleted=True).first()
+            if not user:
+                return None
+            return user
+        except Exception as e:
+            raise ServiceUnavailableError("Database unavailable") from e
+
+    @staticmethod
+    def get_deleted_by_email(email):
+        try:
+            user = User.query.filter_by(email=email, is_deleted=True).first()
+            if not user:
+                return None
+            return user
+        except Exception as e:
+            raise ServiceUnavailableError("Database unavailable") from e
+
+    @staticmethod
+    def get_deleted_by_token(token):
+        try:
+            user = User.query.filter_by(verification_token=token, is_deleted=True).first()
+            if not user:
+                return None
+            return user
+        except Exception as e:
+            raise ServiceUnavailableError("Database unavailable") from e
+
+    @staticmethod
+    def get_deleted_all():
+        try:
+            users = User.query.filter_by(is_deleted=True).all()
+            if not users:
+                return None
+            return users
+        except Exception as e:
+            raise ServiceUnavailableError("Database unavailable") from e
+
+    @staticmethod
+    def get_by_email_including_deleted(email):
+        try:
+            user = User.query.filter_by(email=email).first()
+            if not user:
+                return None
+            return user
+        except Exception as e:
+            raise ServiceUnavailableError("Database unavailable") from e
+
+    @staticmethod
+    def get_by_token_including_deleted(token):
+        try:
+            user = User.query.filter_by(verification_token=token).first()
+            if not user:
+                return None
+            return user
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 

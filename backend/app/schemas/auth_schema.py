@@ -45,7 +45,7 @@ class LoginSchema(Schema):
     email = fields.Email(required=True)
     password = fields.Str(required=True)
 
-class ForgotPasswordSchema(Schema):
+class EnterEmailSchema(Schema):
     email = fields.Email(required=True)
 
 class PasswordResetSchema(Schema):

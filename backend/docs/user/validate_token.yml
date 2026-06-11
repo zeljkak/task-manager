@@ -1,0 +1,27 @@
+tags:
+  - User
+
+description: Validate a restore account token before allowing restoring.
+
+parameters:
+  - name: token
+    in: path
+    required: true
+    type: string
+    description: Restore account token sent via email
+
+responses:
+  200:
+    description: Token is valid
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: User account restored
+  404:
+    description: Invalid or expired token
+  500:
+    description: Internal server error
+  503:
+    description: Service unavailable (database or email service down)

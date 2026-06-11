@@ -6,69 +6,86 @@ class EmailService:
 
     @staticmethod
     def send_verification_email(user):
+        try:
 
-        verify_url = (
-            f"{Config.BASE_URL}/auth/verify-email/"
-            f"{user.verification_token}"
-        )
+            verify_url = (
+                f"{Config.BASE_URL}/auth/verify-email/"
+                f"{user.verification_token}"
+            )
 
-        msg = Message(
-            subject="Verify your account",
-            recipients=[user.email]
-        )
+            msg = Message(
+                subject="Verify your account",
+                recipients=[user.email]
+            )
 
-        msg.body = f"""
-        Welcome!
+            msg.body = f"""
+            Welcome!
+    
+            Click the link below to verify your account:
+    
+            {verify_url}
+            """
 
-        Click the link below to verify your account:
+            mail.send(msg)
 
-        {verify_url}
-        """
-
-        mail.send(msg)
+        except Exception as e:
+            # add resend link option
+            raise ServiceUnavailableError("Email service unavailable") from e
 
 
     @staticmethod
     def send_password_reset_email(user):
-        verify_url = (
-            f"{Config.FRONTEND_URL}/reset-password/"
-            f"{user.verification_token}"
-        )
+        try:
 
-        msg = Message(
-            subject="Reset your password",
-            recipients=[user.email]
-        )
+            verify_url = (
+                f"{Config.FRONTEND_URL}/reset-password/"
+                f"{user.verification_token}"
+            )
 
-        msg.body = f"""
-                Hello!
+            msg = Message(
+                subject="Reset your password",
+                recipients=[user.email]
+            )
 
-                Click the link below to reset your password:
+            msg.body = f"""
+                    Hello!
+    
+                    Click the link below to reset your password:
+    
+                    {verify_url}
+                    """
 
-                {verify_url}
-                """
+            mail.send(msg)
 
-        mail.send(msg)
+        except Exception as e:
+            # add resend link option
+            raise ServiceUnavailableError("Email service unavailable") from e
 
 
     @staticmethod
     def send_restore_account_email(user):
-        verify_url = (
-            f"{Config.BASE_URL}/auth/restore-account/"
-            f"{user.verification_token}"
-        )
+        try:
 
-        msg = Message(
-            subject="Restore your account",
-            recipients=[user.email]
-        )
+            verify_url = (
+                f"{Config.FRONTEND_URL}/restore-account/"
+                f"{user.verification_token}"
+            )
 
-        msg.body = f"""
-            Hello!
+            msg = Message(
+                subject="Restore your account",
+                recipients=[user.email]
+            )
 
-            Click the link below to restore your account:
+            msg.body = f"""
+                Hello!
+    
+                Click the link below to restore your account:
+    
+                {verify_url}
+                """
 
-            {verify_url}
-            """
+            mail.send(msg)
 
-        mail.send(msg)
+        except Exception as e:
+            # add resend link option
+            raise ServiceUnavailableError("Email service unavailable") from e
