@@ -1,5 +1,6 @@
 from sqlalchemy.sql import func
 from backend.app.extensions.db import db
+from backend.app.models.association_tables import task_followers
 
 class User(db.Model):
     __tablename__ = "users"
@@ -19,3 +20,5 @@ class User(db.Model):
 
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"), nullable=False, default="2")
     role = db.relationship("Role", backref="users")
+
+    followed_tasks = db.relationship("Task", secondary=task_followers, back_populates="followers")

@@ -1,6 +1,7 @@
 from backend.app.extensions.ma import ma
 from marshmallow import Schema, fields, validates, ValidationError
 from backend.app.models.user_model import User
+from backend.app.schemas.summary_schema import TaskSummarySchema
 
 class UserSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
@@ -13,12 +14,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
     email_verified = ma.auto_field(data_key="emailVerified")
     created_at = ma.auto_field(data_key="createdAt")
     role_id = ma.auto_field(data_key="roleId")
-
-#for nested user output
-class UserSummarySchema(Schema):
-    id = fields.Int()
-    first_name = fields.Str(data_key="firstName")
-    last_name = fields.Str(data_key="lastName")
+    followed_tasks = fields.Nested(TaskSummarySchema, data_key="followedTasks", many=True)
 
 class UserUpdateSchema(Schema):
     first_name = fields.Str(data_key="firstName")

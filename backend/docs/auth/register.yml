@@ -69,6 +69,29 @@ responses:
             roleId:
               type: integer
               example: 2
+            followedTasks:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  title:
+                    type: string
+                    example: Implement login endpoint
+                  assignedTo:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      firstName:
+                        type: string
+                        example: Anna
+                      lastName:
+                        type: string
+                        example: Smith
   400:
     description: Bad request (missing or invalid fields)
   409:

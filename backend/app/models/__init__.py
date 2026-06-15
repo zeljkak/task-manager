@@ -6,3 +6,4 @@ from backend.app.models.project_model import Project
 from backend.app.models.priority_model import Priority
 from backend.app.models.task_status_model import TaskStatus
 from backend.app.models.activity_log_model import ActivityLog
+from backend.app.models.association_tables import task_followers, task_relations

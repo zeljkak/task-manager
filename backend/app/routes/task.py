@@ -146,3 +146,29 @@ def restore_task(taskId):
         "message": "Task updated successfully",
         "task": TaskResponseSchema().dump(task)
     }), 200
+
+@task_bp.route('/<int:taskId>/follow', methods=['POST'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/task/task_following.yml"))
+@jwt_required()
+
+def follow_task(taskId):
+    current_user_id = int(get_jwt_identity())
+    task = TaskService.follow_task(taskId, current_user_id)
+
+    return jsonify({
+        "message": "Task following updated",
+        "task": TaskResponseSchema().dump(task)
+    }), 200
+
+@task_bp.route('/<int:taskId>/follow', methods=['DELETE'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/task/task_following.yml"))
+@jwt_required()
+
+def unfollow_task(taskId):
+    current_user_id = int(get_jwt_identity())
+    task = TaskService.unfollow_task(taskId, current_user_id)
+
+    return jsonify({
+        "message": "Task following updated",
+        "task": TaskResponseSchema().dump(task)
+    }), 200

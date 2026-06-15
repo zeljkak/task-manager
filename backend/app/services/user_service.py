@@ -6,7 +6,7 @@ from backend.app.repositories.user_repository import UserRepository
 from backend.app.services.activity_log_service import ActivityLogService
 from backend.app.services.email_service import EmailService
 
-from backend.app.exceptions.http_exceptions import DuplicatesError, NotFoundError, BadRequestError
+from backend.app.exceptions.http_exceptions import DuplicatesError, NotFoundError, AuthenticationError
 from backend.app.services.role_service import RoleService
 
 
@@ -195,7 +195,7 @@ class UserService:
 
     @staticmethod
     def restore_request(email):
-        user_existence = UserService.get_deleted_user_by_email(email)
+        UserService.get_deleted_user_by_email(email)
         user = UserService.set_verification_token(email)
 
         EmailService.send_restore_account_email(user)
@@ -216,3 +216,9 @@ class UserService:
     @staticmethod
     def verify_password(user, password):
         return check_password_hash(user.password, password)
+
+
+    @staticmethod
+    def check_followed_tasks(user_id):
+        user = UserService.get_user_by_id(user_id)
+        return user.followed_tasks

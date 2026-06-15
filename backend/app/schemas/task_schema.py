@@ -2,9 +2,7 @@ from marshmallow import Schema, fields
 from marshmallow import validates, ValidationError
 
 from backend.app.schemas.priority_schema import PriorityResponseSchema
-from backend.app.schemas.project_schema import ProjectSummarySchema
-from backend.app.schemas.user_schema import UserSummarySchema
-
+from backend.app.schemas.summary_schema import ProjectSummarySchema, UserSummarySchema
 
 class TaskSchema(Schema):
     title = fields.Str(required=True)
@@ -36,3 +34,4 @@ class TaskResponseSchema(Schema):
     project = fields.Nested(ProjectSummarySchema)
     created_at = fields.DateTime(data_key="createdAt")
     created_by = fields.Nested(UserSummarySchema, data_key="createdBy")
+    followers = fields.Nested(UserSummarySchema, many=True)

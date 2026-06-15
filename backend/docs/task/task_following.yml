@@ -2,7 +2,7 @@ tags:
   - Task
 
 description:
-  Restore a specific deleted task that matches the id. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+  Follow/unfollow a specific task that matches the id. Requires a valid JWT token in Authorization header. Format: Bearer <token>
 
 security:
   - BearerAuth: []
@@ -12,17 +12,15 @@ parameters:
     in: path
     required: true
     type: integer
-    example: 2
-    description: ID of the deleted task to restore
+    example: 1
+    description: ID of the task to follow/unfollow
+
 responses:
   200:
-    description: Task updated successfully
+    description: Task following updated
     schema:
       type: object
       properties:
-        message:
-          type: string
-          example: Task updated successfully
         task:
           type: object
           properties:
@@ -31,7 +29,7 @@ responses:
               example: 1
             title:
               type: string
-              example: Implement login endpoint urgently
+              example: Implement login endpoint
             description:
               type: string
               example: Create JWT authentication and validation.
@@ -55,10 +53,10 @@ responses:
               properties:
                 id:
                   type: integer
-                  example: 3
+                  example: 2
                 level:
                   type: string
-                  example: high
+                  example: medium
             project:
               type: object
               properties:
@@ -80,7 +78,7 @@ responses:
               example: 6
             createdAt:
               type: datetime
-              example: "2026-05-12 11:30:30.97232+02"
+              example: "2026-05-28T13:54:55.729333+02:00"
             createdBy:
               type: object
               properties:
@@ -107,16 +105,14 @@ responses:
                   lastName:
                     type: string
                     example: Smith
+  400:
+    description: Bad request (state hasn't changed)
   401:
     description: Unauthorized (missing or invalid token)
-  403:
-    description: Forbidden (unallowed action)
   404:
     description: Related resource not found
   422:
     description: Invalid token format
-  429:
-    description: Too many requests
   500:
     description: Internal server error
   503:

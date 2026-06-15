@@ -1,5 +1,6 @@
 from backend.app.extensions.db import db
 from sqlalchemy.sql import func
+from backend.app.models.association_tables import task_followers, task_relations
 
 
 class Task(db.Model):
@@ -33,3 +34,6 @@ class Task(db.Model):
     status = db.relationship("TaskStatus", backref="tasks")
     priority = db.relationship("Priority", backref="tasks")
     project = db.relationship("Project", backref="tasks")
+
+    followers = db.relationship("User", secondary=task_followers, back_populates="followed_tasks")
+    related = db.relationship("Task", secondary=task_relations, primaryjoin=id == task_relations.c.task_id, secondaryjoin=id == task_relations.c.related_task_id, backref="related_to")

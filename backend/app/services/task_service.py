@@ -12,7 +12,8 @@ from backend.app.repositories.project_repository import ProjectRepository
 from backend.app.repositories.priority_repository import PriorityRepository
 from backend.app.repositories.task_status_repository import TaskStatusRepository
 
-from backend.app.exceptions.http_exceptions import NotFoundError, ForbiddenError
+from backend.app.exceptions.http_exceptions import NotFoundError, ForbiddenError, BadRequestError
+
 
 class TaskService:
 
@@ -63,6 +64,15 @@ class TaskService:
             raise NotFoundError("Tasks not found")
 
         return tasks
+
+    @staticmethod
+    def get_task_by_id_including_deleted(task_id):
+        task = TaskRepository.get_by_id_including_deleted(task_id)
+
+        if not task:
+            raise NotFoundError("Task not found")
+
+        return task
 
     @staticmethod
     def create_task(data, current_user_id):
@@ -169,3 +179,63 @@ class TaskService:
         task.is_deleted = False
 
         return TaskRepository.update(task)
+
+
+    @staticmethod
+    def check_followers(task_id):
+        task = TaskService.get_task_by_id_including_deleted(task_id)
+        return task.followers
+
+
+    @staticmethod
+    def follow_task(task_id, current_user_id):
+        user = UserService.get_user_by_id(current_user_id)
+        task = TaskService.get_task_by_id(task_id)
+        if user in task.followers:
+            raise BadRequestError("User already followed this task")
+        else:
+            task.followers.append(user)
+
+
+        return TaskRepository.update(task)
+
+
+    @staticmethod
+    def unfollow_task(task_id, current_user_id):
+        user = UserService.get_user_by_id(current_user_id)
+        task = TaskService.get_task_by_id(task_id)
+        if user not in task.followers:
+            raise BadRequestError("User already unfollowed this task")
+        else:
+            task.followers.remove(user)
+
+        return TaskRepository.update(task)
+
+
+    @staticmethod
+    def normalize_relation(task1_id, task2_id):
+        if task1_id == task2_id:
+            raise BadRequestError("A task cannot relate to itself")
+
+        a, b = sorted((task1_id, task2_id))
+        return (a, b)
+
+
+    @staticmethod
+    def create_relation(task1_id, task2_id):
+        t1, t2 = TaskService.normalize_relation(task1_id, task2_id)
+
+        if TaskRepository.relation_exists(t1, t2):
+            raise BadRequestError("Task cannot relate to itself")
+
+        TaskRepository.add_relation(t1, t2)
+
+
+    @staticmethod
+    def delete_relation(task1_id, task2_id):
+        t1, t2 = TaskService.normalize_relation(task1_id, task2_id)
+
+        if not TaskRepository.relation_exists(t1, t2):
+            raise NotFoundError("Relation does not exist")
+
+        TaskRepository.remove_relation(t1, t2)

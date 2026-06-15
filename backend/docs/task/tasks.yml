@@ -85,7 +85,20 @@ responses:
                   lastName:
                     type: string
                     example: Smith
-
+              followers:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    firstName:
+                      type: string
+                      example: Anna
+                    lastName:
+                      type: string
+                      example: Smith
   401:
     description: Unauthorized (missing or invalid token)
   422:

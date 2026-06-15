@@ -1,8 +1,7 @@
 from marshmallow import Schema, fields
 from marshmallow import validates, ValidationError
 
-from backend.app.schemas.user_schema import UserSummarySchema
-
+from backend.app.schemas.summary_schema import UserSummarySchema
 
 class CommentSchema(Schema):
     comment = fields.Str(required=True)
