@@ -82,7 +82,7 @@ responses:
   401:
     description: Unauthorized (missing or invalid token)
   422:
-    description: Invalid token format
+    description: Validation error
   429:
     description: Too many requests
   500:

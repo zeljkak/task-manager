@@ -1,5 +1,5 @@
 tags:
-  - User
+  - Admin
 
 description:
   Get all users. Requires a valid JWT token in Authorization header. Format: Bearer <token>
@@ -64,8 +64,8 @@ responses:
                           example: Smith
   401:
     description: Unauthorized (missing or invalid token)
-  422:
-    description: Invalid token format
+  403:
+    description: Forbidden (unallowed action)
   500:
     description: Internal server error
   503:

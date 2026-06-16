@@ -33,12 +33,8 @@ class ProjectService:
 
     @staticmethod
     def get_all_projects():
-        projects = ProjectRepository.get_all()
+        return ProjectRepository.get_all()
 
-        if not projects:
-            raise NotFoundError("Projects not found")
-
-        return projects
 
     @staticmethod
     def create_project(data, current_user_id):

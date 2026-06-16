@@ -1,0 +1,93 @@
+tags:
+  - Admin
+
+description:
+  Retrieve activity logs. Results can be filtered by task ID and/or user ID. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+
+security:
+  - bearerAuth: []
+
+parameters:
+  - name: taskId
+    in: query
+    required: false
+    type: integer
+    example: 2
+    description: ID of the task to filter by
+  - name: userId
+    in: query
+    required: false
+    type: integer
+    description: ID of the user to filter by
+    example: 1
+
+responses:
+  200:
+    description: Activity logs retrieved successfully
+    schema:
+      type: object
+      properties:
+        activities:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              action:
+                type: string
+                example: TASK_UPDATED
+              field:
+                type: string
+                example: description
+              oldValue:
+                type: object
+                example: Test task for update
+              newValue:
+                type: object
+                example: Test task for deletion
+              user:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  firstName:
+                    type: string
+                    example: Anna
+                  lastName:
+                    type: string
+                    example: Smith
+              task:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 3
+                  title:
+                    type: string
+                    example: Finish adding routes
+                  assignedTo:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      firstName:
+                        type: string
+                        example: Anna
+                      lastName:
+                        type: string
+                        example: Smith
+              createdAt:
+                type: datetime
+                example: "2026-05-28T13:54:55.729333+02:00"
+  401:
+    description: Unauthorized (missing or invalid token)
+  403:
+    description: Forbidden (unallowed action)
+  500:
+    description: Internal server error
+  503:
+    description: Service unavailable (database or email service down)

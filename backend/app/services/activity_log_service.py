@@ -1,6 +1,8 @@
 from backend.app.models.activity_log_model import ActivityLog
-
 from backend.app.repositories.activity_log_repository import ActivityLogRepository
+
+from backend.app.exceptions.http_exceptions import NotFoundError
+
 
 class ActivityLogService:
     @staticmethod
@@ -33,3 +35,7 @@ class ActivityLogService:
             new_value=new_val
         )
         return ActivityLogRepository.create(log)
+
+    @staticmethod
+    def get_logs(task_id=None, user_id=None):
+        return ActivityLogRepository.get_logs(task_id, user_id)

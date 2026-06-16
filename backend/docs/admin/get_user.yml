@@ -1,8 +1,8 @@
 tags:
-  - User
+  - Admin
 
 description:
-  Update a specific users role. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+  Get a specific user that matches the ID. Requires a valid JWT token in Authorization header. Format: Bearer <token>
 
 security:
   - BearerAuth: []
@@ -13,27 +13,13 @@ parameters:
     required: true
     type: integer
     example: 1
-    description: ID of the user to update
-  - name: body
-    in: body
-    required: true
-    schema:
-      type: object
-      required:
-        - roleName
-      properties:
-        roleName:
-          type: string
-          example: user
+    description: ID of the user to retrieve
 responses:
   200:
-    description: User role updated successfully
+    description: User retrieved successfully
     schema:
       type: object
       properties:
-        message:
-          type: string
-          example: User role updated successfully
         user:
           type: object
           properties:
@@ -57,7 +43,7 @@ responses:
               example: "2026-05-28T13:54:55.729333+02:00"
             roleId:
               type: integer
-              example: 1
+              example: 2
             followedTasks:
               type: array
               items:
@@ -83,8 +69,12 @@ responses:
                         example: Smith
   401:
     description: Unauthorized (missing or invalid token)
+  403:
+    description: Forbidden (unallowed action)
+  404:
+    description: Related resource not found
   422:
-    description: Invalid token format
+    description: Validation error
   500:
     description: Internal server error
   503:

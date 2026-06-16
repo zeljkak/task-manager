@@ -18,22 +18,18 @@ class CommentRepository:
     @staticmethod
     def get_by_task_id(task_id):
         try:
-            comments = (Comment.query.join(Task, Comment.task_id == Task.id)
+            return (Comment.query.join(Task, Comment.task_id == Task.id)
                         .filter(Task.id == task_id,Task.is_deleted.is_(False)).all())
-            if not comments:
-                return None
-            return comments
+
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
     def get_all():
         try:
-            comments = (Comment.query.join(Task, Comment.task_id == Task.id)
+            return (Comment.query.join(Task, Comment.task_id == Task.id)
                        .filter(Task.is_deleted.is_(False)).all())
-            if not comments:
-                return None
-            return comments
+
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 

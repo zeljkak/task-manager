@@ -1,18 +1,39 @@
 tags:
-  - User
+  - Admin
 
 description:
-  Get current user's profile. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+  Update a specific user. Requires a valid JWT token in Authorization header. Format: Bearer <token>
 
 security:
   - BearerAuth: []
 
+parameters:
+  - name: userId
+    in: path
+    required: true
+    type: integer
+    example: 1
+    description: ID of the user to update
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - roleName
+      properties:
+        roleName:
+          type: string
+          example: user
 responses:
   200:
-    description: User profile retrieved successfully
+    description: User role updated successfully
     schema:
       type: object
       properties:
+        message:
+          type: string
+          example: User updated successfully
         user:
           type: object
           properties:
@@ -36,7 +57,7 @@ responses:
               example: "2026-05-28T13:54:55.729333+02:00"
             roleId:
               type: integer
-              example: 2
+              example: 1
             followedTasks:
               type: array
               items:
@@ -62,6 +83,14 @@ responses:
                         example: Smith
   401:
     description: Unauthorized (missing or invalid token)
+  403:
+    description: Forbidden (unallowed action)
+  404:
+    description: Related resource not found
+  422:
+    description: Validation error
+  429:
+    description: Too many requests
   500:
     description: Internal server error
   503:

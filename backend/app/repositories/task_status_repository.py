@@ -7,7 +7,20 @@ class TaskStatusRepository:
     @staticmethod
     def get_by_id(task_status_id):
         try:
-            return TaskStatus.query.get(task_status_id)
+            task_status = TaskStatus.query.get(task_status_id)
+            if not task_status:
+                return None
+            return task_status
+        except Exception as e:
+            raise ServiceUnavailableError("Database unavailable") from e
+
+    @staticmethod
+    def get_by_name(status):
+        try:
+            task_status = TaskStatus.query.filter_by(status=status).first()
+            if not task_status:
+                return None
+            return task_status
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 
@@ -15,6 +28,7 @@ class TaskStatusRepository:
     def get_all():
         try:
             return TaskStatus.query.all()
+
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 
@@ -27,35 +41,3 @@ class TaskStatusRepository:
         except Exception as e:
             db.session.rollback()
             raise ServiceUnavailableError("Database unavailable") from e
-
-"""
-    @staticmethod
-    def update(task_status_id, status):
-        try:
-            task_status = TaskStatusRepository.get_by_id(task_status_id)
-            if not task_status:
-                return None
-
-            task_status.status = status
-            db.session.commit()
-            return task_status
-
-        except Exception as e:
-            db.session.rollback()
-            raise ServiceUnavailableError("Database unavailable") from e
-"""
-
-"""
-    @staticmethod
-    def delete(task_status_id):
-        try:
-            task_status = TaskStatusRepository.get_by_id(task_status_id)
-            if not task_status:
-                return None
-            db.session.delete(task_status)
-            db.session.commit()
-
-        except Exception as e:
-            db.session.rollback()
-            raise ServiceUnavailableError("Database unavailable") from e
-"""

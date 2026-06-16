@@ -36,10 +36,8 @@ class UserRepository:
     @staticmethod
     def get_all():
         try:
-            users = User.query.filter_by(is_deleted=False).all()
-            if not users:
-                return None
-            return users
+            return User.query.filter_by(is_deleted=False).all()
+
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 
@@ -76,10 +74,8 @@ class UserRepository:
     @staticmethod
     def get_deleted_all():
         try:
-            users = User.query.filter_by(is_deleted=True).all()
-            if not users:
-                return None
-            return users
+            return User.query.filter_by(is_deleted=True).all()
+
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 

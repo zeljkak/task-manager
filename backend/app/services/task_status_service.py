@@ -24,9 +24,4 @@ class TaskStatusService:
 
     @staticmethod
     def get_all_statuses():
-        task_statuses = TaskStatusRepository.get_all()
-
-        if not task_statuses:
-            raise NotFoundError("Task statuses not found")
-
-        return task_statuses
+        return TaskStatusRepository.get_all()

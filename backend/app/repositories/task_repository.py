@@ -17,10 +17,8 @@ class TaskRepository:
     @staticmethod
     def get_all():
         try:
-            tasks = Task.query.filter_by(is_deleted=False).all()
-            if not tasks:
-                return None
-            return tasks
+            return Task.query.filter_by(is_deleted=False).all()
+
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 
@@ -37,10 +35,8 @@ class TaskRepository:
     @staticmethod
     def get_deleted_all():
         try:
-            tasks = Task.query.filter_by(is_deleted=True).all()
-            if not tasks:
-                return None
-            return tasks
+            return Task.query.filter_by(is_deleted=True).all()
+
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 

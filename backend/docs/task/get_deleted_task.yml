@@ -130,10 +130,12 @@ responses:
                         example: Smith
   401:
     description: Unauthorized (missing or invalid token)
+  403:
+    description: Forbidden (unallowed action)
   404:
     description: Related resource not found
   422:
-    description: Invalid token format
+    description: Validation error
   500:
     description: Internal server error
   503:

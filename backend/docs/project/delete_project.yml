@@ -20,10 +20,12 @@ responses:
     description: Project deleted successfully
   401:
     description: Unauthorized (missing or invalid token)
+  403:
+    description: Forbidden (unallowed action)
   404:
     description: Related resource not found
   422:
-    description: Invalid token format
+    description: Validation error
   429:
     description: Too many requests
   500:

@@ -68,7 +68,6 @@ def get_comments(taskId):
 
 @task_bp.route('/<int:taskId>/comments', methods=['POST'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/task/create_comment_for_task.yml"))
-@limiter.limit("10 per minute")
 @jwt_required()
 
 def create_comment(taskId):

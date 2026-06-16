@@ -38,14 +38,11 @@ class TaskService:
 
         return task
 
+
     @staticmethod
     def get_all_tasks():
-        tasks = TaskRepository.get_all()
+        return TaskRepository.get_all()
 
-        if not tasks:
-            raise NotFoundError("Tasks not found")
-
-        return tasks
 
     @staticmethod
     def get_deleted_task_by_id(task_id):
@@ -56,14 +53,11 @@ class TaskService:
 
         return task
 
+
     @staticmethod
     def get_deleted_tasks():
-        tasks = TaskRepository.get_deleted_all()
+        return TaskRepository.get_deleted_all()
 
-        if not tasks:
-            raise NotFoundError("Tasks not found")
-
-        return tasks
 
     @staticmethod
     def get_task_by_id_including_deleted(task_id):
@@ -73,6 +67,7 @@ class TaskService:
             raise NotFoundError("Task not found")
 
         return task
+
 
     @staticmethod
     def create_task(data, current_user_id):

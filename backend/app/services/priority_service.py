@@ -23,9 +23,4 @@ class PriorityService:
 
     @staticmethod
     def get_all_priorities():
-        priorities = PriorityRepository.get_all()
-
-        if not priorities:
-            raise NotFoundError("Priorities not found")
-
-        return priorities
+        return PriorityRepository.get_all()

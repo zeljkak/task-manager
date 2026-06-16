@@ -23,9 +23,4 @@ class RoleService:
 
     @staticmethod
     def get_all_roles():
-        roles = RoleRepository.get_all()
-
-        if not roles:
-            raise NotFoundError("Roles not found")
-
-        return roles
+        return RoleRepository.get_all()

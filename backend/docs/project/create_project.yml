@@ -78,8 +78,8 @@ responses:
     description: Bad request (missing or invalid fields)
   401:
     description: Authentication required
-  404:
-    description: Related resource not found
+  403:
+    description: Forbidden (unallowed action)
   422:
     description: Validation error
   429:

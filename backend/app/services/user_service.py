@@ -50,12 +50,7 @@ class UserService:
 
     @staticmethod
     def get_all_users():
-        users = UserRepository.get_all()
-
-        if not users:
-            raise NotFoundError("Users not found")
-
-        return users
+        return UserRepository.get_all()
 
 
     @staticmethod
@@ -90,12 +85,7 @@ class UserService:
 
     @staticmethod
     def get_deleted_users():
-        users = UserRepository.get_deleted_all()
-
-        if not users:
-            raise NotFoundError("Users not found")
-
-        return users
+        return UserRepository.get_deleted_all()
 
 
     @staticmethod
@@ -175,7 +165,7 @@ class UserService:
 
 
     @staticmethod
-    def update_user_role(user_id, data):
+    def update_user_by_admin(user_id, data):
         role_name = data["role_name"].lower()
         user = UserService.get_user_by_id(user_id)
         role = RoleService.get_role_by_name(role_name)

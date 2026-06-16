@@ -15,7 +15,7 @@ responses:
   404:
     description: Related resource not found
   422:
-    description: Invalid token format
+    description: Validation error
   429:
     description: Too many requests
   500:

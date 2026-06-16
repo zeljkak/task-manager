@@ -28,10 +28,8 @@ class ProjectRepository:
     @staticmethod
     def get_all():
         try:
-            project = Project.query.all()
-            if not project:
-                return None
-            return project
+            return Project.query.all()
+
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 

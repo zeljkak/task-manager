@@ -55,7 +55,7 @@ class AuthService:
 
     @staticmethod
     def request_password_reset(email):
-        user_existence = UserService.get_user_by_email(email)
+        UserService.get_user_by_email(email)
         user = UserService.set_verification_token(email)
 
         EmailService.send_password_reset_email(user)
