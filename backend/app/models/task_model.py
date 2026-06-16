@@ -37,3 +37,7 @@ class Task(db.Model):
 
     followers = db.relationship("User", secondary=task_followers, back_populates="followed_tasks")
     related = db.relationship("Task", secondary=task_relations, primaryjoin=id == task_relations.c.task_id, secondaryjoin=id == task_relations.c.related_task_id, backref="related_to")
+
+    @property
+    def all_related(self):
+        return list(self.related) + list(self.related_to)

@@ -9,15 +9,13 @@ from backend.app.decorators.roles_required import roles_required
 from backend.app.schemas.comment_schema import CommentSchema, CommentResponseSchema
 from backend.app.services.comment_service import CommentService
 from backend.app.services.task_service import TaskService
-from backend.app.schemas.task_schema import TaskSchema, TaskResponseSchema
+from backend.app.schemas.task_schema import TaskSchema, TaskResponseSchema, TaskRelationSchema
 
 from backend.app.extensions.limiter import limiter
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 task_bp = Blueprint('task', __name__, url_prefix='/tasks')
-
-task_schema = TaskSchema()
 
 @task_bp.route('', methods=['GET'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/task/tasks.yml"))
@@ -49,7 +47,7 @@ def get_task(taskId):
 def create_task():
     current_user = int(get_jwt_identity())
 
-    data = task_schema.load(request.get_json())
+    data = TaskSchema().load(request.get_json())
     task = TaskService.create_task(data, current_user)
 
     return jsonify({
@@ -172,3 +170,37 @@ def unfollow_task(taskId):
         "message": "Task following updated",
         "task": TaskResponseSchema().dump(task)
     }), 200
+
+@task_bp.route('/<int:taskId>/related', methods=['GET'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/task/get_relation.yml"))
+@jwt_required()
+
+def get_relation(taskId):
+    tasks = TaskService.get_related(taskId)
+
+    return jsonify({
+        "tasks": TaskResponseSchema(many=True).dump(tasks)
+    }), 200
+
+@task_bp.route('/<int:taskId>/related', methods=['POST'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/task/create_relation.yml"))
+@jwt_required()
+
+def add_relation(taskId):
+    data = TaskRelationSchema().load(request.get_json())
+    tasks = TaskService.create_relation(taskId, data["related_task_id"])
+
+    return jsonify({
+        "message": "Relation created successfully",
+        "tasks": TaskResponseSchema(many=True).dump(tasks)
+    }), 200
+
+@task_bp.route('/<int:taskId>/related', methods=['DELETE'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/task/delete_relation.yml"))
+@jwt_required()
+
+def remove_relation(taskId):
+    data = TaskRelationSchema().load(request.get_json())
+    tasks = TaskService.delete_relation(taskId, data["related_task_id"])
+
+    return "", 204

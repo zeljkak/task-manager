@@ -1,0 +1,43 @@
+tags:
+  - Task
+
+description:
+  Delete a specific relation between tasks. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+
+security:
+  - BearerAuth: []
+
+parameters:
+  - name: taskId
+    in: path
+    required: true
+    type: integer
+    example: 2
+    description: ID of the task in relation
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - relatedTaskId
+      properties:
+        relatedTaskId:
+          type: integer
+          example: 3
+
+responses:
+  204:
+    description: Task relation deleted successfully
+  401:
+    description: Unauthorized (missing or invalid token)
+  404:
+    description: Related resource not found
+  422:
+    description: Invalid token format
+  429:
+    description: Too many requests
+  500:
+    description: Internal server error
+  503:
+    description: Service unavailable (database or email service down)

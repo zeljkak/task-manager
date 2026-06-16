@@ -105,6 +105,29 @@ responses:
                   lastName:
                     type: string
                     example: Smith
+            related:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 3
+                  title:
+                    type: string
+                    example: Finish adding routes
+                  assignedTo:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      firstName:
+                        type: string
+                        example: Anna
+                      lastName:
+                        type: string
+                        example: Smith
   400:
     description: Bad request (state hasn't changed)
   401:

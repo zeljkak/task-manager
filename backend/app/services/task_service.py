@@ -129,7 +129,7 @@ class TaskService:
 
         current_user = UserService.get_user_by_id(current_user_id)
         user_role = RoleService.get_role_by_id(current_user.role_id)
-        is_allowed = task.created_by_id == current_user_id or task.updated_by_id == current_user_id or task.assigned_to_id == current_user_id or user_role.role_name == "admin"
+        is_allowed = task.created_by_id == current_user_id or task.assigned_to_id == current_user_id or user_role.role_name == "admin"
         if not is_allowed:
             raise ForbiddenError("Cannot update task")
 
@@ -158,7 +158,7 @@ class TaskService:
 
         current_user = UserService.get_user_by_id(current_user_id)
         user_role = RoleService.get_role_by_id(current_user.role_id)
-        is_allowed = task.created_by_id == current_user_id or task.updated_by_id == current_user_id or task.assigned_to_id == current_user_id or user_role.role_name == "admin"
+        is_allowed = task.created_by_id == current_user_id or task.assigned_to_id == current_user_id or user_role.role_name == "admin"
         if not is_allowed:
             raise ForbiddenError("Cannot delete task")
 
@@ -182,7 +182,7 @@ class TaskService:
 
 
     @staticmethod
-    def check_followers(task_id):
+    def get_followers(task_id):
         task = TaskService.get_task_by_id_including_deleted(task_id)
         return task.followers
 
@@ -222,20 +222,31 @@ class TaskService:
 
 
     @staticmethod
+    def get_related(task_id):
+        task = TaskService.get_task_by_id(task_id)
+        return task.all_related
+
+
+    @staticmethod
     def create_relation(task1_id, task2_id):
+        task1 = TaskService.get_task_by_id(task1_id)
+        task2 = TaskService.get_task_by_id(task2_id)
         t1, t2 = TaskService.normalize_relation(task1_id, task2_id)
 
         if TaskRepository.relation_exists(t1, t2):
-            raise BadRequestError("Task cannot relate to itself")
+            raise BadRequestError("Task relation already exists")
 
         TaskRepository.add_relation(t1, t2)
+        return task1, task2
 
 
     @staticmethod
     def delete_relation(task1_id, task2_id):
+        task1 = TaskService.get_task_by_id(task1_id)
+        task2 = TaskService.get_task_by_id(task2_id)
         t1, t2 = TaskService.normalize_relation(task1_id, task2_id)
 
         if not TaskRepository.relation_exists(t1, t2):
-            raise NotFoundError("Relation does not exist")
+            raise NotFoundError("Task relation does not exist")
 
         TaskRepository.remove_relation(t1, t2)

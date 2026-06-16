@@ -2,7 +2,8 @@ from marshmallow import Schema, fields
 from marshmallow import validates, ValidationError
 
 from backend.app.schemas.priority_schema import PriorityResponseSchema
-from backend.app.schemas.summary_schema import ProjectSummarySchema, UserSummarySchema
+from backend.app.schemas.summary_schema import ProjectSummarySchema, UserSummarySchema, TaskSummarySchema
+
 
 class TaskSchema(Schema):
     title = fields.Str(required=True)
@@ -22,6 +23,14 @@ class TaskSchema(Schema):
         if len(value.strip()) < 1:
             raise ValidationError("Title cannot be blank.")
 
+class TaskRelationSchema(Schema):
+    related_task_id = fields.Int(required=True, data_key="relatedTaskId")
+
+    @validates("related_task_id")
+    def validate_related_task_id(self, value, **kwargs):
+        if value < 1:
+            raise ValidationError("Related task ID cannot be zero.")
+
 class TaskResponseSchema(Schema):
     id = fields.Int()
     title = fields.Str()
@@ -35,3 +44,4 @@ class TaskResponseSchema(Schema):
     created_at = fields.DateTime(data_key="createdAt")
     created_by = fields.Nested(UserSummarySchema, data_key="createdBy")
     followers = fields.Nested(UserSummarySchema, many=True)
+    related = fields.Nested(TaskSummarySchema, many=True, attribute="all_related")
