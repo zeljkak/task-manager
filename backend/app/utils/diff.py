@@ -1,3 +1,7 @@
+from datetime import datetime
+from marshmallow import ValidationError as MarshmallowValidationError
+
+
 def get_changed_fields(old_obj, new_obj, fields):
 
     changes = []
@@ -22,3 +26,19 @@ def get_changed_fields(old_obj, new_obj, fields):
             })
 
     return changes
+
+def parse_date(value):
+    if not value:
+        return None
+
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    except ValueError:
+        raise MarshmallowValidationError(
+            {"date": ["Invalid date format. Expected YYYY-MM-DD"]}
+        )
+
+def parse_bool(value):
+    if value is None:
+        return None
+    return value.lower() in ("true", "1", "yes")

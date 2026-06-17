@@ -1,12 +1,13 @@
 from backend.app.models.priority_model import Priority
 from backend.app.repositories.priority_repository import PriorityRepository
+from backend.app import constants
 
 
 def seed_priorities():
     priorities = [
-        {"id": 1, "level": "low"},
-        {"id": 2, "level": "medium"},
-        {"id": 3, "level": "high"}
+        {"id": constants.LOW_PRIORITY_ID, "level": "low"},
+        {"id": constants.MEDIUM_PRIORITY_ID, "level": "medium"},
+        {"id": constants.HIGH_PRIORITY_ID, "level": "high"}
     ]
 
     for priority_data in priorities:

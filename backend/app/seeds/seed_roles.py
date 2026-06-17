@@ -1,11 +1,12 @@
 from backend.app.models.role_model import Role
 from backend.app.repositories.role_repository import RoleRepository
+from backend.app import constants
 
 
 def seed_roles():
     roles = [
-        {"id": 1, "role_name": "admin"},
-        {"id": 2, "role_name": "user"}
+        {"id": constants.ADMIN_ID, "role_name": "admin"},
+        {"id": constants.USER_ID, "role_name": "user"}
     ]
 
     for role_data in roles:

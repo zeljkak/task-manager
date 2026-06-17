@@ -62,13 +62,10 @@ def update_user(userId):
 @roles_required("admin")
 
 def get_activity_logs():
-    task_id = request.args.get("task_id", type=int)
-    user_id = request.args.get("user_id", type=int)
+    task_id = request.args.get("taskId", type=int)
+    user_id = request.args.get("userId", type=int)
 
-    logs = ActivityLogService.get_logs(
-        task_id=task_id,
-        user_id=user_id
-    )
+    logs = ActivityLogService.get_logs(task_id, user_id)
 
     return jsonify({
         "activities": ActivityLogResponseSchema(many=True).dump(logs)

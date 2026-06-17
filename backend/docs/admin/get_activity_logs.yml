@@ -5,7 +5,7 @@ description:
   Retrieve activity logs. Results can be filtered by task ID and/or user ID. Requires a valid JWT token in Authorization header. Format: Bearer <token>
 
 security:
-  - bearerAuth: []
+  - BearerAuth: []
 
 parameters:
   - name: taskId

@@ -2,10 +2,89 @@ tags:
   - Task
 
 description:
-  Get all tasks. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+  Retrieve tasks. Results can be filtered by title, description, assigned user, status, priority, project, date of creation and due date. Requires a valid JWT token in Authorization header. Format: Bearer <token>
 
 security:
   - BearerAuth: []
+
+parameters:
+  - name: title
+    in: query
+    required: false
+    type: string
+    example: Implement login
+    description: Title of the task to filter by
+  - name: description
+    in: query
+    required: false
+    type: string
+    example: Create JWT authentication
+    description: Description of the task to filter by
+  - name: assignedToId
+    in: query
+    required: false
+    type: integer
+    example: 1
+    description: ID of the user to filter by
+  - name: statusId
+    in: query
+    required: false
+    type: integer
+    example: 2
+    description: ID of the task status to filter by
+  - name: priorityId
+    in: query
+    required: false
+    type: integer
+    example: 1
+    description: ID of the priority to filter by
+  - name: projectId
+    in: query
+    required: false
+    type: integer
+    example: 1
+    description: ID of the project to filter by
+  - name: dueBefore
+    in: query
+    required: false
+    type: string
+    format: date
+    example: "2026-12-27"
+    description: Due date of the task to filter by
+  - name: dueAfter
+    in: query
+    required: false
+    type: string
+    format: date
+    example: "2026-12-27"
+    description: Due date of the task to filter by
+  - name: createdBefore
+    in: query
+    required: false
+    type: string
+    format: date
+    example: "2026-12-27"
+    description: Creation date of the task to filter by
+  - name: createdAfter
+    in: query
+    required: false
+    type: string
+    format: date
+    example: "2026-12-27"
+    description: Creation date of the task to filter by
+  - name: overdue
+    in: query
+    required: false
+    type: boolean
+    example: true
+    default: false
+    description: If true, returns only tasks with due date in the past and not completed
+  - name: followedBy
+    in: query
+    required: false
+    type: integer
+    example: 1
+    description: ID of the user to filter by
 
 responses:
   200:
@@ -124,6 +203,8 @@ responses:
                           example: Smith
   401:
     description: Unauthorized (missing or invalid token)
+  422:
+    description: Validation error
   500:
     description: Internal server error
   503:

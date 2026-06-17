@@ -11,6 +11,7 @@ from backend.app.services.comment_service import CommentService
 from backend.app.services.task_service import TaskService
 from backend.app.schemas.task_schema import TaskSchema, TaskResponseSchema, TaskRelationSchema
 
+from backend.app.utils.diff import parse_bool, parse_date
 from backend.app.extensions.limiter import limiter
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -22,7 +23,20 @@ task_bp = Blueprint('task', __name__, url_prefix='/tasks')
 @jwt_required()
 
 def get_tasks():
-    tasks = TaskService.get_all_tasks()
+    title = request.args.get("title", type=str)
+    description = request.args.get("description", type=str)
+    assigned_to_id = request.args.get("assignedToId", type=int)
+    status_id = request.args.get("statusId", type=int)
+    priority_id = request.args.get("priorityId", type=int)
+    project_id = request.args.get("projectId", type=int)
+    due_before = parse_date(request.args.get("dueBefore"))
+    due_after = parse_date(request.args.get("dueAfter"))
+    created_before = parse_date(request.args.get("createdBefore"))
+    created_after = parse_date(request.args.get("createdAfter"))
+    overdue = parse_bool(request.args.get("overdue"))
+    followed_by = request.args.get("followedBy", type=int)
+
+    tasks = TaskService.get_tasks(title, description, assigned_to_id, status_id, priority_id, project_id, due_before, due_after, created_before, created_after, overdue, followed_by)
 
     return jsonify({
         "tasks": TaskResponseSchema(many=True).dump(tasks)
