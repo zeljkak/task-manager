@@ -1,11 +1,15 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flasgger import swag_from
 import os
 
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from backend.app.decorators.roles_required import roles_required
 
+from backend.app.utils.file_storage import save_file
+
 from backend.app.services.project_service import ProjectService
+from backend.app.services.attachment_service import AttachmentService
+from backend.app.schemas.attachment_schema import AttachmentResponseSchema
 from backend.app.schemas.project_schema import ProjectSchema, ProjectResponseSchema
 
 from backend.app.extensions.limiter import limiter
@@ -53,6 +57,33 @@ def create_project():
     return jsonify({
         "message": "Project created successfully",
         "project": ProjectResponseSchema().dump(project)
+    }), 201
+
+@project_bp.route('/<int:projectId>/attachments', methods=['POST'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/project/create_project_attachment.yml"))
+@jwt_required()
+
+def create_project_attachment(projectId):
+    current_user = int(get_jwt_identity())
+    file = request.files.get("file")
+    if not file:
+        return jsonify({"error": "No file provided"}), 400
+
+    unique_name, original_name, file_type = save_file(file)
+
+    file_url = unique_name
+
+    file_data = {
+        "file_url": file_url,
+        "file_name": original_name,
+        "file_type": file_type
+    }
+
+    attachment = AttachmentService.create_project_attachment(projectId, current_user, file_data)
+
+    return jsonify({
+        "message": "Attachment created successfully",
+        "attachment": AttachmentResponseSchema().dump(attachment)
     }), 201
 
 @project_bp.route('<int:projectId>', methods=['PATCH'])

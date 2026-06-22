@@ -16,3 +16,5 @@ class Project(db.Model):
 
     created_by = db.relationship("User", foreign_keys=[created_by_id], backref="created_projects")
     updated_by = db.relationship("User", foreign_keys=[updated_by_id], backref="updated_projects")
+
+    attachments = db.relationship("Attachment", back_populates="project", cascade="all, delete-orphan")

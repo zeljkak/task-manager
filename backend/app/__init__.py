@@ -18,6 +18,8 @@ from backend.app.routes.project import project_bp
 from backend.app.routes.comment import comment_bp
 from backend.app.routes.task_status import task_status_bp
 from backend.app.routes.admin import admin_bp
+from backend.app.routes.attachment import attachment_bp
+from backend.app.routes.file import file_bp
 
 from backend.app import models
 
@@ -48,12 +50,17 @@ swagger = Swagger(template=swagger_template)
 def create_app():
     app = Flask(__name__)
 
+    from flask import send_from_directory, current_app
+    import os
+
     #enable React and Flask communication
     CORS(app)
     # for production use a second parameter: origins=["http://localhost:5173"]
 
     #Load everything from config.py
     app.config.from_object(Config)
+    app.config["UPLOAD_FOLDER"] = Config.UPLOAD_FOLDER
+    app.config["MAX_CONTENT_LENGTH"] = Config.MAX_CONTENT_LENGTH
 
     # Initialize Swagger
     swagger.init_app(app)
@@ -74,6 +81,8 @@ def create_app():
     app.register_blueprint(comment_bp)
     app.register_blueprint(task_status_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(attachment_bp)
+    app.register_blueprint(file_bp)
     #print(app.url_map)
 
     register_error_handlers(app)

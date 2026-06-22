@@ -1,52 +1,56 @@
 tags:
   - Task
 
-description: Create a new comment on a task.
+description:
+  Create an attachment for a specific task that matches the ID. Requires a valid JWT token in Authorization header. Format: Bearer <token>
 
 security:
   - BearerAuth: []
+
+consumes:
+  - multipart/form-data
 
 parameters:
   - name: taskId
     in: path
     required: true
     type: integer
-    example: 1
-    description: ID of the task to comment on
-  - name: body
-    in: body
+    example: 4
+    description: ID of the task to create an attachment for
+  - name: file
+    in: formData
     required: true
-    schema:
-      type: object
-      required:
-        - comment
-      properties:
-        comment:
-          type: string
-          example: Implemented login endpoint
+    type: file
+    description: File to upload
 
 responses:
   201:
-    description: Comment created successfully
+    description: Attachment created successfully
     schema:
       type: object
       properties:
         message:
           type: string
-          example: Comment created successfully
-        comment:
+          example: Attachment created successfully
+        attachment:
           type: object
           properties:
             id:
               type: integer
               example: 1
-            comment:
+            fileUrl:
               type: string
-              example: Finished creating task routes
-            taskId:
-              type: integer
-              example: 3
-            user:
+              example: "http://localhost:5000/uploads/abc123_design.pdf"
+            fileName:
+              type: string
+              example: "design.pdf"
+            fileType:
+              type: string
+              example: "application/pdf"
+            createdAt:
+              type: datetime
+              example: "2026-08-28T13:54:55.729333+02:00"
+            createdBy:
               type: object
               properties:
                 id:
@@ -58,21 +62,13 @@ responses:
                 lastName:
                   type: string
                   example: Smith
-            createdAt:
-              type: datetime
-              example: "2026-05-28T13:54:55.729333+02:00"
-            updatedAt:
-              type: datetime
-              example: "2026-05-28T13:54:55.729333+02:00"
   400:
     description: Bad request (missing or invalid fields)
   401:
     description: Authentication required
   404:
     description: Related resource not found
-  422:
-    description: Validation error
   500:
     description: Internal server error
   503:
-    description: Service unavailable (database or email service down)
+    description: Database unavailable

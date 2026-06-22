@@ -27,70 +27,6 @@ responses:
             id:
               type: integer
               example: 1
-            title:
-              type: string
-              example: Implement login endpoint
-            description:
-              type: string
-              example: Create JWT authentication and validation.
-            assignedTo:
-              type: object
-              properties:
-                id:
-                  type: integer
-                  example: 1
-                firstName:
-                  type: string
-                  example: Anna
-                lastName:
-                  type: string
-                  example: Smith
-            statusId:
-              type: integer
-              example: 2
-            priority:
-              type: object
-              properties:
-                id:
-                  type: integer
-                  example: 2
-                level:
-                  type: string
-                  example: medium
-            project:
-              type: object
-              properties:
-                id:
-                  type: integer
-                  example: 1
-                projectName:
-                  type: string
-                  example: Example Project
-                projectDescription:
-                  type: string
-                  example: This is an example of a project. It can be renamed or deleted.
-            dueDate:
-              type: string
-              format: date
-              example: "2027-05-20"
-            estimatedHours:
-              type: integer
-              example: 6
-            createdAt:
-              type: datetime
-              example: "2026-05-28T13:54:55.729333+02:00"
-            createdBy:
-              type: object
-              properties:
-                id:
-                  type: integer
-                  example: 1
-                firstName:
-                  type: string
-                  example: Anna
-                lastName:
-                  type: string
-                  example: Smith
             followers:
               type: array
               items:
@@ -105,29 +41,6 @@ responses:
                   lastName:
                     type: string
                     example: Smith
-            related:
-              type: array
-              items:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                    example: 3
-                  title:
-                    type: string
-                    example: Finish adding routes
-                  assignedTo:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                        example: 1
-                      firstName:
-                        type: string
-                        example: Anna
-                      lastName:
-                        type: string
-                        example: Smith
   400:
     description: Bad request (state hasn't changed)
   401:

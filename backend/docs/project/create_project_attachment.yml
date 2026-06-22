@@ -1,0 +1,74 @@
+tags:
+  - Project
+
+description:
+  Create an attachment for a specific project that matches the ID. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+
+security:
+  - BearerAuth: []
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: projectId
+    in: path
+    required: true
+    type: integer
+    example: 4
+    description: ID of the project to create an attachment for
+  - name: file
+    in: formData
+    required: true
+    type: file
+    description: File to upload
+
+responses:
+  201:
+    description: Attachment created successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Attachment created successfully
+        attachment:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            fileUrl:
+              type: string
+              example: "http://localhost:5000/uploads/abc123_design.pdf"
+            fileName:
+              type: string
+              example: "design.pdf"
+            fileType:
+              type: string
+              example: "application/pdf"
+            createdAt:
+              type: datetime
+              example: "2026-08-28T13:54:55.729333+02:00"
+            createdBy:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                firstName:
+                  type: string
+                  example: Anna
+                lastName:
+                  type: string
+                  example: Smith
+  400:
+    description: Bad request (missing or invalid fields)
+  401:
+    description: Authentication required
+  404:
+    description: Related resource not found
+  500:
+    description: Internal server error
+  503:
+    description: Database unavailable

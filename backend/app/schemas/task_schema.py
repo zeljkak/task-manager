@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields
 from marshmallow import validates, ValidationError
 
+from backend.app.schemas.attachment_schema import AttachmentResponseSchema
 from backend.app.schemas.priority_schema import PriorityResponseSchema
 from backend.app.schemas.summary_schema import ProjectSummarySchema, UserSummarySchema, TaskSummarySchema
 
@@ -44,4 +45,13 @@ class TaskResponseSchema(Schema):
     created_at = fields.DateTime(data_key="createdAt")
     created_by = fields.Nested(UserSummarySchema, data_key="createdBy")
     followers = fields.Nested(UserSummarySchema, many=True)
+    related = fields.Nested(TaskSummarySchema, many=True, attribute="all_related")
+    attachments = fields.Nested(AttachmentResponseSchema, many=True)
+
+class TaskFollowersResponseSchema(Schema):
+    id = fields.Int()
+    followers = fields.Nested(UserSummarySchema, many=True)
+
+class TaskRelationResponseSchema(Schema):
+    id = fields.Int()
     related = fields.Nested(TaskSummarySchema, many=True, attribute="all_related")

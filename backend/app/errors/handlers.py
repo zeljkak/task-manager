@@ -1,4 +1,5 @@
 from flask import jsonify
+from werkzeug.exceptions import HTTPException as WerkzeugHTTPException
 from backend.app.exceptions.http_exceptions import HTTPException
 from flask_limiter.errors import RateLimitExceeded
 from marshmallow import ValidationError as MarshmallowValidationError
@@ -43,6 +44,9 @@ def register_error_handlers(app):
 
     @app.errorhandler(Exception)
     def handle_generic_exception(error):
+        if isinstance(error, WerkzeugHTTPException):
+            return handle_http_exception(error)
+
         logger.exception(error)
 
         return jsonify({

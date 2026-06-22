@@ -39,6 +39,9 @@ responses:
               roleId:
                 type: integer
                 example: 2
+              isDeleted:
+                type: boolean
+                example: false
               followedTasks:
                 type: array
                 items:

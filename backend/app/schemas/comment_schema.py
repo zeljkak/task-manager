@@ -2,6 +2,7 @@ from marshmallow import Schema, fields
 from marshmallow import validates, ValidationError
 
 from backend.app.schemas.summary_schema import UserSummarySchema
+from backend.app.schemas.attachment_schema import AttachmentResponseSchema
 
 class CommentSchema(Schema):
     comment = fields.Str(required=True)
@@ -18,3 +19,4 @@ class CommentResponseSchema(Schema):
     task_id = fields.Int(data_key="taskId")
     created_at = fields.DateTime(data_key="createdAt")
     updated_at = fields.DateTime(data_key="updatedAt")
+    attachments = fields.Nested(AttachmentResponseSchema, many=True)

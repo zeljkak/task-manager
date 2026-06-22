@@ -1,15 +1,11 @@
 from flask_jwt_extended import create_access_token
+from datetime import timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from backend.app.routes import user
 from backend.app.services.user_service import UserService
 from backend.app.services.email_service import EmailService
 
-from backend.app.exceptions.http_exceptions import (
-    BadRequestError,
-    AuthenticationError,
-    ServiceUnavailableError
-)
+from backend.app.exceptions.http_exceptions import BadRequestError, AuthenticationError
 
 from backend.app.repositories.user_repository import UserRepository
 
@@ -34,7 +30,7 @@ class AuthService:
         if not check_password_hash(user.password, password):
             raise AuthenticationError("Invalid credentials")
 
-        token = create_access_token(identity=str(user.id), additional_claims={"role": user.role.role_name})
+        token = create_access_token(identity=str(user.id), additional_claims={"role": user.role.role_name}, expires_delta=timedelta(days=30))
 
         return token
 

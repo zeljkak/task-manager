@@ -201,6 +201,38 @@ responses:
                         lastName:
                           type: string
                           example: Smith
+              attachments:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    fileUrl:
+                      type: string
+                      example: "http://localhost:5000/uploads/abc123_design.pdf"
+                    fileName:
+                      type: string
+                      example: "design.pdf"
+                    fileType:
+                      type: string
+                      example: "application/pdf"
+                    createdAt:
+                      type: datetime
+                      example: "2026-08-28T13:54:55.729333+02:00"
+                    createdBy:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        firstName:
+                          type: string
+                          example: Anna
+                        lastName:
+                          type: string
+                          example: Smith
   401:
     description: Unauthorized (missing or invalid token)
   422:

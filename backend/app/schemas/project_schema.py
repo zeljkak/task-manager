@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields
 from marshmallow import validates, ValidationError
 from backend.app.schemas.summary_schema import UserSummarySchema
+from backend.app.schemas.attachment_schema import AttachmentResponseSchema
 
 class ProjectSchema(Schema):
     project_name = fields.Str(required=True, data_key="projectName")
@@ -19,3 +20,4 @@ class ProjectResponseSchema(Schema):
     updated_at = fields.DateTime(data_key="updatedAt")
     created_by = fields.Nested(UserSummarySchema, data_key="createdBy")
     updated_by = fields.Nested(UserSummarySchema, data_key="updatedBy")
+    attachments = fields.Nested(AttachmentResponseSchema, many=True)

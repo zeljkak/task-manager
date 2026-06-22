@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flasgger import swag_from
 import os
 
@@ -9,8 +9,11 @@ from backend.app.decorators.roles_required import roles_required
 from backend.app.schemas.comment_schema import CommentSchema, CommentResponseSchema
 from backend.app.services.comment_service import CommentService
 from backend.app.services.task_service import TaskService
-from backend.app.schemas.task_schema import TaskSchema, TaskResponseSchema, TaskRelationSchema
+from backend.app.schemas.task_schema import TaskSchema, TaskResponseSchema, TaskRelationSchema, TaskFollowersResponseSchema, TaskRelationResponseSchema
+from backend.app.services.attachment_service import AttachmentService
+from backend.app.schemas.attachment_schema import AttachmentResponseSchema
 
+from backend.app.utils.file_storage import save_file
 from backend.app.utils.diff import parse_bool, parse_date
 from backend.app.extensions.limiter import limiter
 
@@ -69,8 +72,35 @@ def create_task():
         "task": TaskResponseSchema().dump(task)
     }), 201
 
+@task_bp.route('/<int:taskId>/attachments', methods=['POST'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/task/create_task_attachment.yml"))
+@jwt_required()
+
+def create_task_attachment(taskId):
+    current_user = int(get_jwt_identity())
+    file = request.files.get("file")
+    if not file:
+        return jsonify({"error": "No file provided"}), 400
+
+    unique_name, original_name, file_type = save_file(file)
+
+    file_url = unique_name
+
+    file_data = {
+        "file_url": file_url,
+        "file_name": original_name,
+        "file_type": file_type
+    }
+
+    attachment = AttachmentService.create_task_attachment(taskId, current_user, file_data)
+
+    return jsonify({
+        "message": "Attachment created successfully",
+        "attachment": AttachmentResponseSchema().dump(attachment)
+    }), 201
+
 @task_bp.route('/<int:taskId>/comments', methods=['GET'])
-@swag_from(os.path.join(BASE_DIR, "../../docs/task/get_comments_for_task.yml"))
+@swag_from(os.path.join(BASE_DIR, "../../docs/task/get_task_comments.yml"))
 @jwt_required()
 
 def get_comments(taskId):
@@ -81,7 +111,7 @@ def get_comments(taskId):
     }), 200
 
 @task_bp.route('/<int:taskId>/comments', methods=['POST'])
-@swag_from(os.path.join(BASE_DIR, "../../docs/task/create_comment_for_task.yml"))
+@swag_from(os.path.join(BASE_DIR, "../../docs/task/create_task_comment.yml"))
 @jwt_required()
 
 def create_comment(taskId):
@@ -168,7 +198,7 @@ def follow_task(taskId):
 
     return jsonify({
         "message": "Task following updated",
-        "task": TaskResponseSchema().dump(task)
+        "task": TaskFollowersResponseSchema().dump(task)
     }), 200
 
 @task_bp.route('/<int:taskId>/follow', methods=['DELETE'])
@@ -181,7 +211,7 @@ def unfollow_task(taskId):
 
     return jsonify({
         "message": "Task following updated",
-        "task": TaskResponseSchema().dump(task)
+        "task": TaskFollowersResponseSchema().dump(task)
     }), 200
 
 @task_bp.route('/<int:taskId>/related', methods=['GET'])
@@ -189,10 +219,10 @@ def unfollow_task(taskId):
 @jwt_required()
 
 def get_relation(taskId):
-    tasks = TaskService.get_related(taskId)
+    task = TaskService.get_task_by_id(taskId)
 
     return jsonify({
-        "tasks": TaskResponseSchema(many=True).dump(tasks)
+        "task": TaskRelationResponseSchema().dump(task)
     }), 200
 
 @task_bp.route('/<int:taskId>/related', methods=['POST'])
@@ -201,11 +231,11 @@ def get_relation(taskId):
 
 def add_relation(taskId):
     data = TaskRelationSchema().load(request.get_json())
-    tasks = TaskService.create_relation(taskId, data["related_task_id"])
+    task = TaskService.create_relation(taskId, data["related_task_id"])
 
     return jsonify({
         "message": "Relation created successfully",
-        "tasks": TaskResponseSchema(many=True).dump(tasks)
+        "task": TaskRelationResponseSchema().dump(task)
     }), 200
 
 @task_bp.route('/<int:taskId>/related', methods=['DELETE'])

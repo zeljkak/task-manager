@@ -35,6 +35,7 @@ class Task(db.Model):
     priority = db.relationship("Priority", backref="tasks")
     project = db.relationship("Project", backref="tasks")
 
+    attachments = db.relationship("Attachment", back_populates="task", cascade="all, delete-orphan")
     followers = db.relationship("User", secondary=task_followers, back_populates="followed_tasks")
     related = db.relationship("Task", secondary=task_relations, primaryjoin=id == task_relations.c.task_id, secondaryjoin=id == task_relations.c.related_task_id, backref="related_to")
 

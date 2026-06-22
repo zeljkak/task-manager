@@ -14,3 +14,5 @@ class Comment(db.Model):
 
     user = db.relationship("User", backref="comments")
     task = db.relationship("Task", backref="comments")
+    attachments = db.relationship("Attachment", back_populates="comment", cascade="all, delete-orphan")
+

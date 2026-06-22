@@ -177,12 +177,6 @@ class TaskService:
 
 
     @staticmethod
-    def get_followers(task_id):
-        task = TaskService.get_task_by_id_including_deleted(task_id)
-        return task.followers
-
-
-    @staticmethod
     def follow_task(task_id, current_user_id):
         user = UserService.get_user_by_id(current_user_id)
         task = TaskService.get_task_by_id(task_id)
@@ -217,12 +211,6 @@ class TaskService:
 
 
     @staticmethod
-    def get_related(task_id):
-        task = TaskService.get_task_by_id(task_id)
-        return task.all_related
-
-
-    @staticmethod
     def create_relation(task1_id, task2_id):
         task1 = TaskService.get_task_by_id(task1_id)
         task2 = TaskService.get_task_by_id(task2_id)
@@ -232,7 +220,7 @@ class TaskService:
             raise BadRequestError("Task relation already exists")
 
         TaskRepository.add_relation(t1, t2)
-        return task1, task2
+        return task1
 
 
     @staticmethod

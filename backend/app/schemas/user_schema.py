@@ -12,6 +12,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
     first_name = ma.auto_field(data_key="firstName")
     last_name = ma.auto_field(data_key="lastName")
     email_verified = ma.auto_field(data_key="emailVerified")
+    is_deleted = ma.auto_field(data_key="isDeleted")
     created_at = ma.auto_field(data_key="createdAt")
     role_id = ma.auto_field(data_key="roleId")
     followed_tasks = fields.Nested(TaskSummarySchema, data_key="followedTasks", many=True)

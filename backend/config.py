@@ -7,7 +7,7 @@ class Config:
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+    PROJECT_ROOT_BACKEND = os.path.dirname(os.path.abspath(__file__))
     BASE_URL = os.getenv("BASE_URL")
     FRONTEND_URL = os.getenv("FRONTEND_URL")
 
@@ -20,3 +20,6 @@ class Config:
 
     SEED_ADMIN_EMAIL = os.getenv("SEED_ADMIN_EMAIL")
     SEED_ADMIN_PASSWORD = os.getenv("SEED_ADMIN_PASSWORD")
+
+    UPLOAD_FOLDER = os.path.join(PROJECT_ROOT_BACKEND, "uploads")
+    MAX_CONTENT_LENGTH = 10 * 1024 * 1024
