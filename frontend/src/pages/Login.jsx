@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import { login } from "../services/authService.js";
 
 export default function Login() {
@@ -28,7 +29,9 @@ export default function Login() {
           setMessage(res.data?.message || "Login successful");
 
           if (res.data?.accessToken) {
-              localStorage.setItem("accessToken", res.data.accessToken);
+              localStorage.setItem("accessToken", "Bearer " + res.data.accessToken);
+              const decoded = jwtDecode(res.data.accessToken);
+              localStorage.setItem("userId", decoded.sub);
           }
 
           setTimeout(() => {

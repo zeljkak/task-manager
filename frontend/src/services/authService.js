@@ -1,21 +1,21 @@
-import axios from "axios";
+import api from "../api/axios";
 
 export const checkTokenForResetPassword = (token) => {
-  return axios.get(
-    `http://localhost:5000/auth/reset-password/${token}`
+  return api.get(
+    `/auth/reset-password/${token}`
   );
 };
 
 export const resetPassword = (token, data) => {
-  return axios.post(
-    `http://localhost:5000/auth/reset-password/${token}`,
+  return api.post(
+    `/auth/reset-password/${token}`,
     data
   );
 };
 
 export const login = (data) => {
-  return axios.post(
-    `http://localhost:5000/auth/login`,
+  return api.post(
+    `/auth/login`,
     data
   );
 }

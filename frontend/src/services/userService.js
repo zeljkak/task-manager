@@ -1,7 +1,13 @@
-import axios from "axios";
+import api from "../api/axios";
 
 export const restoreAccount = (token) => {
-  return axios.get(
-    `http://localhost:5000/users/restore/${token}`
+  return api.get(
+    `/users/restore/${token}`
+  );
+};
+
+export const getProfile = () => {
+  return api.get(
+    `/users/profile`
   );
 };
