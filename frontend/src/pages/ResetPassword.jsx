@@ -70,7 +70,7 @@ export default function ResetPassword() {
 
   if (loading) {
     return (
-      <div style={{ maxWidth: "400px", margin: "50px auto" }}>
+      <div className={"centered-page"}>
         <p>Checking reset link...</p>
       </div>
     );
@@ -78,15 +78,15 @@ export default function ResetPassword() {
 
   if (!tokenValid) {
     return (
-      <div style={{ maxWidth: "400px", margin: "50px auto" }}>
+      <div className={"centered-page"}>
         <h2>Reset Password</h2>
-        <p style={{ color: "red" }}>{error}</p>
+        <p className={"error"}>{error}</p>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: "400px", margin: "50px auto" }}>
+    <div className={"centered-page"}>
       <h2>Reset Password</h2>
 
       <form onSubmit={handleSubmit}>
@@ -113,8 +113,8 @@ export default function ResetPassword() {
         </button>
       </form>
 
-      {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {message && <p className={"message"}>{message}</p>}
+      {error && <p className={"error"}>{error}</p>}
     </div>
   );
 }

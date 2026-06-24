@@ -1,7 +1,9 @@
 import {useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import { getTasks } from "../services/taskService.js";
-import TaskCard from "../components/TaskCard.jsx";
+import TaskCardComponent from "../components/TaskCardComponent.jsx";
+import {getTaskStatuses} from "../services/taskStatusService.js";
+import StatusComponent from "../components/StatusComponent.jsx";
 
 export default function Home() {
 
@@ -10,6 +12,13 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  const [taskStatuses, setTaskStatuses] = useState([]);
+  useEffect(() => {
+    getTaskStatuses()
+      .then((res) => setTaskStatuses(res.data.taskStatuses))
+      .catch((err) => console.error(err));
+  }, []);
 
   const [tasks, setTasks] = useState([]);
   const userId = localStorage.getItem("userId");
@@ -20,19 +29,24 @@ export default function Home() {
   }, []);
 
   return (
-    <div>
-      {tasks.map(task => (
-        <TaskCard key={task.id} task={task} />
+    <div id={"all-tasks"}>
+      {taskStatuses.map(taskStatus => (
+        <StatusComponent key={taskStatus.id} status={taskStatus}>
+          {tasks.filter(task => task.statusId === taskStatus.id)
+            .map(task => (
+              <TaskCardComponent key={task.id} task={task} />
+            ))}
+        </StatusComponent>
       ))}
 
       {message && (
-        <p style={{ color: "green", marginTop: "10px" }}>
+        <p className={"message"}>
           {message}
         </p>
       )}
 
       {error && (
-        <p style={{ color: "red", marginTop: "10px" }}>
+        <p className={"error"}>
           {error}
         </p>
       )}

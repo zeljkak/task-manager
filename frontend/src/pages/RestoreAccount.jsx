@@ -37,12 +37,12 @@ export default function RestoreAccount() {
   }, [token, navigate]);
 
   return (
-      <div style={{ maxWidth: "400px", margin: "50px auto" }}>
+      <div className={"centered-page"}>
       <h2>Restoring Account</h2>
 
       {loading && <p>Restoring your account...</p>}
-      {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {message && <p className={"message"}>{message}</p>}
+      {error && <p className={"error"}>{error}</p>}
     </div>
   );
 }

@@ -19,18 +19,18 @@ export default function Profile() {
   }, []);
 
   return (
-    <div style={{ maxWidth: "400px", margin: "50px auto" }}>
+    <div className={"centered-page"}>
       <h2>Profile</h2><hr /><br />
       <ProfileComponent key={user.id} user={user} />
 
       {message && (
-        <p style={{ color: "green", marginTop: "10px" }}>
+        <p className={"message"}>
           {message}
         </p>
       )}
 
       {error && (
-        <p style={{ color: "red", marginTop: "10px" }}>
+        <p className={"error"}>
           {error}
         </p>
       )}

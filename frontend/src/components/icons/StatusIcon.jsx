@@ -1,16 +1,21 @@
+import BacklogSvg from "../../assets/icons/backlog.svg?react";
 import ToDoSvg from "../../assets/icons/to-do.svg?react";
-import InProgressSvg from "../../assets/icons/in-progress.svg?react"
-import DoneSvg from "../../assets/icons/done.svg?react"
-import CancelledSvg from "../../assets/icons/cancelled.svg?react"
+import InProgressSvg from "../../assets/icons/in-progress.svg?react";
+import DoneSvg from "../../assets/icons/done.svg?react";
+import CancelledSvg from "../../assets/icons/cancelled.svg?react";
 
 function StatusIcon({ status }) {
     const commonProps = {
-        width: 18,
-        height: 18,
-        style: { marginRight: "6px", marginBottom: "3px", verticalAlign: "middle" }
+        width: 26,
+        height: 26,
+        style: { marginRight: "6px", verticalAlign: "middle" }
     };
 
-    if (status === "todo") {
+    if (status === "backlog") {
+        return <BacklogSvg {...commonProps} />
+    }
+
+    if (status === "to_do") {
         return <ToDoSvg {...commonProps} />;
     }
 

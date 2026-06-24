@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {Navigate, useNavigate} from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { login } from "../services/authService.js";
 
 export default function Login() {
+  if (localStorage.getItem("accessToken")) {
+      return <Navigate to="/" replace />
+  }
+
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -48,49 +52,48 @@ export default function Login() {
   };
 
   return (
-      <div style={{ maxWidth: "400px", margin: "50px auto" }}>
+      <div className={"centered-page"}>
       <h2>Login</h2>
 
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "10px" }}>
+        <div className={"form-div"}>
           <label>Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            style={{ width: "100%", padding: "8px" }}
+            className={"form-input"}
           />
         </div>
 
-        <div style={{ marginBottom: "10px" }}>
+        <div className={"form-div"}>
           <label>Password</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            style={{ width: "100%", padding: "8px" }}
+            className={"form-input"}
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          style={{ width: "100%", padding: "10px" }}
         >
           {loading ? "Logging in..." : "Login"}
         </button>
       </form>
 
       {message && (
-        <p style={{ color: "green", marginTop: "10px" }}>
+        <p className={"message"}>
           {message}
         </p>
       )}
 
       {error && (
-        <p style={{ color: "red", marginTop: "10px" }}>
+        <p className={"error"}>
           {error}
         </p>
       )}
