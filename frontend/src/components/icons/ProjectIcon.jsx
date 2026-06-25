@@ -1,8 +1,9 @@
 import ProjectSvg from "../../assets/icons/project.svg?react";
-function ProjectIcon() {
+
+function ProjectIcon({ size }) {
     const commonProps = {
-        width: 18,
-        height: 18,
+        width: size,
+        height: size,
         style: { marginRight: "6px", marginBottom: "3px", verticalAlign: "middle" }
     };
 

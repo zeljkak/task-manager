@@ -9,6 +9,10 @@ import Home from "./pages/Home.jsx";
 
 function App() {
 
+  useEffect(() => {
+      document.documentElement.setAttribute("data-bs-theme", "dark");
+  }, []);
+
   return (
     <Routes>
       <Route path="/" element={<Home />} />

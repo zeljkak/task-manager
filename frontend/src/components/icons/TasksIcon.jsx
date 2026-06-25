@@ -1,14 +1,14 @@
-import UserSvg from "../../assets/icons/user.svg?react";
+import TasksSvg from "../../assets/icons/tasks.svg?react";
 
-function UserIcon({ size }) {
+function TasksIcon({ size }) {
     const commonProps = {
         width: size,
         height: size,
         style: { marginRight: "6px", marginBottom: "3px", verticalAlign: "middle" }
     };
 
-    return <UserSvg {...commonProps} />;
+    return <TasksSvg {...commonProps} />;
 
 }
 
-export default UserIcon;
+export default TasksIcon;

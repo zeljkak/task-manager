@@ -4,10 +4,10 @@ import InProgressSvg from "../../assets/icons/in-progress.svg?react";
 import DoneSvg from "../../assets/icons/done.svg?react";
 import CancelledSvg from "../../assets/icons/cancelled.svg?react";
 
-function StatusIcon({ status }) {
+function StatusIcon({ size, status }) {
     const commonProps = {
-        width: 26,
-        height: 26,
+        width: size,
+        height: size,
         style: { marginRight: "6px", verticalAlign: "middle" }
     };
 

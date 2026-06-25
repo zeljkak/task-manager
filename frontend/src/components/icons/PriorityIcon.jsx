@@ -2,10 +2,10 @@ import LowPrioritySvg from "../../assets/icons/low-priority.svg?react";
 import MediumPrioritySvg from "../../assets/icons/medium-priority.svg?react";
 import HighPrioritySvg from "../../assets/icons/high-priority.svg?react";
 
-function PriorityIcon({ level }) {
+function PriorityIcon({ level, size }) {
     const commonProps = {
-        width: 18,
-        height: 18,
+        width: size,
+        height: size,
         style: { marginRight: "6px", marginBottom: "3px", verticalAlign: "middle" }
     };
 

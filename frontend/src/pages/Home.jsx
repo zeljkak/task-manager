@@ -4,10 +4,13 @@ import { getTasks } from "../services/taskService.js";
 import TaskCardComponent from "../components/TaskCardComponent.jsx";
 import {getTaskStatuses} from "../services/taskStatusService.js";
 import StatusComponent from "../components/StatusComponent.jsx";
+import SidebarComponent from "../components/SidebarComponent.jsx";
 
 export default function Home() {
 
   const navigate = useNavigate();
+
+  const [isVisible, setIsVisible] = useState(true);
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -29,6 +32,7 @@ export default function Home() {
   }, []);
 
   return (
+    <><SidebarComponent isVisible={isVisible} setIsVisible={setIsVisible} />
     <div id={"all-tasks"}>
       {taskStatuses.map(taskStatus => (
         <StatusComponent key={taskStatus.id} status={taskStatus}>
@@ -50,6 +54,6 @@ export default function Home() {
           {error}
         </p>
       )}
-    </div>
+    </div></>
   )
 }

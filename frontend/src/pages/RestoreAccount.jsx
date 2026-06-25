@@ -29,6 +29,9 @@ export default function RestoreAccount() {
             }, 2000);
         } catch (err) {
             setError(err.response?.data?.message || "Invalid or expired token");
+            setTimeout(() => {
+              navigate("/login");
+          }, 3000);
         } finally {
             setLoading(false);
         }

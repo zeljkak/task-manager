@@ -8,23 +8,23 @@ function TaskData({ task }) {
     return (
         <div className={"task-data"}>
             <p className={"task-priority"}>
-                <PriorityIcon level={task.priority.level} />
+                <PriorityIcon level={task.priority.level} size={18} />
                 {task.priority.level}
             </p>
             <p className={"task-assignee"}>
-                <UserIcon />
+                <UserIcon size={18} />
                 {task.assignedTo.firstName}
             </p>
             <p className={"task-due-date"}>
-                <DueDateIcon />
+                <DueDateIcon size={18} />
                 {task.dueDate ?? "No due date"}
             </p>
             <p className={"task-project"}>
-                <ProjectIcon />
+                <ProjectIcon size={18} />
                 {task.project?.projectName ?? "No project"}
             </p>
             <p className={"task-estimated-hours"}>
-                <EstimatedHoursIcon />
+                <EstimatedHoursIcon size={18} />
                 {task.estimatedHours}
             </p>
         </div>

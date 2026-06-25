@@ -27,6 +27,9 @@ export default function ResetPassword() {
           err.response?.data?.error || "Invalid or expired token"
         );
         setTokenValid(false);
+        setTimeout(() => {
+              navigate("/login");
+          }, 3000);
       } finally {
         setLoading(false);
       }
@@ -58,7 +61,7 @@ export default function ResetPassword() {
 
       setTimeout(() => {
         navigate("/login");
-      }, 2000);
+      }, 3000);
     } catch (err) {
       setError(
         err.response?.data?.error || "Something went wrong"

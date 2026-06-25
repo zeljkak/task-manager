@@ -1,8 +1,9 @@
 import DueDateSvg from "../../assets/icons/due-date.svg?react";
-function DueDateIcon() {
+
+function DueDateIcon({ size }) {
     const commonProps = {
-        width: 18,
-        height: 18,
+        width: size,
+        height: size,
         style: { marginRight: "6px", marginBottom: "3px", verticalAlign: "middle" }
     };
 
