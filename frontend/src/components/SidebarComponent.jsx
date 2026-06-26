@@ -1,3 +1,4 @@
+import {NavLink} from "react-router-dom";
 import ThemeIcon from "./icons/ThemeIcon.jsx";
 import UserIcon from "./icons/UserIcon.jsx";
 import InboxIcon from "./icons/InboxIcon.jsx";
@@ -16,26 +17,26 @@ function SidebarComponent({ isVisible, setIsVisible }) {
             <button onClick={toggleSidebar}>
                 <ThemeIcon state={isVisible} size={24}/>
             </button>
-            <a href={"#"}>
+            <NavLink to={"/profile"}>
                 <UserIcon size={24}/>
                 {isVisible && "Profile"}
-            </a>
-            <a href={"#"}>
+            </NavLink>
+            <NavLink to={"/inbox"}>
                 <InboxIcon size={24}/>
                 {isVisible && "Inbox"}
-            </a>
-            <a href={"#"}>
+            </NavLink>
+            <NavLink to={"/"}>
                 <TasksIcon size={24}/>
                 {isVisible && "My Tasks"}
-            </a>
-            <a href={"#"}>
+            </NavLink>
+            <NavLink to={"/projects"}>
                 <ProjectIcon size={24}/>
                 {isVisible && "Projects"}
-            </a>
-            <a href={"#"}>
+            </NavLink>
+            <NavLink to={"/settings"}>
                 <SettingsIcon size={24}/>
                 {isVisible && "Settings"}
-            </a>
+            </NavLink>
         </div>
     );
 }

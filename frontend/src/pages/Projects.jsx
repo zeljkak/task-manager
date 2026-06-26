@@ -1,27 +1,29 @@
 import {useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
-import { getProfile } from "../services/userService.js";
-import ProfileComponent from "../components/ProfileComponent.jsx";
+import ProjectComponent from "../components/ProjectComponent.jsx";
+import {getProjects} from "../services/projectService.js";
+import TaskCardComponent from "../components/TaskCardComponent.jsx";
 
-export default function Profile() {
+export default function Projects() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const [user, setUser] = useState([]);
+  const [projects, setProjects] = useState([]);
 
   useEffect(() => {
-    getProfile()
-        .then(data => setUser(data.data.user))
+    getProjects()
+        .then(res => setProjects(res.data.projects))
         .catch(err => console.error(err));
   }, []);
 
   return (
     <>
-      <h2>Profile</h2><hr /><br />
-      <ProfileComponent key={user.id} user={user} />
+      {projects.map(project => (
+          <ProjectComponent key={project.id} project={project} />
+        ))}
 
       {message && (
         <p className={"message"}>

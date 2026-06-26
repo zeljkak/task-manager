@@ -15,7 +15,7 @@ function ProfileComponent({ user }) {
             </p><br />
             <p>Join Date</p>
             <p className={"created-at"}>
-                {user.createdAt}
+                {new Date(user.createdAt).toLocaleDateString("en-GB").replaceAll("/", ".").concat(".")}
             </p>
         </div>
     );

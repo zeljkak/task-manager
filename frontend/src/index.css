@@ -94,18 +94,31 @@ code {
   background: var(--code-bg);
 }
 
-#all-tasks {
+a {
+  color: inherit;
+  font-style: italic;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+#content {
   display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  overflow-x: scroll;
+  flex-direction: column;
+  overflow-x: auto;
+  padding-top: 15px;
+  padding-left: 15px;
+  width: inherit;
   max-width: 100%;
-  padding-top: 10px;
-  padding-left: 10px;
   height: 100vh;
 }
 
-.task-status {
+.all-tasks, .all-projects {
+  flex-direction: row !important;
+  align-items: flex-start;
+  overflow-x: scroll;
+}
+
+.task-status, .project {
   padding-right: 30px;
   flex: 0 0 350px;
 }
@@ -168,28 +181,45 @@ code {
 #sidebar {
   display: flex;
   flex-direction: column;
-  padding: 10px 20px 10px 10px;
+  padding: 10px;
   min-width: min-content;
   white-space: nowrap;
   border-right: 1px solid #dee2e6;
 }
 
 #sidebar > a {
-  padding-bottom: 15px;
+  margin-bottom: 15px;
+  padding: 5px 10px;
   font-weight: 500;
   color: inherit;
   text-decoration: none;
+  font-style: normal;
 }
 
 #sidebar > button {
   background-color: inherit;
-  padding: 0 0 15px 0;
+  padding: 5px 10px;
   border: inherit;
   width: inherit;
   max-width: min-content;
   border-right: none;
+  margin-bottom: 15px;
 }
 
-.collapsed {
-  padding-right: 10px !important;
+svg {
+  margin: 5px 5px 5px 0 !important;
+  justify-self: auto;
+}
+
+#sidebar a.active {
+  background-color: var(--bs-secondary-bg);
+  border-radius: 50%;
+}
+
+#sidebar.collapsed > a > svg, #sidebar.collapsed > button > svg {
+  margin: 5px !important;
+}
+
+hr {
+  width: 40%;
 }
