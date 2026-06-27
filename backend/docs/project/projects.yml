@@ -2,10 +2,44 @@ tags:
   - Project
 
 description:
-  Get all projects. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+  Retrieve projects. Results can be filtered by name, description, creator and date of creation. Requires a valid JWT token in Authorization header. Format: Bearer <token>
 
 security:
   - BearerAuth: []
+
+parameters:
+  - name: projectName
+    in: query
+    required: false
+    type: string
+    example: Second project
+    description: Name of the project to filter by
+  - name: projectDescription
+    in: query
+    required: false
+    type: string
+    example: Client dashboard
+    description: Description of the project to filter by
+  - name: createdById
+    in: query
+    required: false
+    type: integer
+    example: 1
+    description: ID of the user to filter by
+  - name: createdBefore
+    in: query
+    required: false
+    type: string
+    format: date
+    example: "2026-12-27"
+    description: Creation date of the project to filter by
+  - name: createdAfter
+    in: query
+    required: false
+    type: string
+    format: date
+    example: "2026-12-27"
+    description: Creation date of the project to filter by
 
 responses:
   200:
@@ -27,6 +61,9 @@ responses:
               projectDescription:
                 type: string
                 example: This project can be used as a client dashboard. All tasks relating to the specific client are connected to it.
+              archived:
+                type: boolean
+                example: False
               createdBy:
                 type: object
                 properties:

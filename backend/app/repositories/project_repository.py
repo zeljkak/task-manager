@@ -1,7 +1,7 @@
 from backend.app.models.project_model import Project
 from backend.app.extensions.db import db
 from backend.app.exceptions.http_exceptions import ServiceUnavailableError
-
+from datetime import timedelta
 
 class ProjectRepository:
     @staticmethod
@@ -26,12 +26,30 @@ class ProjectRepository:
 
 
     @staticmethod
-    def get_all():
+    def get_projects(name=None, description=None, created_by_id=None, created_before=None, created_after=None):
         try:
-            return Project.query.all()
+            projects = Project.query
+
+            if name and name.strip():
+                projects = projects.filter(Project.project_name.ilike(f"%{name}%"))
+
+            if description and description.strip():
+                projects = projects.filter(Project.project_description.ilike(f"%{description}%"))
+
+            if created_by_id is not None:
+                projects = projects.filter(Project.created_by_id == created_by_id)
+
+            if created_before is not None:
+                projects = projects.filter(Project.created_at <= created_before + timedelta(days=1))
+
+            if created_after is not None:
+                projects = projects.filter(Project.created_at >= created_after)
+
+            return projects.order_by(Project.created_at.desc()).all()
 
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
+
 
     @staticmethod
     def create(project):

@@ -156,7 +156,21 @@ def delete_task(taskId):
 @roles_required("admin")
 
 def get_deleted_tasks():
-    tasks = TaskService.get_deleted_tasks()
+    title = request.args.get("title", type=str)
+    description = request.args.get("description", type=str)
+    assigned_to_id = request.args.get("assignedToId", type=int)
+    status_id = request.args.get("statusId", type=int)
+    priority_id = request.args.get("priorityId", type=int)
+    project_id = request.args.get("projectId", type=int)
+    due_before = parse_date(request.args.get("dueBefore"))
+    due_after = parse_date(request.args.get("dueAfter"))
+    created_before = parse_date(request.args.get("createdBefore"))
+    created_after = parse_date(request.args.get("createdAfter"))
+    overdue = parse_bool(request.args.get("overdue"))
+    followed_by = request.args.get("followedBy", type=int)
+
+    tasks = TaskService.get_deleted_tasks(title, description, assigned_to_id, status_id, priority_id, project_id, due_before,
+                                  due_after, created_before, created_after, overdue, followed_by)
 
     return jsonify({
         "tasks": TaskResponseSchema(many=True).dump(tasks)

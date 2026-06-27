@@ -1,8 +1,8 @@
+from backend.app.exceptions.http_exceptions import BadRequestError
 from backend.app.exceptions.http_exceptions import NotFoundError
 
 from backend.app.repositories.project_repository import ProjectRepository
 from backend.app.models.project_model import Project
-
 
 class ProjectService:
 
@@ -32,8 +32,8 @@ class ProjectService:
 
 
     @staticmethod
-    def get_all_projects():
-        return ProjectRepository.get_all()
+    def get_projects(name=None, description=None, created_by_id=None, created_before=None, created_after=None):
+        return ProjectRepository.get_projects(name, description, created_by_id, created_before, created_after)
 
 
     @staticmethod
@@ -61,7 +61,21 @@ class ProjectService:
         return ProjectRepository.update(project)
 
     @staticmethod
-    def delete_project(project_id):
+    def archive_project(project_id):
         project = ProjectService.get_project_by_id(project_id)
 
-        return ProjectRepository.delete(project)
+        if project.archived == True:
+            raise BadRequestError("Project already archived")
+
+        project.archived = True
+        return ProjectRepository.update(project)
+
+    @staticmethod
+    def unarchive_project(project_id):
+        project = ProjectService.get_project_by_id(project_id)
+
+        if project.archived == False:
+            raise BadRequestError("Project already active")
+
+        project.archived = False
+        return ProjectRepository.update(project)

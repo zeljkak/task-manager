@@ -33,6 +33,9 @@ responses:
             projectDescription:
               type: string
               example: This project can be used as a client dashboard. All tasks relating to the specific client are connected to it.
+            archived:
+              type: boolean
+              example: False
             createdBy:
               type: object
               properties:

@@ -14,7 +14,7 @@ export default function Projects() {
   const [projects, setProjects] = useState([]);
 
   useEffect(() => {
-    getProjects()
+    getProjects({})
         .then(res => setProjects(res.data.projects))
         .catch(err => console.error(err));
   }, []);

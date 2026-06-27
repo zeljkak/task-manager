@@ -21,3 +21,4 @@ class ProjectResponseSchema(Schema):
     created_by = fields.Nested(UserSummarySchema, data_key="createdBy")
     updated_by = fields.Nested(UserSummarySchema, data_key="updatedBy")
     attachments = fields.Nested(AttachmentResponseSchema, many=True)
+    archived = fields.Bool()

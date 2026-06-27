@@ -1,7 +1,8 @@
 import api from "../api/axios";
 
-export const getProjects = () => {
+export const getProjects = (filters = {}) => {
   return api.get(
-    `/projects`
-  );
+    `/projects`, {
+        params: filters,
+      });
 };

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify
 from flasgger import swag_from
 import os
 
@@ -6,6 +6,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from backend.app.decorators.roles_required import roles_required
 
 from backend.app.utils.file_storage import save_file
+from backend.app.utils.diff import parse_bool, parse_date
 
 from backend.app.services.project_service import ProjectService
 from backend.app.services.attachment_service import AttachmentService
@@ -25,7 +26,13 @@ project_schema = ProjectSchema()
 @jwt_required()
 
 def get_projects():
-    projects = ProjectService.get_all_projects()
+    name = request.args.get("projectName", type=str)
+    description = request.args.get("projectDescription", type=str)
+    created_by_id = request.args.get("createdById", type=int)
+    created_before = parse_date(request.args.get("createdBefore"))
+    created_after = parse_date(request.args.get("createdAfter"))
+
+    projects = ProjectService.get_projects(name, description, created_by_id, created_before, created_after)
 
     return jsonify({
         "projects": ProjectResponseSchema(many=True).dump(projects)
@@ -103,13 +110,30 @@ def update_project(projectId):
         "project": ProjectResponseSchema().dump(project)
     }), 200
 
-@project_bp.route('/<int:projectId>', methods=['DELETE'])
-@swag_from(os.path.join(BASE_DIR, "../../docs/project/delete_project.yml"))
+@project_bp.route('/<int:projectId>/archive', methods=['POST'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/project/archive_project.yml"))
 @limiter.limit("2 per minute")
 @jwt_required()
 @roles_required("admin")
 
-def delete_project(projectId):
-    ProjectService.delete_project(projectId)
+def archive_project(projectId):
+    project = ProjectService.archive_project(projectId)
 
-    return "", 204
+    return jsonify({
+        "message": "Project archived successfully",
+        "project": ProjectResponseSchema().dump(project)
+    }), 200
+
+@project_bp.route('/<int:projectId>/unarchive', methods=['POST'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/project/unarchive_project.yml"))
+@limiter.limit("2 per minute")
+@jwt_required()
+@roles_required("admin")
+
+def unarchive_project(projectId):
+    project = ProjectService.unarchive_project(projectId)
+
+    return jsonify({
+        "message": "Project unarchived successfully",
+        "project": ProjectResponseSchema().dump(project)
+    }), 200

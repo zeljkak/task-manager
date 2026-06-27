@@ -8,6 +8,8 @@ class Project(db.Model):
     project_name = db.Column(db.String(255), nullable=False)
     project_description = db.Column(db.Text)
 
+    archived = db.Column(db.Boolean, server_default="false", nullable=False)
+
     created_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     updated_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
 

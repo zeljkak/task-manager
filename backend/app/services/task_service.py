@@ -55,8 +55,8 @@ class TaskService:
 
 
     @staticmethod
-    def get_deleted_tasks():
-        return TaskRepository.get_deleted_all()
+    def get_deleted_tasks(title=None, description=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, followed_by=None):
+        return TaskRepository.get_deleted_tasks(title, description, assigned_to_id, status_id, priority_id, project_id, due_before, due_after, created_before, created_after, overdue, followed_by)
 
 
     @staticmethod
@@ -80,8 +80,13 @@ class TaskService:
             raise NotFoundError("Assigned user not found")
 
         if data.get("project_id"):
-            if not ProjectRepository.get_by_id(data["project_id"]):
+            project = ProjectRepository.get_by_id(data["project_id"])
+            if not project:
                 raise NotFoundError("Project not found")
+            if project.archived == True:
+                project = None
+            else:
+                project = project.id
 
         if data.get("priority_id"):
             if not PriorityRepository.get_by_id(data["priority_id"]):
@@ -96,6 +101,7 @@ class TaskService:
             description=data.get("description"),
             status_id=data.get("status_id"),
             priority_id=data.get("priority_id"),
+            project_id=project,
             assigned_to_id=assigned_to_id,
             created_by_id=current_user_id,
             updated_by_id=current_user_id,
@@ -130,6 +136,25 @@ class TaskService:
 
         # copy old state
         old_task = TaskService.copy_task(task)
+
+        if data.get("project_id"):
+            project = ProjectRepository.get_by_id(data["project_id"])
+            if not project:
+                raise NotFoundError("Project not found")
+            if project.archived == True:
+                raise BadRequestError("Cannot link a task to an archived project")
+
+        assigned_to = UserRepository.get_by_id(data.get("assigned_to_id"))
+        if not assigned_to:
+            raise NotFoundError("Assigned user not found")
+
+        if data.get("priority_id"):
+            if not PriorityRepository.get_by_id(data["priority_id"]):
+                raise NotFoundError("Priority not found")
+
+        if data.get("status_id"):
+            if not TaskStatusRepository.get_by_id(data["status_id"]):
+                raise NotFoundError("Status not found")
 
         # apply updates
         for key, value in data.items():
