@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import ProjectComponent from "../components/ProjectComponent.jsx";
 import {getProjects} from "../services/projectService.js";
-import TaskCardComponent from "../components/TaskCardComponent.jsx";
+import ProjectStatusComponent from "../components/ProjectStatusComponent.jsx";
 
 export default function Projects() {
   const navigate = useNavigate();
@@ -19,11 +19,20 @@ export default function Projects() {
         .catch(err => console.error(err));
   }, []);
 
+  const activeProjects = projects.filter(project => !project.archived);
+  const inactiveProjects = projects.filter(project => project.archived);
   return (
     <>
-      {projects.map(project => (
+      <ProjectStatusComponent key={"unarchived"} status={"active"} length={activeProjects.length}>
+        {activeProjects.map(project => (
+            <ProjectComponent key={project.id} project={project} />
+          ))}
+      </ProjectStatusComponent>
+      <ProjectStatusComponent key={"archived"} status={"archived"} length={inactiveProjects.length}>
+        {inactiveProjects.map(project => (
           <ProjectComponent key={project.id} project={project} />
         ))}
+      </ProjectStatusComponent>
 
       {message && (
         <p className={"message"}>

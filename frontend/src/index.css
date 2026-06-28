@@ -118,16 +118,33 @@ a {
   overflow-x: scroll;
 }
 
-.task-status, .project {
+.task-status {
   padding-right: 30px;
   flex: 0 0 350px;
 }
 
-.task-status > h4 {
+.project-status {
+  padding-right: 30px;
+  flex: 1;
+}
+
+.task-status > div, .project-status > div {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 2px;
+}
+
+.task-status > div > h4, .project-status > div > h4 {
+  flex: 0 0 auto;
   white-space: nowrap;
+  margin: 0
+}
+
+.task-status > div > p, .project-status > div > p {
+  margin-left: 10px;
+  color: lightgrey;
+  margin-bottom: 2px;
+  padding-left: 5px;
 }
 
 .card {

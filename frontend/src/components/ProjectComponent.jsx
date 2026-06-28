@@ -20,12 +20,10 @@ function ProjectData({ project }) {
 
 function ProjectComponent({ project }) {
     return (
-        <div className="project">
-            <div className="card">
-                <div className="card-body">
-                    <h5 className="project-title">{project.projectName}</h5><br />
-                    <ProjectData project={project} />
-                </div>
+        <div className="card">
+            <div className="card-body">
+                <h5 className="project-title">{project.projectName}</h5><br />
+                <ProjectData project={project} />
             </div>
         </div>
     );
