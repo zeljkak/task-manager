@@ -18,7 +18,7 @@ function ProjectData({ project }) {
     );
 }
 
-function ProjectComponent({ project }) {
+function ProjectCardComponent({ project }) {
     return (
         <div className="card">
             <div className="card-body">
@@ -29,4 +29,4 @@ function ProjectComponent({ project }) {
     );
 }
 
-export default ProjectComponent;
+export default ProjectCardComponent;

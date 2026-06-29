@@ -6,9 +6,6 @@ export default function Layout() {
     const [isVisible, setIsVisible] = useState(true);
 
     const location = useLocation();
-    const isHome = location.pathname === "/";
-    const isProjects = location.pathname === "/projects";
-
 
     return (
         <><SidebarComponent
@@ -16,7 +13,7 @@ export default function Layout() {
             setIsVisible={setIsVisible}
         />
 
-        <div id="content" className={isHome ? "all-tasks" : isProjects ? "all-projects" : ""}>
+        <div id="content">
             <Outlet />
         </div></>
     );

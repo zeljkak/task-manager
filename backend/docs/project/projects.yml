@@ -8,18 +8,12 @@ security:
   - BearerAuth: []
 
 parameters:
-  - name: projectName
+  - name: projectText
     in: query
     required: false
     type: string
     example: Second project
-    description: Name of the project to filter by
-  - name: projectDescription
-    in: query
-    required: false
-    type: string
-    example: Client dashboard
-    description: Description of the project to filter by
+    description: Name or description of the project to filter by
   - name: createdById
     in: query
     required: false

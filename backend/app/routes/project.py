@@ -26,13 +26,12 @@ project_schema = ProjectSchema()
 @jwt_required()
 
 def get_projects():
-    name = request.args.get("projectName", type=str)
-    description = request.args.get("projectDescription", type=str)
+    text = request.args.get("projectText", type=str)
     created_by_id = request.args.get("createdById", type=int)
     created_before = parse_date(request.args.get("createdBefore"))
     created_after = parse_date(request.args.get("createdAfter"))
 
-    projects = ProjectService.get_projects(name, description, created_by_id, created_before, created_after)
+    projects = ProjectService.get_projects(text, created_by_id, created_before, created_after)
 
     return jsonify({
         "projects": ProjectResponseSchema(many=True).dump(projects)

@@ -1,8 +1,9 @@
 import {useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
-import ProjectComponent from "../components/ProjectComponent.jsx";
+import ProjectCardComponent from "../components/ProjectCardComponent.jsx";
 import {getProjects} from "../services/projectService.js";
 import ProjectStatusComponent from "../components/ProjectStatusComponent.jsx";
+import FilterComponent from "../components/FilterComponent.jsx";
 
 export default function Projects() {
   const navigate = useNavigate();
@@ -13,26 +14,47 @@ export default function Projects() {
 
   const [projects, setProjects] = useState([]);
 
+  const [filters, setFilters] = useState({
+    projectText: "",
+    createdById: "",
+    createdBefore: "",
+    createdAfter: ""
+  });
+
+  async function loadProjects() {
+    const data = await getProjects(filters);
+    setProjects(data.projects);
+  }
+
   useEffect(() => {
-    getProjects({})
-        .then(res => setProjects(res.data.projects))
-        .catch(err => console.error(err));
-  }, []);
+    loadProjects();
+  }, [filters]);
 
   const activeProjects = projects.filter(project => !project.archived);
   const inactiveProjects = projects.filter(project => project.archived);
   return (
     <>
-      <ProjectStatusComponent key={"unarchived"} status={"active"} length={activeProjects.length}>
-        {activeProjects.map(project => (
-            <ProjectComponent key={project.id} project={project} />
-          ))}
-      </ProjectStatusComponent>
-      <ProjectStatusComponent key={"archived"} status={"archived"} length={inactiveProjects.length}>
-        {inactiveProjects.map(project => (
-          <ProjectComponent key={project.id} project={project} />
-        ))}
-      </ProjectStatusComponent>
+      <FilterComponent element={"project"}
+                       text={filters.projectText}
+                       onChange={(value) =>
+                           setFilters(prev => ({
+                               ...prev,
+                               projectText: value
+                           }))
+                       }
+      />
+        <div className={"all-projects"}>
+          <ProjectStatusComponent key={"unarchived"} status={"active"} length={activeProjects.length}>
+            {activeProjects.map(project => (
+                <ProjectCardComponent key={project.id} project={project} />
+              ))}
+          </ProjectStatusComponent>
+          <ProjectStatusComponent key={"archived"} status={"archived"} length={inactiveProjects.length}>
+            {inactiveProjects.map(project => (
+              <ProjectCardComponent key={project.id} project={project} />
+            ))}
+          </ProjectStatusComponent>
+        </div>
 
       {message && (
         <p className={"message"}>

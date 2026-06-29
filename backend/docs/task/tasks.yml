@@ -8,18 +8,12 @@ security:
   - BearerAuth: []
 
 parameters:
-  - name: title
+  - name: text
     in: query
     required: false
     type: string
     example: Implement login
-    description: Title of the task to filter by
-  - name: description
-    in: query
-    required: false
-    type: string
-    example: Create JWT authentication
-    description: Description of the task to filter by
+    description: Title or description of the task to filter by
   - name: assignedToId
     in: query
     required: false
@@ -79,7 +73,7 @@ parameters:
     example: true
     default: false
     description: If true, returns only tasks with due date in the past and not completed
-  - name: followedBy
+  - name: followedById
     in: query
     required: false
     type: integer

@@ -17,15 +17,15 @@ class TaskRepository:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
-    def get_tasks(title=None, description=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, followed_by=None):
+    def get_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, followed_by_id=None):
         try:
             tasks = Task.query.filter_by(is_deleted=False)
 
-            if title and title.strip():
-                tasks = tasks.filter(Task.title.ilike(f"%{title}%"))
-
-            if description and description.strip():
-                tasks = tasks.filter(Task.description.ilike(f"%{description}%"))
+            if text and text.strip():
+                tasks = tasks.filter(
+                    Task.title.ilike(f"%{text}%") |
+                    Task.description.ilike(f"%{text}%")
+                )
 
             if assigned_to_id is not None:
                 tasks = tasks.filter(Task.assigned_to_id == assigned_to_id)
@@ -58,8 +58,8 @@ class TaskRepository:
                     Task.status_id != constants.DONE_STATUS_ID
                 )
 
-            if followed_by is not None:
-                tasks = tasks.join(Task.followers).filter(User.id == followed_by)
+            if followed_by_id is not None:
+                tasks = tasks.join(Task.followers).filter(User.id == followed_by_id)
 
             return tasks.order_by(Task.created_at.desc()).all()
 
@@ -77,15 +77,15 @@ class TaskRepository:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
-    def get_deleted_tasks(title=None, description=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, followed_by=None):
+    def get_deleted_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, followed_by_id=None):
         try:
             tasks = Task.query.filter_by(is_deleted=True)
 
-            if title and title.strip():
-                tasks = tasks.filter(Task.title.ilike(f"%{title}%"))
-
-            if description and description.strip():
-                tasks = tasks.filter(Task.description.ilike(f"%{description}%"))
+            if text and text.strip():
+                tasks = tasks.filter(
+                    Task.title.ilike(f"%{text}%") |
+                    Task.description.ilike(f"%{text}%")
+                )
 
             if assigned_to_id is not None:
                 tasks = tasks.filter(Task.assigned_to_id == assigned_to_id)
@@ -118,8 +118,8 @@ class TaskRepository:
                     Task.status_id != constants.DONE_STATUS_ID
                 )
 
-            if followed_by is not None:
-                tasks = tasks.join(Task.followers).filter(User.id == followed_by)
+            if followed_by_id is not None:
+                tasks = tasks.join(Task.followers).filter(User.id == followed_by_id)
 
             return tasks.order_by(Task.created_at.desc()).all()
 

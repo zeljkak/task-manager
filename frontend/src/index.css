@@ -53,7 +53,6 @@
   }
 }
 
-
 body {
   margin: 0;
   overflow: hidden;
@@ -81,7 +80,6 @@ p {
 
 code,
 .counter {
-  /*font-family: var(--mono);*/
   display: inline-flex;
   border-radius: 4px;
   color: var(--text-h);
@@ -113,34 +111,43 @@ a {
 }
 
 .all-tasks, .all-projects {
-  flex-direction: row !important;
-  align-items: flex-start;
   overflow-x: scroll;
+  height: calc(100vh - 20px);
+  display: grid;
+  align-items: stretch;
+  margin-top: 20px;
+  padding-right: 15px;
+  padding-bottom: 10px;
 }
 
-.task-status {
-  padding-right: 30px;
-  flex: 0 0 350px;
+.all-tasks {
+  column-gap: 30px;
+  grid-template-columns: repeat(5, 350px);
 }
 
-.project-status {
-  padding-right: 30px;
-  flex: 1;
+.all-projects {
+  column-gap: 15px;
+  grid-template-columns: repeat(2, 1fr);
+  overflow-x: auto;
 }
 
-.task-status > div, .project-status > div {
+.fixed-status {
   display: flex;
   flex-direction: row;
   align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: #121212;
 }
 
-.task-status > div > h4, .project-status > div > h4 {
+.fixed-status > h4 {
   flex: 0 0 auto;
   white-space: nowrap;
   margin: 0
 }
 
-.task-status > div > p, .project-status > div > p {
+.fixed-status > p {
   margin-left: 10px;
   color: lightgrey;
   margin-bottom: 2px;
@@ -205,7 +212,7 @@ a {
 }
 
 #sidebar > a {
-  margin-bottom: 15px;
+  margin-bottom: 5px;
   padding: 5px 10px;
   font-weight: 500;
   color: inherit;
@@ -220,17 +227,17 @@ a {
   width: inherit;
   max-width: min-content;
   border-right: none;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
 }
 
 svg {
-  margin: 5px 5px 5px 0 !important;
+  margin: 5px 5px 8.5px 0 !important;
   justify-self: auto;
 }
 
 #sidebar a.active {
   background-color: var(--bs-secondary-bg);
-  border-radius: 50%;
+  border-radius: 10px;
 }
 
 #sidebar.collapsed > a > svg, #sidebar.collapsed > button > svg {
@@ -239,4 +246,10 @@ svg {
 
 hr {
   width: 40%;
+}
+
+input {
+  background-color: #212529;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
 }

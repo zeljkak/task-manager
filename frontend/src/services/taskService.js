@@ -1,8 +1,14 @@
 import api from "../api/axios";
 
-export const getTasks = (filters = {}) => {
-  return api.get(
-    `/tasks`, {
-        params: filters,
-      });
+export async function getTasks(filters = {}) {
+  const params = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+      if (value !== "" && value !== null && value !== undefined) {
+          params.append(key,value);
+      }
+  });
+
+  const response = await api.get(`/tasks?${params.toString()}`);
+  return response.data;
 };

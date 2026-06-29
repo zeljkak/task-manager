@@ -3,7 +3,7 @@ import ArchivedProjectIcon from "./icons/ArchivedProjectIcon.jsx";
 function ProjectStatusComponent({ status, length, children }) {
     return (
         <div className={"project-status"} id={status}>
-            <div>
+            <div className={"fixed-status"}>
                 <h4>
                     <ArchivedProjectIcon status={status} size={26} />
                     {status.charAt(0).toUpperCase() + status.slice(1)}

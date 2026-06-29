@@ -26,15 +26,15 @@ class ProjectRepository:
 
 
     @staticmethod
-    def get_projects(name=None, description=None, created_by_id=None, created_before=None, created_after=None):
+    def get_projects(text=None, created_by_id=None, created_before=None, created_after=None):
         try:
             projects = Project.query
 
-            if name and name.strip():
-                projects = projects.filter(Project.project_name.ilike(f"%{name}%"))
-
-            if description and description.strip():
-                projects = projects.filter(Project.project_description.ilike(f"%{description}%"))
+            if text and text.strip():
+                projects = projects.filter(
+                    Project.project_name.ilike(f"%{text}%") |
+                    Project.project_description.ilike(f"%{text}%")
+                )
 
             if created_by_id is not None:
                 projects = projects.filter(Project.created_by_id == created_by_id)
