@@ -1,11 +1,9 @@
 import {useState} from "react";
+import {Outlet} from "react-router-dom";
 import SidebarComponent from "../components/SidebarComponent.jsx";
-import {Outlet, useLocation} from "react-router-dom";
 
 export default function Layout() {
     const [isVisible, setIsVisible] = useState(true);
-
-    const location = useLocation();
 
     return (
         <><SidebarComponent

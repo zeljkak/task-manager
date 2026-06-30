@@ -1,12 +1,13 @@
-function FilterComponent({ element, text, onChange }) {
+function TaskFilterComponent({ text, onChange }) {
     return (
-        <div className= {[element, "filter"].join("-")}>
+        <div className= {"task-filter"}>
             <input className={"text-filter"}
                    placeholder={"Search"} value={text}
                    onChange={(e) => onChange(e.target.value)} />
+
 
         </div>
     );
 }
 
-export default FilterComponent;
+export default TaskFilterComponent;

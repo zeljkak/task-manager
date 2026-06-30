@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from flasgger import swag_from
 import os
 
+from backend.app.schemas.summary_schema import UserSummarySchema
 from backend.app.extensions.limiter import limiter
 from backend.app.schemas.auth_schema import EnterEmailSchema
 from backend.app.schemas.user_schema import UserSchema, UserUpdateSchema
@@ -11,6 +12,17 @@ from backend.app.services.user_service import UserService
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 user_bp = Blueprint('user', __name__, url_prefix='/users')
+
+@user_bp.route('', methods=['GET'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/user/users.yml"))
+@jwt_required()
+
+def get_users():
+    users = UserService.get_all_users()
+
+    return jsonify({
+        "users": UserSummarySchema(many=True).dump(users)
+    }), 200
 
 @user_bp.route('/profile', methods=['GET'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/user/profile.yml"))

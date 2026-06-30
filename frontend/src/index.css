@@ -110,8 +110,61 @@ a {
   height: 100vh;
 }
 
+.task-filter, .project-filter {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.created-by-container {
+  position: relative;
+}
+
+.created-by-filter, .created-by-option {
+  font-style: normal;
+  font-weight: normal;
+  color: #dee2e6;
+  background-color: inherit;
+  border: 0;
+}
+
+.created-by-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+
+  width: min-content;
+  white-space: nowrap;
+
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+
+  background-color: #212529;
+  border: 1px solid #495057;
+  padding: 5px;
+  border-radius: 5px;
+
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.created-by-container:hover .created-by-options {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.created-by-option {
+  text-align: left;
+}
+
+.created-by-option.active {
+  background-color: #868791;
+  border-radius: 5px;
+}
+
 .all-tasks, .all-projects {
-  overflow-x: scroll;
   height: calc(100vh - 20px);
   display: grid;
   align-items: stretch;
@@ -123,6 +176,7 @@ a {
 .all-tasks {
   column-gap: 30px;
   grid-template-columns: repeat(5, 350px);
+  overflow-x: scroll;
 }
 
 .all-projects {
@@ -197,7 +251,7 @@ a {
   margin-bottom: 10px;
 }
 
-.form-input, button {
+.form-input, .form-input > button {
   width: 100%;
   padding: 8px;
 }
@@ -252,4 +306,5 @@ input {
   background-color: #212529;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 5px;
+  padding: 2px 5px;
 }

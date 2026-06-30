@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { resetPassword, checkTokenForResetPassword } from "../services/authService";
+import {useParams, useNavigate} from "react-router-dom";
+import {resetPassword, checkTokenForResetPassword} from "../services/authService";
 
 export default function ResetPassword() {
   const { token } = useParams();

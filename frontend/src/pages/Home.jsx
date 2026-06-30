@@ -1,10 +1,10 @@
 import {useEffect, useState} from "react";
-import { useNavigate } from "react-router-dom";
-import { getTasks } from "../services/taskService.js";
+import {useNavigate} from "react-router-dom";
 import TaskCardComponent from "../components/TaskCardComponent.jsx";
-import {getTaskStatuses} from "../services/taskStatusService.js";
 import TaskStatusComponent from "../components/TaskStatusComponent.jsx";
-import FilterComponent from "../components/FilterComponent.jsx";
+import TaskFilterComponent from "../components/TaskFilterComponent.jsx";
+import {getTaskStatuses} from "../services/taskStatusService.js";
+import {getTasks} from "../services/taskService.js";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -49,14 +49,13 @@ export default function Home() {
 
   return (
     <>
-      <FilterComponent element={"task"}
-                       text={filters.text}
-                       onChange={(value) =>
-                           setFilters(prev => ({
+      <TaskFilterComponent text={filters.text}
+                           onChange={(value) =>
+                             setFilters(prev => ({
                                ...prev,
                                text: value
-                           }))
-                       }
+                             }))
+                           }
       />
       <div className={"all-tasks"}>
         {taskStatuses.map(taskStatus => {

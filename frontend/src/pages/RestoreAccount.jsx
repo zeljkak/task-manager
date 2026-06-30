@@ -1,6 +1,6 @@
-import {useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { restoreAccount } from "../services/userService.js";
+import {useEffect, useState, useRef} from "react";
+import {useParams, useNavigate} from "react-router-dom";
+import {restoreAccount} from "../services/userService.js";
 
 export default function RestoreAccount() {
   const { token } = useParams();

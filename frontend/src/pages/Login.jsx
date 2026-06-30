@@ -1,7 +1,7 @@
-import { useState } from "react";
+import {useState} from "react";
 import {Navigate, useNavigate} from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
-import { login } from "../services/authService.js";
+import {jwtDecode} from "jwt-decode";
+import {login} from "../services/authService.js";
 
 export default function Login() {
   if (localStorage.getItem("accessToken")) {

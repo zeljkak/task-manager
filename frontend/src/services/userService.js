@@ -11,3 +11,9 @@ export const getProfile = () => {
     `/users/profile`
   );
 };
+
+export const getUsers = () => {
+  return api.get(
+    `/users`
+  );
+};

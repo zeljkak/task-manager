@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
-import { useNavigate } from "react-router-dom";
-import { getProfile } from "../services/userService.js";
+import {useNavigate} from "react-router-dom";
+import {getProfile} from "../services/userService.js";
 import ProfileComponent from "../components/ProfileComponent.jsx";
 
 export default function Profile() {

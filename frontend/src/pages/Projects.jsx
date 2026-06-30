@@ -1,9 +1,10 @@
-import {useEffect, useState} from "react";
-import { useNavigate } from "react-router-dom";
+import {useEffect, useState, useMemo} from "react";
+import {useNavigate} from "react-router-dom";
 import ProjectCardComponent from "../components/ProjectCardComponent.jsx";
-import {getProjects} from "../services/projectService.js";
 import ProjectStatusComponent from "../components/ProjectStatusComponent.jsx";
-import FilterComponent from "../components/FilterComponent.jsx";
+import ProjectFilterComponent from "../components/ProjectFilterComponent.jsx";
+import {getProjects} from "../services/projectService.js";
+import {getUsers} from "../services/userService.js";
 
 export default function Projects() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export default function Projects() {
   const [error, setError] = useState("");
 
   const [projects, setProjects] = useState([]);
+  const [users, setUsers] = useState([]);
 
   const [filters, setFilters] = useState({
     projectText: "",
@@ -30,31 +32,56 @@ export default function Projects() {
     loadProjects();
   }, [filters]);
 
-  const activeProjects = projects.filter(project => !project.archived);
-  const inactiveProjects = projects.filter(project => project.archived);
+  const grouped = useMemo(() => {
+    return projects.reduce(
+      (acc, project) => {
+        const key = project.archived ? "archived" : "active";
+        (acc[key]).push(project);
+        return acc;
+      },
+      { active: [], archived: [] }
+    );
+  }, [projects]);
+
+  useEffect(() => {
+    getUsers()
+    .then((res) => setUsers(res.data.users))
+    .catch((err) => console.error(err));
+  }, []);
+
+  const sections = [
+    { key: "active", status: "active" },
+    { key: "archived", status: "archived" }
+  ];
+
   return (
     <>
-      <FilterComponent element={"project"}
-                       text={filters.projectText}
-                       onChange={(value) =>
-                           setFilters(prev => ({
-                               ...prev,
-                               projectText: value
-                           }))
-                       }
+      <ProjectFilterComponent text={filters.projectText}
+          users={users} selectedUserId={filters.createdById}
+          onChange={(value) =>
+            setFilters(prev => ({
+              ...prev,
+              projectText: value
+            }))
+          }
+          onUserSelect={(userId) =>
+            setFilters(prev => ({
+              ...prev,
+              createdById: userId
+            }))
+          }
       />
-        <div className={"all-projects"}>
-          <ProjectStatusComponent key={"unarchived"} status={"active"} length={activeProjects.length}>
-            {activeProjects.map(project => (
+      <div className={"all-projects"}>
+        {sections.map(section => (
+          <ProjectStatusComponent key={section.key}
+            status={section.status}
+            length={grouped[section.key].length}>
+              {grouped[section.key].map(project => (
                 <ProjectCardComponent key={project.id} project={project} />
               ))}
           </ProjectStatusComponent>
-          <ProjectStatusComponent key={"archived"} status={"archived"} length={inactiveProjects.length}>
-            {inactiveProjects.map(project => (
-              <ProjectCardComponent key={project.id} project={project} />
-            ))}
-          </ProjectStatusComponent>
-        </div>
+        ))}
+      </div>
 
       {message && (
         <p className={"message"}>
