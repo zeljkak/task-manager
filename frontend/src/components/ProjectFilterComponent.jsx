@@ -7,7 +7,7 @@ function ProjectFilterComponent({ text, users, selectedUserId, onChange, onUserS
             <div className={"created-by-container"}>
                 <button type="button"
                         className="created-by-filter">
-                    Created By
+                    Creator
                 </button>
                 <div className="created-by-options">
                     <button key={""} type="button"

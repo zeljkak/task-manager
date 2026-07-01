@@ -1,10 +1,11 @@
 import {useEffect, useState} from "react";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useOutletContext} from "react-router-dom";
 import TaskCardComponent from "../components/TaskCardComponent.jsx";
 import TaskStatusComponent from "../components/TaskStatusComponent.jsx";
 import TaskFilterComponent from "../components/TaskFilterComponent.jsx";
 import {getTaskStatuses} from "../services/taskStatusService.js";
 import {getTasks} from "../services/taskService.js";
+import {getUsers} from "../services/userService.js";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -13,12 +14,10 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const userId = localStorage.getItem("userId");
+  const userId = Number(localStorage.getItem("userId"));
+  const { resetMyTasksKey } = useOutletContext();
 
-  const [taskStatuses, setTaskStatuses] = useState([]);
-  const [tasks, setTasks] = useState([]);
-
-  const [filters, setFilters] = useState({
+  const getDefaultFilters = (userId) => ({
     text: "",
     assignedToId: userId,
     statusId: "",
@@ -30,7 +29,16 @@ export default function Home() {
     createdAfter: "",
     overdue: "",
     followedById: ""
-  });
+});
+
+  const [filters, setFilters] = useState(() => getDefaultFilters(userId));
+  const [taskStatuses, setTaskStatuses] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    setFilters(getDefaultFilters(userId));
+}, [resetMyTasksKey, userId]);
 
   async function loadTasks() {
     const data = await getTasks(filters);
@@ -47,15 +55,37 @@ export default function Home() {
       .catch((err) => console.error(err));
   }, []);
 
+  useEffect(() => {
+    getUsers()
+    .then((res) => setUsers(res.data.users))
+    .catch((err) => console.error(err));
+  }, []);
+
   return (
     <>
-      <TaskFilterComponent text={filters.text}
-                           onChange={(value) =>
-                             setFilters(prev => ({
-                               ...prev,
-                               text: value
-                             }))
-                           }
+      <TaskFilterComponent
+          text={filters.text}
+          onChange={(value) =>
+              setFilters(prev => ({
+                  ...prev,
+                  text: value
+              }))
+          }
+          users={users}
+          selectedFollowerId={filters.followedById}
+          selectedAssigneeId={filters.assignedToId}
+          onAssigneeSelect={(assigneeId) =>
+              setFilters(prev => ({
+                  ...prev,
+                  assignedToId: assigneeId
+              }))
+          }
+          onFollowerSelect={(followerId) =>
+              setFilters(prev =>({
+                  ...prev,
+                  followedById: followerId
+              }))
+          }
       />
       <div className={"all-tasks"}>
         {taskStatuses.map(taskStatus => {

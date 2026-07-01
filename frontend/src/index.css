@@ -113,14 +113,18 @@ a {
 .task-filter, .project-filter {
   display: flex;
   flex-direction: row;
-  gap: 10px;
+  gap: 5px;
 }
 
-.created-by-container {
+.created-by-container,
+.assigned-to-container,
+.followed-by-container {
   position: relative;
 }
 
-.created-by-filter, .created-by-option {
+.created-by-filter, .created-by-option,
+.assigned-to-filter, .assigned-to-option,
+.followed-by-filter, .followed-by-option {
   font-style: normal;
   font-weight: normal;
   color: #dee2e6;
@@ -128,7 +132,19 @@ a {
   border: 0;
 }
 
-.created-by-options {
+.created-by-filter,
+.assigned-to-filter,
+.followed-by-filter {
+  padding: 0 3px;
+}
+
+.text-filter {
+  margin-right: 3px;
+}
+
+.created-by-options,
+.assigned-to-options,
+.followed-by-options {
   position: absolute;
   top: 100%;
   left: 0;
@@ -150,16 +166,22 @@ a {
   pointer-events: none;
 }
 
-.created-by-container:hover .created-by-options {
+.created-by-container:hover .created-by-options,
+.assigned-to-container:hover .assigned-to-options,
+.followed-by-container:hover .followed-by-options {
   opacity: 1;
   pointer-events: auto;
 }
 
-.created-by-option {
+.created-by-option,
+.assigned-to-option,
+.followed-by-option {
   text-align: left;
 }
 
-.created-by-option.active {
+.created-by-option.active,
+.assigned-to-option.active,
+.followed-by-option.active {
   background-color: #868791;
   border-radius: 5px;
 }
@@ -307,4 +329,5 @@ input {
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 5px;
   padding: 2px 5px;
+  width: 150px;
 }

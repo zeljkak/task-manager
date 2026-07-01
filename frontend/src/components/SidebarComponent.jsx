@@ -6,7 +6,7 @@ import TasksIcon from "./icons/TasksIcon.jsx";
 import ProjectIcon from "./icons/ProjectIcon.jsx";
 import SettingsIcon from "./icons/SettingsIcon.jsx";
 
-function SidebarComponent({ isVisible, setIsVisible }) {
+function SidebarComponent({ isVisible, setIsVisible, onMyTasksClick }) {
 
     const toggleSidebar = () => {
         setIsVisible(prev => !prev);
@@ -25,7 +25,7 @@ function SidebarComponent({ isVisible, setIsVisible }) {
                 <InboxIcon size={24}/>
                 {isVisible && "Inbox"}
             </NavLink>
-            <NavLink to={"/"}>
+            <NavLink to={"/"} onClick={onMyTasksClick}>
                 <TasksIcon size={24}/>
                 {isVisible && "My Tasks"}
             </NavLink>
