@@ -1,0 +1,36 @@
+tags:
+  - Project
+
+description:
+  Retrieve basic projects list. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+
+security:
+  - BearerAuth: []
+
+responses:
+  200:
+    description: Projects retrieved successfully
+    schema:
+      type: object
+      properties:
+        projects:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 2
+              projectName:
+                type: string
+                example: Second project
+              projectDescription:
+                type: string
+                example: This project can be used as a client dashboard. All tasks relating to the specific client are connected to it.
+
+  401:
+    description: Unauthorized (missing or invalid token)
+  500:
+    description: Internal server error
+  503:
+    description: Service unavailable (database or email service down)

@@ -32,6 +32,11 @@ class ProjectService:
 
 
     @staticmethod
+    def get_active_projects():
+        return ProjectRepository.get_active_projects()
+
+
+    @staticmethod
     def get_projects(text=None, created_by_id=None, created_before=None, created_after=None):
         return ProjectRepository.get_projects(text, created_by_id, created_before, created_after)
 

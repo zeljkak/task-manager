@@ -12,3 +12,9 @@ export async function getProjects(filters = {}) {
   const response = await api.get(`/projects?${params.toString()}`);
   return response.data;
 };
+
+export const getProjectsList = () => {
+  return api.get(
+    `/projects/list`
+  );
+};

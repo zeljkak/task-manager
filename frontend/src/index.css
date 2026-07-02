@@ -118,13 +118,19 @@ a {
 
 .created-by-container,
 .assigned-to-container,
-.followed-by-container {
+.followed-by-container,
+.status-container,
+.priority-container,
+.project-container {
   position: relative;
 }
 
 .created-by-filter, .created-by-option,
 .assigned-to-filter, .assigned-to-option,
-.followed-by-filter, .followed-by-option {
+.followed-by-filter, .followed-by-option,
+.status-filter, .status-option,
+.priority-filter, .priority-option,
+.project-filter, .project-option {
   font-style: normal;
   font-weight: normal;
   color: #dee2e6;
@@ -134,7 +140,10 @@ a {
 
 .created-by-filter,
 .assigned-to-filter,
-.followed-by-filter {
+.followed-by-filter,
+.status-filter,
+.priority-filter,
+.project-filter {
   padding: 0 3px;
 }
 
@@ -144,7 +153,10 @@ a {
 
 .created-by-options,
 .assigned-to-options,
-.followed-by-options {
+.followed-by-options,
+.status-options,
+.priority-options,
+.project-options {
   position: absolute;
   top: 100%;
   left: 0;
@@ -168,20 +180,29 @@ a {
 
 .created-by-container:hover .created-by-options,
 .assigned-to-container:hover .assigned-to-options,
-.followed-by-container:hover .followed-by-options {
+.followed-by-container:hover .followed-by-options,
+.status-container:hover .status-options,
+.priority-container:hover .priority-options,
+.project-container:hover .project-options {
   opacity: 1;
   pointer-events: auto;
 }
 
 .created-by-option,
 .assigned-to-option,
-.followed-by-option {
+.followed-by-option,
+.status-option,
+.priority-option,
+.project-option {
   text-align: left;
 }
 
 .created-by-option.active,
 .assigned-to-option.active,
-.followed-by-option.active {
+.followed-by-option.active,
+.status-option.active,
+.priority-option.active,
+.project-option.active {
   background-color: #868791;
   border-radius: 5px;
 }

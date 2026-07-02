@@ -40,8 +40,10 @@ class TaskService:
 
 
     @staticmethod
-    def get_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, followed_by_id=None):
-        return TaskRepository.get_tasks(text, assigned_to_id, status_id, priority_id, project_id, due_before, due_after, created_before, created_after, overdue, followed_by_id)
+    def get_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, has_project=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, followed_by_id=None):
+        if has_project is True:
+            has_project = False
+        return TaskRepository.get_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before, due_after, created_before, created_after, overdue, followed_by_id)
 
 
     @staticmethod
@@ -55,8 +57,8 @@ class TaskService:
 
 
     @staticmethod
-    def get_deleted_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, followed_by_id=None):
-        return TaskRepository.get_deleted_tasks(text, assigned_to_id, status_id, priority_id, project_id, due_before, due_after, created_before, created_after, overdue, followed_by_id)
+    def get_deleted_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, has_project=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, followed_by_id=None):
+        return TaskRepository.get_deleted_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before, due_after, created_before, created_after, overdue, followed_by_id)
 
 
     @staticmethod

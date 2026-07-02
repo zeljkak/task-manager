@@ -6,6 +6,8 @@ import TaskFilterComponent from "../components/TaskFilterComponent.jsx";
 import {getTaskStatuses} from "../services/taskStatusService.js";
 import {getTasks} from "../services/taskService.js";
 import {getUsers} from "../services/userService.js";
+import {getProjectsList} from "../services/projectService.js";
+import {getPriorities} from "../services/priorityService.js";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -23,6 +25,7 @@ export default function Home() {
     statusId: "",
     priorityId: "",
     projectId: "",
+    hasProject: "",
     dueBefore: "",
     dueAfter: "",
     createdBefore: "",
@@ -35,6 +38,8 @@ export default function Home() {
   const [taskStatuses, setTaskStatuses] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [users, setUsers] = useState([]);
+  const [priorities, setPriorities] = useState([]);
+  const [projects, setProjects] = useState([]);
 
   useEffect(() => {
     setFilters(getDefaultFilters(userId));
@@ -52,6 +57,18 @@ export default function Home() {
   useEffect(() => {
     getTaskStatuses({})
       .then((res) => setTaskStatuses(res.data.taskStatuses))
+      .catch((err) => console.error(err));
+  }, []);
+
+  useEffect(() => {
+    getProjectsList({})
+      .then((res) => setProjects(res.data.projects))
+      .catch((err) => console.error(err));
+  }, []);
+
+  useEffect(() => {
+    getPriorities({})
+      .then((res) => setPriorities(res.data.priorities))
       .catch((err) => console.error(err));
   }, []);
 
@@ -84,6 +101,37 @@ export default function Home() {
               setFilters(prev =>({
                   ...prev,
                   followedById: followerId
+              }))
+          }
+          statuses={taskStatuses}
+          selectedStatusId={filters.statusId}
+          onStatusSelect={(statusId) =>
+              setFilters(prev => ({
+                  ...prev,
+                  statusId: statusId
+              }))
+          }
+          priorities={priorities}
+          selectedPriorityId={filters.priorityId}
+          onPrioritySelect={(priorityId) =>
+              setFilters(prev => ({
+                  ...prev,
+                  priorityId: priorityId
+              }))
+          }
+          projects={projects}
+          selectedProjectId={filters.projectId}
+          onProjectSelect={(projectId) =>
+              setFilters(prev => ({
+                  ...prev,
+                  projectId: projectId
+              }))
+          }
+          selectedHasProject={filters.hasProject}
+          onHasProjectSelect={(hasProject) =>
+              setFilters(prev => ({
+                  ...prev,
+                  hasProject: hasProject
               }))
           }
       />

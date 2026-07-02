@@ -3,7 +3,7 @@ from datetime import date, timedelta
 
 from backend.app.models import Task, User, task_relations
 from backend.app import constants
-from backend.app.exceptions.http_exceptions import ServiceUnavailableError
+from backend.app.exceptions.http_exceptions import ServiceUnavailableError, NotFoundError
 
 class TaskRepository:
     @staticmethod
@@ -17,7 +17,7 @@ class TaskRepository:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
-    def get_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, followed_by_id=None):
+    def get_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, has_project=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, followed_by_id=None):
         try:
             tasks = Task.query.filter_by(is_deleted=False)
 
@@ -38,6 +38,8 @@ class TaskRepository:
 
             if project_id is not None:
                 tasks = tasks.filter(Task.project_id == project_id)
+            elif has_project is not None:
+                tasks = tasks.filter(Task.project_id.is_(None))
 
             if due_before is not None:
                 tasks = tasks.filter(Task.due_date <= due_before)
@@ -77,7 +79,7 @@ class TaskRepository:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
-    def get_deleted_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, followed_by_id=None):
+    def get_deleted_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, has_project=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, followed_by_id=None):
         try:
             tasks = Task.query.filter_by(is_deleted=True)
 
@@ -98,6 +100,8 @@ class TaskRepository:
 
             if project_id is not None:
                 tasks = tasks.filter(Task.project_id == project_id)
+            elif has_project is not None:
+                tasks = tasks.filter(Task.project_id.is_(None))
 
             if due_before is not None:
                 tasks = tasks.filter(Task.due_date <= due_before)

@@ -12,7 +12,7 @@ def register_error_handlers(app):
     @app.errorhandler(HTTPException)
     def handle_http_exception(error):
         return jsonify({
-            "error": error.message
+            "error": str(error)
         }), error.status_code
 
     @app.errorhandler(MarshmallowValidationError)

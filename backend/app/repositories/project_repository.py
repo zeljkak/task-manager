@@ -26,6 +26,15 @@ class ProjectRepository:
 
 
     @staticmethod
+    def get_active_projects():
+        try:
+            projects = Project.query.filter_by(archived=False).all()
+            return projects
+        except Exception as e:
+            raise ServiceUnavailableError("Database unavailable") from e
+
+
+    @staticmethod
     def get_projects(text=None, created_by_id=None, created_before=None, created_after=None):
         try:
             projects = Project.query

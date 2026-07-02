@@ -3,6 +3,7 @@ from flasgger import swag_from
 import os
 
 from flask_jwt_extended import jwt_required, get_jwt_identity
+
 from backend.app.decorators.roles_required import roles_required
 
 from backend.app.utils.file_storage import save_file
@@ -12,6 +13,7 @@ from backend.app.services.project_service import ProjectService
 from backend.app.services.attachment_service import AttachmentService
 from backend.app.schemas.attachment_schema import AttachmentResponseSchema
 from backend.app.schemas.project_schema import ProjectSchema, ProjectResponseSchema
+from backend.app.schemas.summary_schema import ProjectSummarySchema
 
 from backend.app.extensions.limiter import limiter
 
@@ -35,6 +37,17 @@ def get_projects():
 
     return jsonify({
         "projects": ProjectResponseSchema(many=True).dump(projects)
+    }), 200
+
+@project_bp.route('/list', methods=['GET'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/project/projects_list.yml"))
+@jwt_required()
+
+def get_projects_list():
+    projects = ProjectService.get_projects()
+
+    return jsonify({
+        "projects": ProjectSummarySchema(many=True).dump(projects)
     }), 200
 
 @project_bp.route('/<int:projectId>', methods=['GET'])

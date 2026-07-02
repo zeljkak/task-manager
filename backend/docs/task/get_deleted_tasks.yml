@@ -38,6 +38,12 @@ parameters:
     type: integer
     example: 1
     description: ID of the project to filter by
+  - name: hasProject
+    in: query
+    required: false
+    type: boolean
+    example: false
+    description: If not none, returns tasks that aren't part of any project
   - name: dueBefore
     in: query
     required: false

@@ -31,6 +31,7 @@ def get_tasks():
     status_id = request.args.get("statusId", type=int)
     priority_id = request.args.get("priorityId", type=int)
     project_id = request.args.get("projectId", type=int)
+    has_project = request.args.get("hasProject", type=bool)
     due_before = parse_date(request.args.get("dueBefore"))
     due_after = parse_date(request.args.get("dueAfter"))
     created_before = parse_date(request.args.get("createdBefore"))
@@ -38,7 +39,7 @@ def get_tasks():
     overdue = parse_bool(request.args.get("overdue"))
     followed_by_id = request.args.get("followedById", type=int)
 
-    tasks = TaskService.get_tasks(text, assigned_to_id, status_id, priority_id, project_id, due_before, due_after, created_before, created_after, overdue, followed_by_id)
+    tasks = TaskService.get_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before, due_after, created_before, created_after, overdue, followed_by_id)
 
     return jsonify({
         "tasks": TaskResponseSchema(many=True).dump(tasks)
@@ -160,6 +161,7 @@ def get_deleted_tasks():
     status_id = request.args.get("statusId", type=int)
     priority_id = request.args.get("priorityId", type=int)
     project_id = request.args.get("projectId", type=int)
+    has_project = request.args.get("hasProject", type=bool)
     due_before = parse_date(request.args.get("dueBefore"))
     due_after = parse_date(request.args.get("dueAfter"))
     created_before = parse_date(request.args.get("createdBefore"))
@@ -167,7 +169,7 @@ def get_deleted_tasks():
     overdue = parse_bool(request.args.get("overdue"))
     followed_by_id = request.args.get("followedById", type=int)
 
-    tasks = TaskService.get_deleted_tasks(text, assigned_to_id, status_id, priority_id, project_id, due_before,
+    tasks = TaskService.get_deleted_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before,
                                   due_after, created_before, created_after, overdue, followed_by_id)
 
     return jsonify({
