@@ -49,7 +49,7 @@ class ProjectRepository:
                 projects = projects.filter(Project.created_by_id == created_by_id)
 
             if created_before is not None:
-                projects = projects.filter(Project.created_at <= created_before + timedelta(days=1))
+                projects = projects.filter(Project.created_at <= created_before)
 
             if created_after is not None:
                 projects = projects.filter(Project.created_at >= created_after)

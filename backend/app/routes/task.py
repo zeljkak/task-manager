@@ -37,9 +37,10 @@ def get_tasks():
     created_before = parse_date(request.args.get("createdBefore"))
     created_after = parse_date(request.args.get("createdAfter"))
     overdue = parse_bool(request.args.get("overdue"))
+    has_due_date = request.args.get("hasDueDate", type=bool)
     followed_by_id = request.args.get("followedById", type=int)
 
-    tasks = TaskService.get_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before, due_after, created_before, created_after, overdue, followed_by_id)
+    tasks = TaskService.get_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before, due_after, created_before, created_after, overdue, has_due_date, followed_by_id)
 
     return jsonify({
         "tasks": TaskResponseSchema(many=True).dump(tasks)
@@ -167,10 +168,11 @@ def get_deleted_tasks():
     created_before = parse_date(request.args.get("createdBefore"))
     created_after = parse_date(request.args.get("createdAfter"))
     overdue = parse_bool(request.args.get("overdue"))
+    has_due_date = request.args.get("hasDueDate", type=bool)
     followed_by_id = request.args.get("followedById", type=int)
 
     tasks = TaskService.get_deleted_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before,
-                                  due_after, created_before, created_after, overdue, followed_by_id)
+                                  due_after, created_before, created_after, overdue, has_due_date, followed_by_id)
 
     return jsonify({
         "tasks": TaskResponseSchema(many=True).dump(tasks)

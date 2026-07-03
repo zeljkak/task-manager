@@ -49,28 +49,28 @@ parameters:
     required: false
     type: string
     format: date
-    example: "2026-12-27"
+    example: "2026-06-27T22:00:00.000Z"
     description: Due date of the task to filter by
   - name: dueAfter
     in: query
     required: false
     type: string
     format: date
-    example: "2026-12-27"
+    example: "2026-06-27T22:00:00.000Z"
     description: Due date of the task to filter by
   - name: createdBefore
     in: query
     required: false
     type: string
     format: date
-    example: "2026-12-27"
+    example: "2026-06-27T22:00:00.000Z"
     description: Creation date of the task to filter by
   - name: createdAfter
     in: query
     required: false
     type: string
     format: date
-    example: "2026-12-27"
+    example: "2026-06-27T22:00:00.000Z"
     description: Creation date of the task to filter by
   - name: overdue
     in: query
@@ -79,6 +79,12 @@ parameters:
     example: true
     default: false
     description: If true, returns only tasks with due date in the past and not completed
+  - name: hasDueDate
+    in: query
+    required: false
+    type: boolean
+    example: false
+    description: If not none, returns tasks that don't have a due date
   - name: followedById
     in: query
     required: false

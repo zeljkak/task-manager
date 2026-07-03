@@ -79,6 +79,12 @@ parameters:
     example: true
     default: false
     description: If true, returns only tasks with due date in the past and not completed
+  - name: hasDueDate
+    in: query
+    required: false
+    type: boolean
+    example: false
+    description: If not none, returns tasks that don't have a due date
   - name: followedById
     in: query
     required: false

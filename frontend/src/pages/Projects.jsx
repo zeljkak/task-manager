@@ -24,7 +24,16 @@ export default function Projects() {
   });
 
   async function loadProjects() {
-    const data = await getProjects(filters);
+    const apiFilters = { ...filters };
+
+    if (apiFilters.createdBefore && !isNaN(new Date(apiFilters.createdBefore))) {
+      apiFilters.createdBefore = new Date(apiFilters.createdBefore).toISOString();
+    }
+    if (apiFilters.createdAfter && !isNaN(new Date(apiFilters.createdAfter))) {
+      apiFilters.createdAfter = new Date(apiFilters.createdAfter).toISOString();
+    }
+
+    const data = await getProjects(apiFilters);
     setProjects(data.projects);
   }
 
@@ -68,6 +77,20 @@ export default function Projects() {
             setFilters(prev => ({
               ...prev,
               createdById: userId
+            }))
+          }
+          selectedCreatedBefore={filters.createdBefore}
+          onCreatedBeforeSelect={(createdBefore) =>
+            setFilters(prev => ({
+                ...prev,
+                createdBefore: createdBefore
+            }))
+          }
+          selectedCreatedAfter={filters.createdAfter}
+          onCreatedAfterSelect={(createdAfter) =>
+            setFilters(prev => ({
+                ...prev,
+                createdAfter: createdAfter
             }))
           }
       />

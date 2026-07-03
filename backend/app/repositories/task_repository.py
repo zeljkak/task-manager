@@ -17,7 +17,7 @@ class TaskRepository:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
-    def get_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, has_project=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, followed_by_id=None):
+    def get_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, has_project=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, has_due_date=None, followed_by_id=None):
         try:
             tasks = Task.query.filter_by(is_deleted=False)
 
@@ -59,6 +59,8 @@ class TaskRepository:
                     Task.due_date < date.today(),
                     Task.status_id != constants.DONE_STATUS_ID
                 )
+            elif due_after is None and due_before is None and has_due_date is not None:
+                tasks = tasks.filter(Task.due_date.is_(None))
 
             if followed_by_id is not None:
                 tasks = tasks.join(Task.followers).filter(User.id == followed_by_id)
@@ -79,7 +81,7 @@ class TaskRepository:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
-    def get_deleted_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, has_project=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, followed_by_id=None):
+    def get_deleted_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, has_project=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, has_due_date=None, followed_by_id=None):
         try:
             tasks = Task.query.filter_by(is_deleted=True)
 
@@ -121,6 +123,8 @@ class TaskRepository:
                     Task.due_date < date.today(),
                     Task.status_id != constants.DONE_STATUS_ID
                 )
+            elif due_after is None and due_before is None and has_due_date is not None:
+                tasks = tasks.filter(Task.due_date.is_(None))
 
             if followed_by_id is not None:
                 tasks = tasks.join(Task.followers).filter(User.id == followed_by_id)

@@ -31,6 +31,7 @@ export default function Home() {
     createdBefore: "",
     createdAfter: "",
     overdue: "",
+    hasDueDate: "",
     followedById: ""
 });
 
@@ -46,7 +47,21 @@ export default function Home() {
 }, [resetMyTasksKey, userId]);
 
   async function loadTasks() {
-    const data = await getTasks(filters);
+    const apiFilters = { ...filters };
+    if (apiFilters.createdBefore && !isNaN(new Date(apiFilters.createdBefore))) {
+        apiFilters.createdBefore = new Date(apiFilters.createdBefore).toISOString();
+    }
+    if (apiFilters.createdAfter && !isNaN(new Date(apiFilters.createdAfter))) {
+        apiFilters.createdAfter = new Date(apiFilters.createdAfter).toISOString();
+    }
+    if (apiFilters.dueBefore && !isNaN(new Date(apiFilters.dueBefore))) {
+        apiFilters.dueBefore = new Date(apiFilters.dueBefore).toISOString();
+    }
+    if (apiFilters.dueAfter && !isNaN(new Date(apiFilters.dueAfter))) {
+        apiFilters.dueAfter = new Date(apiFilters.dueAfter).toISOString();
+    }
+
+    const data = await getTasks(apiFilters);
     setTasks(data.tasks);
   }
 
@@ -134,6 +149,48 @@ export default function Home() {
                   hasProject: hasProject
               }))
           }
+          selectedCreatedBefore={filters.createdBefore}
+          onCreatedBeforeSelect={(createdBefore) =>
+            setFilters(prev => ({
+                ...prev,
+                createdBefore: createdBefore
+            }))
+          }
+          selectedCreatedAfter={filters.createdAfter}
+          onCreatedAfterSelect={(createdAfter) =>
+            setFilters(prev => ({
+                ...prev,
+                createdAfter: createdAfter
+            }))
+          }
+          selectedDueBefore={filters.dueBefore}
+          onDueBeforeSelect={(dueBefore) =>
+            setFilters(prev => ({
+                ...prev,
+                dueBefore: dueBefore
+            }))
+          }
+          selectedDueAfter={filters.dueAfter}
+          onDueAfterSelect={(dueAfter) =>
+            setFilters(prev => ({
+                ...prev,
+                dueAfter: dueAfter
+            }))
+          }
+          selectedOverdue={filters.overdue}
+          onOverdueSelect={(overdue) =>
+              setFilters(prev => ({
+                  ...prev,
+                  overdue: overdue
+              }))
+          }
+          selectedHasDueDate={filters.hasDueDate}
+          onHasDueDateSelect={(hasDueDate) =>
+              setFilters(prev => ({
+                  ...prev,
+                  hasDueDate: hasDueDate
+              }))
+          }
       />
       <div className={"all-tasks"}>
         {taskStatuses.map(taskStatus => {
@@ -145,6 +202,7 @@ export default function Home() {
             <TaskStatusComponent
               key={taskStatus.id}
               status={taskStatus}
+              filter={filters.statusId}
               length={filteredTasks.length}
             >
               {filteredTasks.map(task => (

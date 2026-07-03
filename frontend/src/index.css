@@ -102,7 +102,7 @@ a {
 #content {
   display: flex;
   flex-direction: column;
-  overflow-x: auto;
+  overflow: hidden;
   padding-top: 15px;
   padding-left: 15px;
   width: inherit;
@@ -121,7 +121,9 @@ a {
 .followed-by-container,
 .status-container,
 .priority-container,
-.project-container {
+.project-container,
+.created-date-container,
+.due-date-container {
   position: relative;
 }
 
@@ -130,7 +132,10 @@ a {
 .followed-by-filter, .followed-by-option,
 .status-filter, .status-option,
 .priority-filter, .priority-option,
-.project-filter, .project-option {
+.project-filter, .project-option,
+.created-date-filter, .created-date-option,
+.due-date-filter, .due-date-option,
+.overdue-option {
   font-style: normal;
   font-weight: normal;
   color: #dee2e6;
@@ -143,12 +148,19 @@ a {
 .followed-by-filter,
 .status-filter,
 .priority-filter,
-.project-filter {
+.project-filter,
+.created-date-filter,
+.due-date-filter {
   padding: 0 3px;
 }
 
 .text-filter {
   margin-right: 3px;
+  background-color: #212529;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+  padding: 2px 5px;
+  width: 150px;
 }
 
 .created-by-options,
@@ -156,7 +168,9 @@ a {
 .followed-by-options,
 .status-options,
 .priority-options,
-.project-options {
+.project-options,
+.created-date-options,
+.due-date-options {
   position: absolute;
   top: 100%;
   left: 0;
@@ -178,12 +192,66 @@ a {
   pointer-events: none;
 }
 
+.created-date-options,
+.due-date-options,
+.date-grouped {
+  width: 170px;
+}
+
+.date-grouped {
+  display: grid;
+  column-gap: 5px;
+  grid-template-columns: 50px 80px;
+  padding: 0 6px;
+}
+
+#created-before, #created-after,
+#due-before, #due-after {
+  width: 96px;
+}
+
+/* REACT DATE PICKER */
+/* Background of the month picker */
+.react-datepicker__header,
+.react-datepicker__header--time,
+.react-datepicker__current-month {
+  background-color: #212529 !important;
+}
+
+/* Visibility of the arrow */
+.react-datepicker__triangle,
+.react-datepicker__triangle::before,
+.react-datepicker__triangle::after {
+  display: none !important;
+}
+
+/* Background of the day picker */
+.react-datepicker__month-container {
+  background-color: rgb(222, 226, 230);
+}
+
+/* Color of the month text */
+.react-datepicker__current-month {
+  color: #dee2e6 !important;
+}
+
+/* Placement of the datepicker below the input field */
+.react-datepicker-popper {
+  margin-top: -4px !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 50% !important;
+}
+
+
 .created-by-container:hover .created-by-options,
 .assigned-to-container:hover .assigned-to-options,
 .followed-by-container:hover .followed-by-options,
 .status-container:hover .status-options,
 .priority-container:hover .priority-options,
-.project-container:hover .project-options {
+.project-container:hover .project-options,
+.created-date-container:hover .created-date-options,
+.due-date-container:hover .due-date-options {
   opacity: 1;
   pointer-events: auto;
 }
@@ -193,7 +261,10 @@ a {
 .followed-by-option,
 .status-option,
 .priority-option,
-.project-option {
+.project-option,
+.created-date-option,
+.due-date-option,
+.overdue-option {
   text-align: left;
 }
 
@@ -202,7 +273,8 @@ a {
 .followed-by-option.active,
 .status-option.active,
 .priority-option.active,
-.project-option.active {
+.project-option.active,
+.overdue-option.active {
   background-color: #868791;
   border-radius: 5px;
 }
@@ -226,6 +298,10 @@ a {
   column-gap: 15px;
   grid-template-columns: repeat(2, 1fr);
   overflow-x: auto;
+}
+
+.hidden {
+    display: none;
 }
 
 .fixed-status {
@@ -343,12 +419,4 @@ svg {
 
 hr {
   width: 40%;
-}
-
-input {
-  background-color: #212529;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 5px;
-  padding: 2px 5px;
-  width: 150px;
 }

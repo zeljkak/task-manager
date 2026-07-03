@@ -1,4 +1,21 @@
-function TaskFilterComponent({ text, users, statuses, priorities, projects, selectedAssigneeId, selectedFollowerId, selectedStatusId, selectedPriorityId, selectedProjectId, selectedHasProject, onChange, onAssigneeSelect, onFollowerSelect, onStatusSelect, onPrioritySelect, onProjectSelect, onHasProjectSelect }) {
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+
+function TaskFilterComponent({ text, users, statuses, priorities, projects,
+        selectedCreatedBefore, selectedCreatedAfter, selectedDueBefore,
+        selectedDueAfter, selectedOverdue, selectedAssigneeId,
+        selectedFollowerId, selectedStatusId, selectedPriorityId,
+        selectedProjectId, selectedHasProject, onChange,
+        onAssigneeSelect, onFollowerSelect, onStatusSelect, onPrioritySelect,
+        onProjectSelect, onHasProjectSelect, onCreatedBeforeSelect,
+        onCreatedAfterSelect, onDueBeforeSelect, onDueAfterSelect, onOverdueSelect,
+        selectedHasDueDate, onHasDueDateSelect }) {
+
+    const selectedBeforeDate = selectedCreatedBefore ? new Date(selectedCreatedBefore) : null;
+    const selectedAfterDate = selectedCreatedAfter ? new Date(selectedCreatedAfter) : null;
+    const selectedBeforeDue = selectedDueBefore ? new Date(selectedDueBefore) : null;
+    const selectedAfterDue = selectedDueAfter ? new Date(selectedDueAfter) : null;
+
     return (
         <div className= {"task-filter"}>
             <input className={"text-filter"} name={"text-filter"}
@@ -111,6 +128,83 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects, sele
                             {project.projectName}
                         </button>
                     ))}
+                </div>
+            </div>
+            <div className={"created-date-container"}>
+                <button type="button"
+                    className="created-date-filter">
+                Created
+                </button>
+                <div className="created-date-options">
+                    <button key={""} type="button"
+                            className={"created-date-option no-option"}
+                            onClick={() => [onCreatedBeforeSelect(""), onCreatedAfterSelect("")]}>Clear
+                    </button>
+                    <div className={"date-grouped"}>
+                        <label htmlFor={"created-before"}>Before</label>
+                        <DatePicker className={"created-date-option"}
+                            id={"created-before"}
+                            selected={selectedBeforeDate && !isNaN(selectedBeforeDate) ? selectedBeforeDate : null}
+                            onChange={(date) => onCreatedBeforeSelect(date)}
+                            dateFormat="yyyy-MM-dd"
+                            placeholderText="yyyy-MM-dd"
+                        />
+                    </div>
+                    <div className={"date-grouped"}>
+                        <label htmlFor={"created-after"}>After</label>
+                        <DatePicker className={"created-date-option"}
+                            id={"created-after"}
+                            selected={selectedAfterDate && !isNaN(selectedAfterDate) ? selectedAfterDate : null}
+                            onChange={(date) => onCreatedAfterSelect(date)}
+                            dateFormat="yyyy-MM-dd"
+                            placeholderText="yyyy-MM-dd"
+                        />
+                    </div>
+                </div>
+            </div>
+            <div className={"due-date-container"}>
+                <button type="button"
+                    className="due-date-filter">
+                Due
+                </button>
+                <div className="due-date-options">
+                    <button key={""} type="button"
+                            className={"due-date-option no-option"}
+                            onClick={() => [onDueBeforeSelect(""), onDueAfterSelect(""), onOverdueSelect(""), onHasDueDateSelect("")]}>Clear
+                    </button>
+                    <button key={"overdue"} type="button"
+                            className={selectedOverdue === true
+                                ? "overdue-option active"
+                                : "overdue-option"}
+                            onClick={() => [onOverdueSelect(true), onHasDueDateSelect("")]}>Overdue
+                    </button>
+                    <button key={null} type="button"
+                            className={selectedHasDueDate === false
+                                ? "overdue-option active"
+                                : "overdue-option"}
+                            onClick={() =>
+                            { onDueBeforeSelect(""); onDueAfterSelect(""); onOverdueSelect(""); onHasDueDateSelect(false); }}>No due date
+                    </button>
+                    <div className={"date-grouped"}>
+                        <label htmlFor={"bue-before"}>Before</label>
+                        <DatePicker className={"due-date-option"}
+                            id={"due-before"}
+                            selected={selectedBeforeDue && !isNaN(selectedBeforeDue) ? selectedBeforeDue : null}
+                            onChange={(date) => [onDueBeforeSelect(date), onHasDueDateSelect("")]}
+                            dateFormat="yyyy-MM-dd"
+                            placeholderText="yyyy-MM-dd"
+                        />
+                    </div>
+                    <div className={"date-grouped"}>
+                        <label htmlFor={"due-after"}>After</label>
+                        <DatePicker className={"due-date-option"}
+                            id={"due-after"}
+                            selected={selectedDueAfter && !isNaN(selectedDueAfter) ? selectedDueAfter : null}
+                            onChange={(date) => [onDueAfterSelect(date), onHasDueDateSelect("")]}
+                            dateFormat="yyyy-MM-dd"
+                            placeholderText="yyyy-MM-dd"
+                        />
+                    </div>
                 </div>
             </div>
         </div>

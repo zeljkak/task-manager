@@ -1,7 +1,6 @@
 from datetime import datetime
 from marshmallow import ValidationError as MarshmallowValidationError
 
-
 def get_changed_fields(old_obj, new_obj, fields):
 
     changes = []
@@ -32,10 +31,15 @@ def parse_date(value):
         return None
 
     try:
-        return datetime.strptime(value, "%Y-%m-%d").date()
-    except ValueError:
+        if isinstance(value, str):
+            clean_value = value.replace('Z', '+00:00')
+        else:
+            clean_value = value
+        return datetime.fromisoformat(clean_value)
+
+    except (ValueError, TypeError):
         raise MarshmallowValidationError(
-            {"date": ["Invalid date format. Expected YYYY-MM-DD"]}
+            {"date": ["Invalid date format. Expected ISO 8601 (e.g., YYYY-MM-DDTHH:mm:ss.sssZ)"]}
         )
 
 def parse_bool(value):

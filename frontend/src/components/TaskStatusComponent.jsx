@@ -1,8 +1,10 @@
 import StatusIcon from "./icons/StatusIcon.jsx";
 
-function TaskStatusComponent({ status, length, children }) {
+function TaskStatusComponent({ status, filter, length, children }) {
+    const hidden = filter && filter !== status.id;
+
     return (
-        <div className={"task-status"} id={status.status.replace("_", "-")}>
+        <div className={`task-status ${hidden ? "hidden" : ""}`} id={status.status.replace("_", "-")}>
             <div className={"fixed-status"}>
                 <h4>
                     <StatusIcon status={status.status} size={26} />
