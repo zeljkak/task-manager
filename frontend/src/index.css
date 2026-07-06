@@ -1,30 +1,4 @@
 :root {
-/*  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 16px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;*/
-
   margin: 0;
   overflow: hidden;
 
@@ -61,7 +35,6 @@ body {
 }
 
 #root {
-  /*width: 1126px;*/
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
@@ -116,6 +89,7 @@ a {
   gap: 5px;
 }
 
+.filter-button-container,
 .created-by-container,
 .assigned-to-container,
 .followed-by-container,
@@ -127,6 +101,7 @@ a {
   position: relative;
 }
 
+.filter-button,
 .created-by-filter, .created-by-option,
 .assigned-to-filter, .assigned-to-option,
 .followed-by-filter, .followed-by-option,
@@ -143,6 +118,7 @@ a {
   border: 0;
 }
 
+.filter-button,
 .created-by-filter,
 .assigned-to-filter,
 .followed-by-filter,
@@ -151,7 +127,7 @@ a {
 .project-filter,
 .created-date-filter,
 .due-date-filter {
-  padding: 0 3px;
+  padding: 2px 3px 0 3px;
 }
 
 .text-filter {
@@ -163,6 +139,7 @@ a {
   width: 150px;
 }
 
+.filter-options,
 .created-by-options,
 .assigned-to-options,
 .followed-by-options,
@@ -172,9 +149,6 @@ a {
 .created-date-options,
 .due-date-options {
   position: absolute;
-  top: 100%;
-  left: 0;
-
   width: min-content;
   white-space: nowrap;
 
@@ -192,17 +166,69 @@ a {
   pointer-events: none;
 }
 
-.created-date-options,
-.due-date-options,
-.date-grouped {
-  width: 170px;
+.filter-options {
+  top: 100%;
+  left: 0;
 }
 
+.created-by-options,
+.assigned-to-options,
+.followed-by-options,
+.status-options,
+.priority-options,
+.project-options,
+.created-date-options,
+.due-date-options {
+  left: 100%;
+  top: 0;
+}
+
+.created-date-options,
+.due-date-options {
+  width: 175px;
+}
+
+/* CREATED DATE AND DUE DATE INPUT FORMATTING */
 .date-grouped {
   display: grid;
-  column-gap: 5px;
+  column-gap: 3px;
   grid-template-columns: 50px 80px;
   padding: 0 6px;
+  align-items: center;
+  width: 165px;
+}
+.wheel-interceptor-wrapper {
+  width: min-content;
+  background: #1a1d20;
+  border-radius: 6px;
+  border: 1px solid #495057;
+  padding: 2px;
+  overflow: hidden;
+  height: 26px !important;
+  display: flex;
+  align-items: center;
+}
+.date-grouped [class*="rmp-container"] {
+  height: 26px !important;
+  background-color: transparent !important;
+}
+.date-grouped [class*="rmp-picker-item"] {
+  color: transparent !important;
+  font-size: 13px;
+  height: 26px !important;
+  line-height: 26px !important;
+  text-align: center;
+}
+.date-grouped [class*="rmp-column"] {
+  height: 26px !important;
+  margin-top: 0 !important;
+}
+.date-grouped [class*="rmp-node"] {
+  margin-top: -4px !important;
+}
+.date-grouped [class*="rmp-picker-item-selected"] {
+  color: #dee2e6 !important;
+  font-weight: 600;
 }
 
 #created-before, #created-after,
@@ -210,48 +236,15 @@ a {
   width: 96px;
 }
 
-/* REACT DATE PICKER */
-/* Background of the month picker */
-.react-datepicker__header,
-.react-datepicker__header--time,
-.react-datepicker__current-month {
-  background-color: #212529 !important;
-}
-
-/* Visibility of the arrow */
-.react-datepicker__triangle,
-.react-datepicker__triangle::before,
-.react-datepicker__triangle::after {
-  display: none !important;
-}
-
-/* Background of the day picker */
-.react-datepicker__month-container {
-  background-color: rgb(222, 226, 230);
-}
-
-/* Color of the month text */
-.react-datepicker__current-month {
-  color: #dee2e6 !important;
-}
-
-/* Placement of the datepicker below the input field */
-.react-datepicker-popper {
-  margin-top: -4px !important;
-  position: absolute !important;
-  top: 0 !important;
-  left: 50% !important;
-}
-
-
-.created-by-container:hover .created-by-options,
-.assigned-to-container:hover .assigned-to-options,
-.followed-by-container:hover .followed-by-options,
-.status-container:hover .status-options,
-.priority-container:hover .priority-options,
-.project-container:hover .project-options,
-.created-date-container:hover .created-date-options,
-.due-date-container:hover .due-date-options {
+.filter-button-container.open > .filter-options,
+.created-by-container.open > .created-by-options,
+.assigned-to-container.open > .assigned-to-options,
+.followed-by-container.open > .followed-by-options,
+.status-container.open > .status-options,
+.priority-container.open > .priority-options,
+.project-container.open > .project-options,
+.created-date-container.open > .created-date-options,
+.due-date-container.open > .due-date-options {
   opacity: 1;
   pointer-events: auto;
 }
@@ -296,7 +289,7 @@ a {
 
 .all-projects {
   column-gap: 15px;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   overflow-x: auto;
 }
 
@@ -347,7 +340,9 @@ a {
   text-align: start;
 }
 
-.task-priority, .task-assignee, .task-due-date, .task-project, .task-estimated-hours {
+.task-priority, .task-assignee,
+.task-due-date, .task-project,
+.task-estimated-hours {
   display: inline-block;
 }
 
@@ -419,4 +414,75 @@ svg {
 
 hr {
   width: 40%;
+}
+
+
+@media (max-width: 500px) {
+  #sidebar {
+    width: inherit;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 62px;
+    padding-bottom: 0;
+    padding-top: 5px;
+  }
+
+  #sidebar > button {
+    display: none;
+  }
+
+  #sidebar > a {
+    padding-bottom: 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  #content {
+    flex: 1;
+    padding-bottom: 62px;
+  }
+
+  .all-tasks, .all-projects {
+    display: grid;
+    align-items: stretch;
+    grid-template-columns: none;
+    grid-template-rows: repeat(5, 1fr);
+    overflow-y: scroll;
+    overflow-x: hidden;
+  }
+
+  .task-status, .project-status {
+    padding-bottom: 10px;
+  }
+
+  .task-status > br, .project-status > br {
+    display: none;
+  }
+
+  hr {
+    width: 80%;
+  }
+}
+
+@media (min-width: 501px) and (max-width: 700px) {
+  .all-projects {
+    display: grid;
+    align-items: stretch;
+    grid-template-columns: none;
+    grid-template-rows: repeat(5, 1fr);
+    overflow-y: scroll;
+    overflow-x: hidden;
+  }
+
+  .project-status {
+    padding-bottom: 10px;
+  }
+
+  .project-status > br {
+    display: none;
+  }
 }

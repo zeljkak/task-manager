@@ -6,36 +6,39 @@ import TasksIcon from "./icons/TasksIcon.jsx";
 import ProjectIcon from "./icons/ProjectIcon.jsx";
 import SettingsIcon from "./icons/SettingsIcon.jsx";
 
-function SidebarComponent({ isVisible, setIsVisible, onMyTasksClick }) {
+function SidebarComponent({ isVisible, setIsVisible, isMobile, onMyTasksClick }) {
 
     const toggleSidebar = () => {
         setIsVisible(prev => !prev);
     };
+    const iconSize = isMobile ? 34 : 24;
 
     return (
         <div id={"sidebar"} className={isVisible ? "expanded" : "collapsed"}>
-            <button onClick={toggleSidebar}>
-                <ThemeIcon state={isVisible} size={24}/>
-            </button>
+            {!isMobile && (
+                <button onClick={toggleSidebar}>
+                    <ThemeIcon state={isVisible} size={iconSize} />
+                </button>
+            )}
             <NavLink to={"/profile"}>
-                <UserIcon size={24}/>
-                {isVisible && "Profile"}
+                <UserIcon size={iconSize}/>
+                {!isMobile && isVisible && "Profile"}
             </NavLink>
             <NavLink to={"/inbox"}>
-                <InboxIcon size={24}/>
-                {isVisible && "Inbox"}
+                <InboxIcon size={iconSize}/>
+                {!isMobile && isVisible && "Inbox"}
             </NavLink>
             <NavLink to={"/"} onClick={onMyTasksClick}>
-                <TasksIcon size={24}/>
-                {isVisible && "My Tasks"}
+                <TasksIcon size={iconSize}/>
+                {!isMobile && isVisible && "My Tasks"}
             </NavLink>
             <NavLink to={"/projects"}>
-                <ProjectIcon size={24}/>
-                {isVisible && "Projects"}
+                <ProjectIcon size={iconSize}/>
+                {!isMobile && isVisible && "Projects"}
             </NavLink>
             <NavLink to={"/settings"}>
-                <SettingsIcon size={24}/>
-                {isVisible && "Settings"}
+                <SettingsIcon size={iconSize}/>
+                {!isMobile && isVisible && "Settings"}
             </NavLink>
         </div>
     );
