@@ -39,7 +39,7 @@ export default function Layout() {
         />
 
         <div id="content">
-            <Outlet context={{ resetMyTasksKey }}/>
+            <Outlet context={{ resetMyTasksKey, isMobile }}/>
         </div></>
     );
 }

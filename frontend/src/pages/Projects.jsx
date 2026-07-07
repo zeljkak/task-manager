@@ -1,5 +1,5 @@
 import {useEffect, useState, useMemo} from "react";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useOutletContext} from "react-router-dom";
 import ProjectCardComponent from "../components/ProjectCardComponent.jsx";
 import ProjectStatusComponent from "../components/ProjectStatusComponent.jsx";
 import ProjectFilterComponent from "../components/ProjectFilterComponent.jsx";
@@ -15,6 +15,8 @@ export default function Projects() {
 
   const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
+
+  const { isMobile } = useOutletContext();
 
   const [filters, setFilters] = useState({
     projectText: "",
@@ -65,7 +67,7 @@ export default function Projects() {
 
   return (
     <>
-      <ProjectFilterComponent text={filters.projectText}
+      <ProjectFilterComponent isMobile={isMobile} text={filters.projectText}
           users={users} selectedUserId={filters.createdById}
           onChange={(value) =>
             setFilters(prev => ({

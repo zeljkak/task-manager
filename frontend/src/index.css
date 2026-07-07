@@ -83,13 +83,14 @@ a {
   height: 100vh;
 }
 
-.task-filter, .project-filter {
+.tasks-filter, .projects-filter {
   display: flex;
   flex-direction: row;
   gap: 5px;
 }
 
 .filter-button-container,
+.clear-all-container,
 .created-by-container,
 .assigned-to-container,
 .followed-by-container,
@@ -101,7 +102,7 @@ a {
   position: relative;
 }
 
-.filter-button,
+.filter-button, .clear-filter,
 .created-by-filter, .created-by-option,
 .assigned-to-filter, .assigned-to-option,
 .followed-by-filter, .followed-by-option,
@@ -119,6 +120,7 @@ a {
 }
 
 .filter-button,
+.clear-filter,
 .created-by-filter,
 .assigned-to-filter,
 .followed-by-filter,
@@ -465,6 +467,107 @@ hr {
 
   hr {
     width: 80%;
+  }
+
+  .tasks-filter > .filter-button-container > button,
+  .projects-filter > .filter-button-container > button,
+  .clear-filter {
+    font-size: 20px;
+    padding-right: 20px;
+  }
+
+  .tasks-filter > input,
+  .projects-filter > input {
+    scale: 1.1;
+  }
+
+  .filter-options,
+  .created-by-options,
+  .assigned-to-options,
+  .followed-by-options,
+  .status-options,
+  .priority-options,
+  .project-options,
+  .created-date-options,
+  .due-date-options {
+    position: fixed;
+    top: 45px !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 65px !important; /*stops overlap with sidebar*/
+    margin: auto;
+
+    width: 100% !important;
+    max-width: 320px;
+    height: fit-content !important;
+    max-height: 50vh;
+    overflow-y: auto;
+
+    padding: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    border-color: #555;
+  }
+
+  .filter-options {
+    box-shadow:
+            0 10px 25px rgba(0, 0, 0, 0.5),
+            0 0 0 100vmax rgba(0, 0, 0, 0.6);
+  }
+
+  .filter-options > div {
+    align-self: center;
+  }
+
+  .filter-options > div > button {
+    padding: 6px;
+  }
+
+  .created-by-option,
+  .assigned-to-option,
+  .followed-by-option,
+  .status-option,
+  .priority-option,
+  .project-option,
+  .overdue-option,
+  .date-grouped {
+    grid-column: 2;
+    font-size: 16px;
+    width: 100% !important;
+    text-align: left;
+    padding: 6px;
+  }
+
+  .assigned-to-options,
+  .followed-by-options,
+  .created-by-options,
+  .status-options,
+  .priority-options,
+  .project-options,
+  .created-date-options,
+  .due-date-options {
+    display: grid !important;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    align-content: start !important;
+    padding: 12px !important;
+    gap: 2px 10px;
+  }
+
+  .submenu-back-button {
+    grid-column: 1;
+    background: transparent;
+    border: none;
+    padding: 5px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    width: max-content;
+    line-height: 1;
+    margin-bottom: -17px;
+  }
+
+  .submenu-back-button > svg {
+    margin: 0 !important;
   }
 }
 

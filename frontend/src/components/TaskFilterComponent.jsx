@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import DatePickerComponent from "./DatePickerComponent.jsx";
+import BackIcon from "./icons/BackIcon.jsx";
 
 function TaskFilterComponent({ text, users, statuses, priorities, projects,
         selectedCreatedBefore, selectedCreatedAfter, selectedDueBefore,
@@ -9,7 +10,7 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
         onAssigneeSelect, onFollowerSelect, onStatusSelect, onPrioritySelect,
         onProjectSelect, onHasProjectSelect, onCreatedBeforeSelect,
         onCreatedAfterSelect, onDueBeforeSelect, onDueAfterSelect, onOverdueSelect,
-        selectedHasDueDate, onHasDueDateSelect }) {
+        selectedHasDueDate, onHasDueDateSelect, isMobile }) {
 
     const [isMainOpen, setIsMainOpen] = useState(false);
     const [activeSubMenu, setActiveSubMenu] = useState(null);
@@ -20,6 +21,9 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
     const selectedAfterDate = selectedCreatedAfter ? new Date(selectedCreatedAfter) : null;
     const selectedBeforeDue = selectedDueBefore ? new Date(selectedDueBefore) : null;
     const selectedAfterDue = selectedDueAfter ? new Date(selectedDueAfter) : null;
+
+    const iconSize = isMobile ? 34 : 24;
+
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -41,8 +45,18 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
         setActiveSubMenu(activeSubMenu === menuName ? null : menuName);
     };
 
+    const renderMobileBackButton = () => {
+        if (!isMobile) return null;
+        return (
+            <button type="button" className="submenu-back-button"
+                onClick={() => setActiveSubMenu(null)}>
+                <BackIcon size={iconSize} />
+            </button>
+        );
+    };
+
     return (
-        <div className={"task-filter"} ref={filterRef}>
+        <div className={"tasks-filter"} ref={filterRef}>
             <div className={`filter-button-container ${isMainOpen ? 'open' : ''}`}>
                 <button type={"button"} className={"filter-button"} onClick={toggleMainFilter}>
                     Filter
@@ -54,6 +68,7 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
                             Assignees
                         </button>
                         <div className={"assigned-to-options"}>
+                            {renderMobileBackButton()}
                             <button key={""} type="button"
                                 className={"assigned-to-option no-option"}
                                 onClick={() => onAssigneeSelect("")}>
@@ -76,6 +91,7 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
                             Followers
                         </button>
                         <div className={"followed-by-options"}>
+                            {renderMobileBackButton()}
                             <button key={""} type="button"
                                 className={"followed-by-option no-option"}
                                 onClick={() => onFollowerSelect("")}>
@@ -98,6 +114,7 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
                             Status
                         </button>
                         <div className={"status-options"}>
+                            {renderMobileBackButton()}
                             <button key={""} type="button"
                                 className={"status-option no-option"}
                                 onClick={() => onStatusSelect("")}>
@@ -120,6 +137,7 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
                             Priority
                         </button>
                         <div className={"priority-options"}>
+                            {renderMobileBackButton()}
                             <button key={""} type="button"
                                 className={"priority-option no-option"}
                                 onClick={() => onPrioritySelect("")}>
@@ -142,6 +160,7 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
                             Project
                         </button>
                         <div className={"project-options"}>
+                            {renderMobileBackButton()}
                             <button key={""} type="button"
                                 className={"project-option no-option"}
                                 onClick={() => { onProjectSelect(""); onHasProjectSelect(""); }}>
@@ -171,6 +190,7 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
                             Created
                         </button>
                         <div className="created-date-options">
+                            {renderMobileBackButton()}
                             <button key={""} type="button"
                                 className={"created-date-option no-option"}
                                 onClick={() => [onCreatedBeforeSelect(""), onCreatedAfterSelect("")]}>
@@ -192,6 +212,7 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
                             Due
                         </button>
                         <div className="due-date-options">
+                            {renderMobileBackButton()}
                             <button key={""} type="button"
                                 className={"due-date-option no-option"}
                                 onClick={() => [onDueBeforeSelect(""), onDueAfterSelect(""), onOverdueSelect(""), onHasDueDateSelect("")]}>
@@ -223,6 +244,18 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
                    placeholder={"Search"} value={text}
                    onChange={(e) => onChange(e.target.value)}
             />
+            <div className={"clear-all-container"}>
+                <button key={"clear-all"} type="button"
+                        className={"clear-filter"}
+                        onClick={() => [onChange(""), onAssigneeSelect(""), onFollowerSelect(""),
+                            onStatusSelect(""), onPrioritySelect(""), onProjectSelect(""),
+                            onCreatedBeforeSelect(""), onCreatedAfterSelect(""),
+                            onDueBeforeSelect(""), onDueAfterSelect(""), onOverdueSelect(""),
+                            onHasDueDateSelect(""), onHasProjectSelect("")
+                        ]}>
+                        Clear All
+                </button>
+            </div>
         </div>
     );
 }

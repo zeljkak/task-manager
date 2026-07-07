@@ -1,7 +1,11 @@
 import {useEffect, useRef, useState} from "react";
 import DatePickerComponent from "./DatePickerComponent.jsx";
+import BackIcon from "./icons/BackIcon.jsx";
 
-function ProjectFilterComponent({ text, users, selectedCreatedBefore, selectedCreatedAfter, selectedUserId, onChange, onUserSelect, onCreatedBeforeSelect, onCreatedAfterSelect }) {
+function ProjectFilterComponent({ text, users, selectedCreatedBefore,
+        selectedCreatedAfter, selectedUserId, onChange, onUserSelect,
+        onCreatedBeforeSelect, onCreatedAfterSelect, isMobile }) {
+
     const [isMainOpen, setIsMainOpen] = useState(false);
     const [activeSubMenu, setActiveSubMenu] = useState(null);
 
@@ -9,6 +13,8 @@ function ProjectFilterComponent({ text, users, selectedCreatedBefore, selectedCr
 
     const selectedBeforeDate = selectedCreatedBefore ? new Date(selectedCreatedBefore) : null;
     const selectedAfterDate = selectedCreatedAfter ? new Date(selectedCreatedAfter) : null;
+
+    const iconSize = isMobile ? 34 : 24;
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -30,8 +36,18 @@ function ProjectFilterComponent({ text, users, selectedCreatedBefore, selectedCr
         setActiveSubMenu(activeSubMenu === menuName ? null : menuName);
     };
 
+    const renderMobileBackButton = () => {
+        if (!isMobile) return null;
+        return (
+            <button type="button" className="submenu-back-button"
+                onClick={() => setActiveSubMenu(null)}>
+                <BackIcon size={iconSize} />
+            </button>
+        );
+    };
+
     return (
-        <div className={"project-filter"} ref={filterRef}>
+        <div className={"projects-filter"} ref={filterRef}>
             <div className={`filter-button-container ${isMainOpen ? 'open' : ''}`}>
                 <button type={"button"} className={"filter-button"} onClick={toggleMainFilter}>
                     Filter
@@ -43,6 +59,7 @@ function ProjectFilterComponent({ text, users, selectedCreatedBefore, selectedCr
                             Creator
                         </button>
                         <div className="created-by-options">
+                            {renderMobileBackButton()}
                             <button key={""} type="button"
                                 className={"created-by-option no-option"}
                                 onClick={() => onUserSelect("")}>Clear
@@ -63,6 +80,7 @@ function ProjectFilterComponent({ text, users, selectedCreatedBefore, selectedCr
                             onClick={() => toggleSubMenu('createdDate')}>Created
                         </button>
                         <div className="created-date-options">
+                            {renderMobileBackButton()}
                             <button key={""} type="button"
                                  className={"created-date-option no-option"}
                                  onClick={() => [onCreatedBeforeSelect(""), onCreatedAfterSelect("")]}>Clear
@@ -83,6 +101,15 @@ function ProjectFilterComponent({ text, users, selectedCreatedBefore, selectedCr
                    placeholder={"Search"} value={text}
                    onChange={(e) => onChange(e.target.value)}
             />
+            <div className={"clear-all-container"}>
+                <button key={"clear-all"} type="button"
+                        className={"clear-filter"}
+                        onClick={() => [onChange(""), onUserSelect(""),
+                            onCreatedBeforeSelect(""), onCreatedAfterSelect("")
+                        ]}>
+                        Clear All
+                </button>
+            </div>
         </div>
     );
 }

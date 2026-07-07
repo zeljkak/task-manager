@@ -17,7 +17,7 @@ export default function Home() {
   const [error, setError] = useState("");
 
   const userId = Number(localStorage.getItem("userId"));
-  const { resetMyTasksKey } = useOutletContext();
+  const { resetMyTasksKey, isMobile } = useOutletContext();
 
   const getDefaultFilters = (userId) => ({
     text: "",
@@ -95,7 +95,7 @@ export default function Home() {
 
   return (
     <>
-      <TaskFilterComponent
+      <TaskFilterComponent isMobile={isMobile}
           text={filters.text}
           onChange={(value) =>
               setFilters(prev => ({
