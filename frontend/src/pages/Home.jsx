@@ -3,6 +3,7 @@ import {useNavigate, useOutletContext} from "react-router-dom";
 import TaskCardComponent from "../components/TaskCardComponent.jsx";
 import TaskStatusComponent from "../components/TaskStatusComponent.jsx";
 import TaskFilterComponent from "../components/TaskFilterComponent.jsx";
+import CreateButtonComponent from "../components/CreateButtonComponent.jsx";
 import {getTaskStatuses} from "../services/taskStatusService.js";
 import {getTasks} from "../services/taskService.js";
 import {getUsers} from "../services/userService.js";
@@ -18,6 +19,7 @@ export default function Home() {
 
   const userId = Number(localStorage.getItem("userId"));
   const { resetMyTasksKey, isMobile } = useOutletContext();
+  const iconSize = isMobile ? 34 : 24;
 
   const getDefaultFilters = (userId) => ({
     text: "",
@@ -192,6 +194,7 @@ export default function Home() {
               }))
           }
       />
+      <CreateButtonComponent isMobile={isMobile} type={"task"} />
       <div className={"all-tasks"}>
         {taskStatuses.map(taskStatus => {
           const filteredTasks = tasks.filter(
@@ -204,6 +207,7 @@ export default function Home() {
               status={taskStatus}
               filter={filters.statusId}
               length={filteredTasks.length}
+              size={iconSize}
             >
               {filteredTasks.map(task => (
                 <TaskCardComponent key={task.id} task={task} />

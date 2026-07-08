@@ -3,6 +3,7 @@ import {useNavigate, useOutletContext} from "react-router-dom";
 import ProjectCardComponent from "../components/ProjectCardComponent.jsx";
 import ProjectStatusComponent from "../components/ProjectStatusComponent.jsx";
 import ProjectFilterComponent from "../components/ProjectFilterComponent.jsx";
+import CreateButtonComponent from "../components/CreateButtonComponent.jsx";
 import {getProjects} from "../services/projectService.js";
 import {getUsers} from "../services/userService.js";
 
@@ -17,6 +18,7 @@ export default function Projects() {
   const [users, setUsers] = useState([]);
 
   const { isMobile } = useOutletContext();
+  const iconSize = isMobile ? 34 : 24;
 
   const [filters, setFilters] = useState({
     projectText: "",
@@ -96,10 +98,11 @@ export default function Projects() {
             }))
           }
       />
+      <CreateButtonComponent isMobile={isMobile} type={"project"} />
       <div className={"all-projects"}>
         {sections.map(section => (
           <ProjectStatusComponent key={section.key}
-            status={section.status}
+            status={section.status} size={iconSize}
             length={grouped[section.key].length}>
               {grouped[section.key].map(project => (
                 <ProjectCardComponent key={project.id} project={project} />

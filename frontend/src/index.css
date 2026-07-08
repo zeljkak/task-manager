@@ -295,6 +295,26 @@ a {
   overflow-x: auto;
 }
 
+.create-button-container {
+  position: relative;
+  width: 100%;
+}
+
+.create-button {
+  width: max-content;
+  height: max-content;
+  display: block;
+  margin-top: 10px;
+  margin-left: auto;
+  margin-right: 5px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  background-color: transparent;
+  border: none;
+  z-index: 2;
+}
+
 .hidden {
     display: none;
 }
@@ -476,9 +496,9 @@ hr {
     padding-right: 20px;
   }
 
-  .tasks-filter > input,
-  .projects-filter > input {
+  .text-filter {
     scale: 1.1;
+    margin-right: 20px;
   }
 
   .filter-options,
@@ -554,6 +574,8 @@ hr {
   }
 
   .submenu-back-button {
+    position: sticky;
+    top: 0;
     grid-column: 1;
     background: transparent;
     border: none;
@@ -568,6 +590,15 @@ hr {
 
   .submenu-back-button > svg {
     margin: 0 !important;
+  }
+
+  .all-projects, .all-tasks {
+    margin-top: -48px;
+  }
+
+  .create-button {
+    margin-right: 15px;
+    position: sticky;
   }
 }
 

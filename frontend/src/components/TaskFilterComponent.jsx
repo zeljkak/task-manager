@@ -27,7 +27,10 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
 
     useEffect(() => {
         function handleClickOutside(event) {
-            if (filterRef.current && !filterRef.current.contains(event.target)) {
+            const clickedInsideMenu = event.target.closest('.filter-options');
+            const clickedFilterButton = event.target.closest('.filter-button');
+
+            if (!clickedInsideMenu && !clickedFilterButton) {
                 setIsMainOpen(false);
                 setActiveSubMenu(null);
             }
