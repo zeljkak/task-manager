@@ -206,7 +206,7 @@ a {
   border: 1px solid #495057;
   padding: 2px;
   overflow: hidden;
-  height: 26px !important;
+  height: 28.8px !important;
   display: flex;
   align-items: center;
 }
@@ -313,6 +313,125 @@ a {
   background-color: transparent;
   border: none;
   z-index: 2;
+}
+
+.create-form {
+  position: fixed;
+  top: 45px !important;
+  left: 50%;
+  transform: translateX(-50%);
+
+  max-height: calc(100vh - 110px);
+  width: 70vw !important;
+  max-width: 600px;
+  overflow-y: auto;
+
+  padding: 0 15px 15px 15px;
+  background-color: #121212;
+  border-color: #555;
+  z-index: 9999;
+  box-shadow:
+            0 10px 25px rgba(0, 0, 0, 0.5),
+            0 0 0 100vmax rgba(0, 0, 0, 0.6);
+}
+
+form > h4 {
+  width: 100%;
+  justify-self: center;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  padding: 20px 10px 10px 10px;
+  background-color: #121212;
+}
+
+.form-input {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.form-element {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  padding-bottom: 10px;
+}
+
+.form-element > label,
+.form-element > p {
+  padding-bottom: 3px;
+}
+
+.form-element > select {
+  background-color: #212529;
+}
+
+.inline-form-element {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.form-element > select {
+  min-width: 0;
+  width: 100%;
+}
+
+.form-element > .date-grouped {
+  padding: 0;
+  width: min-content;
+  margin-right: -5px;
+}
+
+.form-element > .date-grouped > p {
+  display: none;
+}
+
+.form-element > .date-grouped > .wheel-interceptor-wrapper {
+  background-color: #212529;
+}
+
+/*.form-element > input[type="file"],
+.attachment-label {
+  width: min-content;
+}*/
+
+.form-element > textarea {
+  height: 30vh;
+  overflow-y: auto;
+}
+
+.form-element > input:not([type="file"]),
+.form-element > input[type="file"]::file-selector-button,
+.form-element > textarea,
+.form-element > select {
+  background-color: #212529;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px !important;
+  padding: 2px 5px;
+}
+
+.form-element > input[type="file"] {
+  grid-column: auto; /* Forces it to occupy both columns of the grid */
+  width: 100%;
+}
+.form-element > input[type="file"]::file-selector-button {
+  width: 100%;
+  margin-right: 0; /* Clear any previous margins */
+  text-align: center;
+  display: block;
+}
+
+form > button {
+  width: 30%;
+  border-radius: 20px;
+  background-color: #3B3B3BFF;
+  display: block;
+  margin: 10px auto;
+}
+
+form > button:hover {
+  background-color: #7b7b7b;
 }
 
 .hidden {
