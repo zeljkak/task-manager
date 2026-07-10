@@ -44,9 +44,11 @@ export default function Home() {
   const [priorities, setPriorities] = useState([]);
   const [projects, setProjects] = useState([]);
 
+  const [refreshTasks, setRefreshTasks] = useState(0);
+
   useEffect(() => {
     setFilters(getDefaultFilters(userId));
-}, [resetMyTasksKey, userId]);
+  }, [resetMyTasksKey, userId]);
 
   async function loadTasks() {
     const apiFilters = { ...filters };
@@ -69,7 +71,7 @@ export default function Home() {
 
   useEffect(() => {
     loadTasks();
-  }, [filters]);
+  }, [filters, refreshTasks]);
 
   useEffect(() => {
     getTaskStatuses({})
@@ -194,7 +196,9 @@ export default function Home() {
               }))
           }
       />
-      <CreateButtonComponent isMobile={isMobile} type={"task"} />
+      <CreateButtonComponent isMobile={isMobile} type={"task"} users={users}
+             projects={projects} statuses={taskStatuses} priorities={priorities}
+             onCreated={() => setRefreshTasks(prev => prev + 1)} />
       <div className={"all-tasks"}>
         {taskStatuses.map(taskStatus => {
           const filteredTasks = tasks.filter(

@@ -1,4 +1,5 @@
 backend/.env
+backend/uploads/
 frontend/.env
 venv/
 .idea/

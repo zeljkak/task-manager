@@ -17,6 +17,8 @@ export default function Projects() {
   const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
 
+  const [refreshProjects, setRefreshProjects] = useState(0);
+
   const { isMobile } = useOutletContext();
   const iconSize = isMobile ? 34 : 24;
 
@@ -43,7 +45,7 @@ export default function Projects() {
 
   useEffect(() => {
     loadProjects();
-  }, [filters]);
+  }, [filters, refreshProjects]);
 
   const grouped = useMemo(() => {
     return projects.reduce(
@@ -98,7 +100,8 @@ export default function Projects() {
             }))
           }
       />
-      <CreateButtonComponent isMobile={isMobile} type={"project"} />
+      <CreateButtonComponent isMobile={isMobile} type={"project"}
+         onCreated={() => setRefreshProjects(prev => prev + 1)} />
       <div className={"all-projects"}>
         {sections.map(section => (
           <ProjectStatusComponent key={section.key}

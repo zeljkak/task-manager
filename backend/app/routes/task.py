@@ -79,25 +79,28 @@ def create_task():
 
 def create_task_attachment(taskId):
     current_user = int(get_jwt_identity())
-    file = request.files.get("file")
-    if not file:
+    files = request.files.getlist("file")
+    if not files:
         return jsonify({"error": "No file provided"}), 400
 
-    unique_name, original_name, file_type = save_file(file)
+    attachments = []
+    for file in files:
+        if file.filename == "":
+            continue
+        unique_name, original_name, file_type = save_file(file)
 
-    file_url = unique_name
+        file_data = {
+            "file_url": unique_name,
+            "file_name": original_name,
+            "file_type": file_type
+        }
 
-    file_data = {
-        "file_url": file_url,
-        "file_name": original_name,
-        "file_type": file_type
-    }
-
-    attachment = AttachmentService.create_task_attachment(taskId, current_user, file_data)
+        attachment = AttachmentService.create_task_attachment(taskId, current_user, file_data)
+        attachments.append(attachment)
 
     return jsonify({
         "message": "Attachment created successfully",
-        "attachment": AttachmentResponseSchema().dump(attachment)
+        "attachment": AttachmentResponseSchema(many=True).dump(attachments)
     }), 201
 
 @task_bp.route('/<int:taskId>/comments', methods=['GET'])

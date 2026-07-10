@@ -5,7 +5,7 @@ import {useEffect, useState} from "react";
 import CreateProjectComponent from "./CreateProjectComponent.jsx";
 import CreateTaskComponent from "./CreateTaskComponent.jsx";
 
-function CreateButtonComponent ({ isMobile, type }) {
+function CreateButtonComponent ({ isMobile, type, statuses, projects, priorities, users, onCreated }) {
     const title = "New " + type;
     const iconSize = isMobile ? 34 : 24;
     const [open, setOpen] = useState(false);
@@ -31,11 +31,12 @@ function CreateButtonComponent ({ isMobile, type }) {
                 </button>
             </div>
             {open && type === "project" && (
-                <CreateProjectComponent onClose={() => setOpen(false)} />
+                <CreateProjectComponent onClose={() => setOpen(false)} onCreated={onCreated} isMobile={isMobile} />
             )}
 
             {open && type === "task" && (
-                <CreateTaskComponent onClose={() => setOpen(false)} />
+                <CreateTaskComponent onClose={() => setOpen(false)} users={users}
+                     statuses={statuses} projects={projects} priorities={priorities} onCreated={onCreated} isMobile={isMobile} />
             )}
         </>
     );

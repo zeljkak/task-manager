@@ -87,6 +87,8 @@ a {
   display: flex;
   flex-direction: row;
   gap: 5px;
+  z-index: 2;
+  padding-bottom: 5px;
 }
 
 .filter-button-container,
@@ -295,6 +297,10 @@ a {
   overflow-x: auto;
 }
 
+.project-data > a {
+  display: block;
+}
+
 .create-button-container {
   position: relative;
   width: 100%;
@@ -304,9 +310,8 @@ a {
   width: max-content;
   height: max-content;
   display: block;
-  margin-top: 10px;
-  margin-left: auto;
-  margin-right: 5px;
+  margin: auto;
+  padding: 0 6px;
   position: fixed;
   top: 0;
   right: 0;
@@ -335,14 +340,20 @@ a {
             0 0 0 100vmax rgba(0, 0, 0, 0.6);
 }
 
-form > h4 {
+.form-title {
   width: 100%;
-  justify-self: center;
-  text-align: center;
   position: sticky;
   top: 0;
-  padding: 20px 10px 10px 10px;
+  padding: 10px;
   background-color: #121212;
+}
+
+.form-title > h4 {
+  width: 100%;
+  min-height: 100% !important;
+  justify-self: center;
+  align-content: center;
+  text-align: center;
 }
 
 .form-input {
@@ -390,11 +401,6 @@ form > h4 {
 .form-element > .date-grouped > .wheel-interceptor-wrapper {
   background-color: #212529;
 }
-
-/*.form-element > input[type="file"],
-.attachment-label {
-  width: min-content;
-}*/
 
 .form-element > textarea {
   height: 30vh;
@@ -469,7 +475,7 @@ form > button:hover {
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;
-  gap: 10px;
+  column-gap: 10px;
   white-space: nowrap;
   max-width: 400px;
 }
@@ -718,6 +724,34 @@ hr {
   .create-button {
     margin-right: 15px;
     position: sticky;
+  }
+
+  .create-form {
+    width: 100% !important;
+    top: 0 !important;
+    height: 100% !important;
+    max-height: calc(100vh - 60px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  }
+
+  .form-title {
+    display: grid !important;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+  }
+
+  .form-title > .submenu-back-button {
+    grid-column: 1;
+    grid-row: 1;
+    z-index: 2;
+    margin-bottom: 0;
+  }
+
+  .form-title > h4 {
+    grid-column: 1 / span 2;
+    grid-row: 1;
+    margin: 0;
+    width: 100% !important;
   }
 }
 

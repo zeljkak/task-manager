@@ -18,3 +18,15 @@ export const getProjectsList = () => {
     `/projects/list`
   );
 };
+
+export const createProject = (projectData) => {
+  return api.post(
+    `/projects/create_project`, projectData
+  );
+};
+
+export const createProjectAttachment = (projectId, files) => {
+  return api.post(
+    `/projects/${projectId}/attachments`, files
+  );
+};

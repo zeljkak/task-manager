@@ -12,3 +12,15 @@ export async function getTasks(filters = {}) {
   const response = await api.get(`/tasks?${params.toString()}`);
   return response.data;
 };
+
+export const createTask = (taskData) => {
+  return api.post(
+    `/tasks/create_task`, taskData
+  );
+};
+
+export const createTaskAttachment = (taskId, files) => {
+  return api.post(
+    `/tasks/${taskId}/attachments`, files
+  );
+};
