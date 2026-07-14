@@ -24,3 +24,14 @@ export const createTaskAttachment = (taskId, files) => {
     `/tasks/${taskId}/attachments`, files
   );
 };
+
+export const getTask = (taskId) => {
+  return api.post(
+    `/tasks/${taskId}`
+  );
+};
+
+export async function updateTask(taskId, update = {}) {
+  const response = await api.patch(`/tasks/${taskId}`, update);
+  return response.data;
+}

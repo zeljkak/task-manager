@@ -214,7 +214,11 @@ export default function Home() {
               size={iconSize}
             >
               {filteredTasks.map(task => (
-                <TaskCardComponent key={task.id} task={task} />
+                <TaskCardComponent key={task.id} task={task}
+                   priorities={priorities} users={users} projects={projects}
+                   statuses={taskStatuses} isMobile={isMobile}
+                   onChange={() => setRefreshTasks(prev => prev + 1)}
+                />
               ))}
             </TaskStatusComponent>
           );

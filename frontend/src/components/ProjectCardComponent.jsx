@@ -12,7 +12,10 @@ function ProjectData({ project }) {
             <p><a href="#">{project.createdBy.firstName} {project.createdBy.lastName}</a></p><br/>
             <p className={"project-attachments"}>Attachments</p>
             {project.attachments.map(attachment => (
-                <a href={attachment.fileUrl} key={attachment.id}>{attachment.id ? attachment.fileName : ""}</a>
+                <a href={attachment.fileUrl} key={attachment.id}
+                target="_blank" rel="noopener noreferrer" className="file-name">
+                    {attachment.id ? attachment.fileName : ""}
+                </a>
              ))}
         </div>
     );

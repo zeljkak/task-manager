@@ -16,7 +16,7 @@ class Task(db.Model):
     created_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     updated_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
 
-    assigned_to_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    assigned_to_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
 
     ## status will always initially be to do if not specified
     status_id = db.Column(db.Integer, db.ForeignKey("task_status.id"), nullable=False, default=2)

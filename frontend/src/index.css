@@ -88,7 +88,7 @@ a {
   flex-direction: row;
   gap: 5px;
   z-index: 2;
-  padding-bottom: 5px;
+  background-color: #121212;
 }
 
 .filter-button-container,
@@ -320,11 +320,11 @@ a {
   z-index: 2;
 }
 
-.create-form {
-  position: fixed;
-  top: 45px !important;
-  left: 50%;
-  transform: translateX(-50%);
+.create-form, .task-details {
+  position: relative;
+  top: auto !important;
+  left: auto;
+  transform: none;
 
   max-height: calc(100vh - 110px);
   width: 70vw !important;
@@ -333,11 +333,72 @@ a {
 
   padding: 0 15px 15px 15px;
   background-color: #121212;
-  border-color: #555;
-  z-index: 9999;
-  box-shadow:
-            0 10px 25px rgba(0, 0, 0, 0.5),
-            0 0 0 100vmax rgba(0, 0, 0, 0.6);
+  border: 1px solid #555;
+  z-index: 9999;          /* Sits cleanly on top of the overlay */
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.modal-overlay, .confirmation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 9998;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.confirmation-overlay {
+  backdrop-filter: blur(2px);
+}
+
+.confirmation-div {
+  background-color: #121212;
+  border: 1px solid #555;
+  border-radius: 8px;
+  padding: 24px;
+  width: 90vw;
+  max-width: 450px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+  align-items: center;
+  align-content: center;
+}
+
+.confirmation-div > p {
+  justify-self: center;
+}
+
+.file-name {
+  overflow-wrap: break-word;
+  word-break: break-all;
+}
+
+.confirmation-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.confirmation-actions > button {
+  width: 30%;
+  border-radius: 20px;
+  background-color: #3B3B3BFF;
+  margin: 10px;
+}
+
+.negative:hover {
+  background-color: indianred !important;
+}
+
+.positive:hover {
+  background-color: mediumseagreen !important;
 }
 
 .form-title {
@@ -346,6 +407,7 @@ a {
   top: 0;
   padding: 10px;
   background-color: #121212;
+  z-index: 1;
 }
 
 .form-title > h4 {
@@ -353,6 +415,10 @@ a {
   min-height: 100% !important;
   justify-self: center;
   align-content: center;
+  text-align: center;
+}
+
+.form-title > h4 > input {
   text-align: center;
 }
 
@@ -376,6 +442,8 @@ a {
 
 .form-element > select {
   background-color: #212529;
+  min-width: 0;
+  width: 100%;
 }
 
 .inline-form-element {
@@ -383,15 +451,11 @@ a {
   grid-template-columns: repeat(2, 1fr);
 }
 
-.form-element > select {
-  min-width: 0;
-  width: 100%;
-}
-
 .form-element > .date-grouped {
   padding: 0;
   width: min-content;
   margin-right: -5px;
+
 }
 
 .form-element > .date-grouped > p {
@@ -410,7 +474,9 @@ a {
 .form-element > input:not([type="file"]),
 .form-element > input[type="file"]::file-selector-button,
 .form-element > textarea,
-.form-element > select {
+.form-element > select,
+.form-title > h4 > input,
+.form-element > textarea {
   background-color: #212529;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 5px !important;
@@ -418,14 +484,64 @@ a {
 }
 
 .form-element > input[type="file"] {
-  grid-column: auto; /* Forces it to occupy both columns of the grid */
+  grid-column: auto;
   width: 100%;
 }
+
 .form-element > input[type="file"]::file-selector-button {
   width: 100%;
-  margin-right: 0; /* Clear any previous margins */
-  text-align: center;
+  margin-right: 0;
+  text-align: start;
   display: block;
+  padding-left: 9px;
+}
+
+.attach {
+  display: block;
+}
+
+.attachments-title {
+  align-content: center;
+}
+
+.listed-attachments {
+  background-color: #212529;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px !important;
+  padding: 2px 5px;
+}
+
+.attachment-chip {
+  padding-bottom: 5px;
+  align-items: center;
+  display: inline-flex;
+  white-space: nowrap;
+}
+
+.attachment-chip > a {
+  display: inline-block;
+  min-height: 0;
+  white-space: normal;
+  margin-left: 5px;
+  padding-right: 5px;
+}
+
+.attachment-chip > button > svg {
+  margin: 5px !important;
+}
+
+.attachment-chip > button {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+}
+
+.attachment-label {
+  max-width: max-content;
+}
+
+.attachment-label:hover {
+  cursor: pointer;
 }
 
 form > button {
@@ -465,6 +581,10 @@ form > button:hover {
   color: lightgrey;
   margin-bottom: 2px;
   padding-left: 5px;
+}
+
+.task-status > .card {
+  cursor: grab;
 }
 
 .card {
@@ -726,7 +846,7 @@ hr {
     position: sticky;
   }
 
-  .create-form {
+  .create-form, .task-details, .confirmation-div {
     width: 100% !important;
     top: 0 !important;
     height: 100% !important;
@@ -752,6 +872,14 @@ hr {
     grid-row: 1;
     margin: 0;
     width: 100% !important;
+  }
+
+  .negative {
+    background-color: indianred !important;
+  }
+
+  .positive {
+    background-color: mediumseagreen !important;
   }
 }
 

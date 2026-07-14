@@ -82,11 +82,11 @@ function DatePickerComponent({ label, selected, onChange }) {
             <p>{labelValue}</p>
             <div ref={wrapperRef} className="wheel-interceptor-wrapper">
                 <Picker value={selections} className={pickerClass} id={label} onChange={handleValueChange} height={26}>
-                    <Picker.Column name="month">
-                        {months.map(m => <Picker.Item key={m} value={m} data-column="month">{m}</Picker.Item>)}
-                    </Picker.Column>
                     <Picker.Column name="day">
                         {days.map(d => <Picker.Item key={d} value={d} data-column="day">{d}</Picker.Item>)}
+                    </Picker.Column>
+                    <Picker.Column name="month">
+                        {months.map(m => <Picker.Item key={m} value={m} data-column="month">{m}</Picker.Item>)}
                     </Picker.Column>
                     <Picker.Column name="year">
                         {years.map(y => <Picker.Item key={y} value={y} data-column="year">{y}</Picker.Item>)}
