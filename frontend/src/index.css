@@ -72,6 +72,41 @@ a {
   text-decoration: none;
 }
 
+.loading-spinner-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  background-color: #121212;
+  color: #212529;
+}
+
+.loading-spinner-container p {
+  margin-top: 16px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #495057;
+  letter-spacing: 0.5px;
+}
+
+.loading-spinner-container::before {
+  content: "";
+  width: 48px;
+  height: 48px;
+  border: 4px solid #dee2e6;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 #content {
   display: flex;
   flex-direction: column;
@@ -81,6 +116,11 @@ a {
   width: inherit;
   max-width: 100%;
   height: 100vh;
+}
+
+.user-data {
+  overflow-x: auto;
+  padding: 0 15px 15px 0;
 }
 
 .tasks-filter, .projects-filter {
@@ -614,18 +654,42 @@ form > button:hover {
 }
 
 .message {
-  color: green;
+  color: lightgreen;
   margin-top: 10px;
+  justify-self: center;
+  font-weight: bold;
 }
 
 .error {
   color: red;
   margin-top: 10px;
+  justify-self: center;
 }
 
 .centered-page {
+  width: 100%;
+  min-width: max-content;
+  margin: auto;
+}
+
+.centered-page > h2 {
+  justify-self: center;
+}
+
+.centered-page > form {
+  justify-self: center;
+  justify-items: center;
+  width: 90%;
   max-width: 400px;
-  margin: 50px auto;
+  padding: 15px 0;
+}
+
+.centered-page > form > .form-div {
+  width: 80%;
+}
+
+.centered-page > form > button {
+  margin-top: 20px;
 }
 
 .form-div {
@@ -644,6 +708,9 @@ form > button:hover {
   min-width: min-content;
   white-space: nowrap;
   border-right: 1px solid rgba(255, 255, 255, 0.15);
+
+  height: 100vh;
+  overflow-y: auto;
 }
 
 #sidebar > a {
@@ -685,10 +752,14 @@ hr {
 
 
 @media (max-width: 500px) {
+  .centered-page {
+
+  }
+
   #sidebar {
     width: inherit;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     position: fixed;
     bottom: 0;
     left: 0;

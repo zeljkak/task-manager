@@ -5,6 +5,10 @@ load_dotenv()
 
 class Config:
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+    JWT_TOKEN_LOCATION = ['cookies']
+    JWT_COOKIE_SECURE = False #set to True in production (HTTPS)
+    JWT_COOKIE_CSRF_PROTECT = False #set to True later if you want CSRF protection
+
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     PROJECT_ROOT_BACKEND = os.path.dirname(os.path.abspath(__file__))

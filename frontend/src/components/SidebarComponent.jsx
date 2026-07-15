@@ -1,4 +1,4 @@
-import {NavLink} from "react-router-dom";
+import {NavLink, useNavigate} from "react-router-dom";
 import {useEffect} from "react";
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
@@ -8,8 +8,19 @@ import InboxIcon from "./icons/InboxIcon.jsx";
 import TasksIcon from "./icons/TasksIcon.jsx";
 import ProjectIcon from "./icons/ProjectIcon.jsx";
 import SettingsIcon from "./icons/SettingsIcon.jsx";
+import LogoutIcon from "./icons/LogoutIcon.jsx";
+import {useAuth} from "../context/AuthContext.jsx";
 
 function SidebarComponent({ isVisible, setIsVisible, isMobile, onMyTasksClick }) {
+
+    const {logoutUser} = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = async (e) => {
+        e.preventDefault();
+        await logoutUser();
+        navigate("/login");
+    }
 
     const toggleSidebar = () => {
         setIsVisible(prev => !prev);
@@ -57,6 +68,11 @@ function SidebarComponent({ isVisible, setIsVisible, isMobile, onMyTasksClick })
             <NavLink to={"/settings"} data-tippy-content={tooltipText("Settings")}>
                 <SettingsIcon size={iconSize}/>
                 {!isMobile && isVisible && "Settings"}
+            </NavLink>
+            <NavLink to={"/login"} data-tippy-content={tooltipText("Logout")}
+                onClick={handleLogout}>
+                <LogoutIcon size={iconSize}/>
+                {!isMobile && isVisible && "Logout"}
             </NavLink>
         </div>
     );

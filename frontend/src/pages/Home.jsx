@@ -17,13 +17,12 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const userId = Number(localStorage.getItem("userId"));
   const { resetMyTasksKey, isMobile } = useOutletContext();
   const iconSize = isMobile ? 34 : 24;
 
-  const getDefaultFilters = (userId) => ({
+  const getDefaultFilters = () => ({
     text: "",
-    assignedToId: userId,
+    assignedToId: "me",
     statusId: "",
     priorityId: "",
     projectId: "",
@@ -37,7 +36,7 @@ export default function Home() {
     followedById: ""
 });
 
-  const [filters, setFilters] = useState(() => getDefaultFilters(userId));
+  const [filters, setFilters] = useState(() => getDefaultFilters());
   const [taskStatuses, setTaskStatuses] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [users, setUsers] = useState([]);
@@ -47,8 +46,8 @@ export default function Home() {
   const [refreshTasks, setRefreshTasks] = useState(0);
 
   useEffect(() => {
-    setFilters(getDefaultFilters(userId));
-  }, [resetMyTasksKey, userId]);
+    setFilters(getDefaultFilters());
+  }, [resetMyTasksKey]);
 
   async function loadTasks() {
     const apiFilters = { ...filters };

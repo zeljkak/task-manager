@@ -2,7 +2,7 @@ tags:
   - Task
 
 description:
-  Retrieve tasks. Results can be filtered by title, description, assigned user, status, priority, project, date of creation and due date. Requires a valid JWT token in Authorization header. Format: Bearer <token>
+  Retrieve tasks. Results can be filtered by title, description, assigned user, followers, status, priority, project, date of creation and due date. Requires a valid JWT token in Authorization header. Format: Bearer <token>
 
 security:
   - BearerAuth: []
@@ -17,9 +17,9 @@ parameters:
   - name: assignedToId
     in: query
     required: false
-    type: integer
-    example: 1
-    description: ID of the user to filter by
+    type: string
+    example: '1'
+    description: "ID of the user to filter by, or 'me' for the current user"
   - name: statusId
     in: query
     required: false
@@ -88,9 +88,9 @@ parameters:
   - name: followedById
     in: query
     required: false
-    type: integer
-    example: 1
-    description: ID of the user to filter by
+    type: string
+    example: '1'
+    description: "ID of the user to filter by, or 'me' for the current user"
 
 responses:
   200:

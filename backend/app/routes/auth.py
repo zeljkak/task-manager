@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import set_access_cookies, jwt_required, unset_jwt_cookies
 from flasgger import swag_from
 import os
 
@@ -77,7 +78,22 @@ def login():
     data = login_schema.load(request.get_json())
     token = AuthService.login_user(data["email"], data["password"])
 
-    return jsonify({
-        "message": "Login successful",
-        "accessToken": token
-    }), 200
+    response = jsonify({
+        "message": "Login successful"
+    })
+
+    set_access_cookies(response, token)
+
+    return response, 200
+
+@auth_bp.route('/logout', methods=['POST'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/auth/logout.yml"))
+
+def logout():
+    response = jsonify({
+        "message": "Logout successful"
+    })
+
+    unset_jwt_cookies(response)
+
+    return response, 200

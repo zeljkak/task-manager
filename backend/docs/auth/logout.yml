@@ -1,0 +1,16 @@
+tags:
+  - Auth
+
+description: Log out the current user and clear secure session cookies.
+
+responses:
+  200:
+    description: Logout successful (session cookies cleared)
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Logout successful
+  500:
+    description: Internal server error

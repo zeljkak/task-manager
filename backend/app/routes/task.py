@@ -3,6 +3,7 @@ from flasgger import swag_from
 import os
 
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy.sql.functions import current_user
 
 from backend.app.decorators.roles_required import roles_required
 
@@ -14,7 +15,7 @@ from backend.app.services.attachment_service import AttachmentService
 from backend.app.schemas.attachment_schema import AttachmentResponseSchema
 
 from backend.app.utils.file_storage import save_file
-from backend.app.utils.diff import parse_bool, parse_date
+from backend.app.utils.diff import parse_bool, parse_date, parse_user_id
 from backend.app.extensions.limiter import limiter
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -26,8 +27,11 @@ task_bp = Blueprint('task', __name__, url_prefix='/tasks')
 @jwt_required()
 
 def get_tasks():
+    current_user_id = int(get_jwt_identity())
+
     text = request.args.get("text", type=str)
-    assigned_to_id = request.args.get("assignedToId", type=int)
+    assigned_to_id = parse_user_id(request.args.get("assignedToId", type=str), current_user_id)
+    status_id = request.args.get("statusId", type=int)
     status_id = request.args.get("statusId", type=int)
     priority_id = request.args.get("priorityId", type=int)
     project_id = request.args.get("projectId", type=int)
@@ -38,7 +42,7 @@ def get_tasks():
     created_after = parse_date(request.args.get("createdAfter"))
     overdue = parse_bool(request.args.get("overdue"))
     has_due_date = request.args.get("hasDueDate", type=bool)
-    followed_by_id = request.args.get("followedById", type=int)
+    followed_by_id = parse_user_id(request.args.get("followedById", type=str), current_user_id)
 
     tasks = TaskService.get_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before, due_after, created_before, created_after, overdue, has_due_date, followed_by_id)
 
@@ -160,8 +164,10 @@ def delete_task(taskId):
 @roles_required("admin")
 
 def get_deleted_tasks():
+    current_user_id = int(get_jwt_identity())
+
     text = request.args.get("text", type=str)
-    assigned_to_id = request.args.get("assignedToId", type=int)
+    assigned_to_id = parse_user_id(request.args.get("assignedToId", type=str), current_user_id)
     status_id = request.args.get("statusId", type=int)
     priority_id = request.args.get("priorityId", type=int)
     project_id = request.args.get("projectId", type=int)
@@ -172,7 +178,7 @@ def get_deleted_tasks():
     created_after = parse_date(request.args.get("createdAfter"))
     overdue = parse_bool(request.args.get("overdue"))
     has_due_date = request.args.get("hasDueDate", type=bool)
-    followed_by_id = request.args.get("followedById", type=int)
+    followed_by_id = parse_user_id(request.args.get("followedById", type=str), current_user_id)
 
     tasks = TaskService.get_deleted_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before,
                                   due_after, created_before, created_after, overdue, has_due_date, followed_by_id)

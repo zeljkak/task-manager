@@ -20,7 +20,7 @@ export default function Profile() {
 
   return (
     <>
-      <h2>Profile</h2><hr /><br />
+      <h2>Profile</h2><hr />
       <ProfileComponent key={user.id} user={user} />
 
       {message && (

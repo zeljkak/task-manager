@@ -1,12 +1,10 @@
 import {useState} from "react";
 import {Navigate, useNavigate} from "react-router-dom";
-import {jwtDecode} from "jwt-decode";
 import {login} from "../services/authService.js";
+import {useAuth} from "../context/AuthContext.jsx";
 
 export default function Login() {
-  if (localStorage.getItem("accessToken")) {
-      return <Navigate to="/" replace />
-  }
+  const {user, loginUser} = useAuth();
 
   const navigate = useNavigate();
 
@@ -16,6 +14,10 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleSubmit = async (e) => {
       e.preventDefault();
@@ -31,12 +33,7 @@ export default function Login() {
           });
 
           setMessage(res.data?.message || "Login successful");
-
-          if (res.data?.accessToken) {
-              localStorage.setItem("accessToken", "Bearer " + res.data.accessToken);
-              const decoded = jwtDecode(res.data.accessToken);
-              localStorage.setItem("userId", decoded.sub);
-          }
+          loginUser();
 
           setTimeout(() => {
               navigate("/");
@@ -57,31 +54,20 @@ export default function Login() {
 
       <form onSubmit={handleSubmit}>
         <div className={"form-div"}>
-          <label>Email</label>
-          <input
-            type="email"
-            value={email}
+          <label htmlFor={"login-email"}>Email</label>
+          <input type="email" value={email} id={"login-email"} required className={"form-input"}
             onChange={(e) => setEmail(e.target.value)}
-            required
-            className={"form-input"}
           />
         </div>
 
         <div className={"form-div"}>
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
+          <label htmlFor={"login-password"}>Password</label>
+          <input type="password" value={password} id={"login-password"} required className={"form-input"}
             onChange={(e) => setPassword(e.target.value)}
-            required
-            className={"form-input"}
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-        >
+        <button type="submit" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
       </form>

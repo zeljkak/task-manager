@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react'
+import {useEffect} from 'react'
 import {Routes, Route} from "react-router-dom";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
@@ -7,6 +7,7 @@ import Profile from "./pages/Profile.jsx";
 import Layout from "./pages/Layout.jsx";
 import Home from "./pages/Home.jsx";
 import Projects from "./pages/Projects.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
 
@@ -16,10 +17,12 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Home />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/projects" element={<Projects />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/projects" element={<Projects />} />
+        </Route>
       </Route>
 
       <Route path="/login" element={<Login />} />

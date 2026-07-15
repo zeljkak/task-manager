@@ -54,13 +54,10 @@ def create_app():
     import os
 
     #enable React and Flask communication
-    CORS(app)
-    # for production use a second parameter: origins=["http://localhost:5173"]
+    CORS(app, supports_credentials=True, origins=Config.FRONTEND_URL)
 
     #Load everything from config.py
     app.config.from_object(Config)
-    app.config["UPLOAD_FOLDER"] = Config.UPLOAD_FOLDER
-    app.config["MAX_CONTENT_LENGTH"] = Config.MAX_CONTENT_LENGTH
 
     # Initialize Swagger
     swagger.init_app(app)

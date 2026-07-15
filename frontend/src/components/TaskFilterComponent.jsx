@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import DatePickerComponent from "./DatePickerComponent.jsx";
 import BackIcon from "./icons/BackIcon.jsx";
+import {useAuth} from "../context/AuthContext.jsx";
 
 function TaskFilterComponent({ text, users, statuses, priorities, projects,
         selectedCreatedBefore, selectedCreatedAfter, selectedDueBefore,
@@ -17,13 +18,20 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
 
     const filterRef = useRef(null);
 
+    const {user: currentUser} = useAuth();
+    const isUserSelected = (userId) => {
+        if (selectedAssigneeId === "me") {
+            return currentUser?.id === userId;
+        }
+        return selectedAssigneeId === userId;
+    };
+
     const selectedBeforeDate = selectedCreatedBefore ? new Date(selectedCreatedBefore) : null;
     const selectedAfterDate = selectedCreatedAfter ? new Date(selectedCreatedAfter) : null;
     const selectedBeforeDue = selectedDueBefore ? new Date(selectedDueBefore) : null;
     const selectedAfterDue = selectedDueAfter ? new Date(selectedDueAfter) : null;
 
     const iconSize = isMobile ? 34 : 24;
-
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -73,13 +81,15 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
                         <div className={"assigned-to-options"}>
                             {renderMobileBackButton()}
                             <button key={""} type="button"
-                                className={"assigned-to-option no-option"}
+                                className={selectedAssigneeId === ""
+                                    ? "assigned-to-option no-option active"
+                                    : "assigned-to-option no-option"}
                                 onClick={() => onAssigneeSelect("")}>
                                 All assignees
                             </button>
                             {users.map(user => (
                                 <button key={user.id} type="button"
-                                        className={user.id === selectedAssigneeId
+                                        className={isUserSelected(user.id)
                                         ? "assigned-to-option active"
                                         : "assigned-to-option"}
                                         onClick={() => onAssigneeSelect(user.id)}>

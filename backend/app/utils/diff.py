@@ -46,3 +46,16 @@ def parse_bool(value):
     if value is None:
         return None
     return value.lower() in ("true", "1", "yes")
+
+def parse_user_id(val, current_user_id):
+    if not val:
+        return None
+
+    val_str = str(val).strip().lower()
+    if val_str == "me":
+        return current_user_id
+
+    try:
+        return int(val_str)
+    except ValueError:
+        return None

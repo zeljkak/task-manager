@@ -19,3 +19,9 @@ export const login = (data) => {
     data
   );
 }
+
+export const logout = () => {
+  return api.post(
+    `/auth/logout`
+  );
+}
