@@ -194,10 +194,9 @@ export default function Home() {
                   hasDueDate: hasDueDate
               }))
           }
+          buttonOnCreated={() => setRefreshProjects(prev => prev + 1)}
       />
-      <CreateButtonComponent isMobile={isMobile} type={"task"} users={users}
-             projects={projects} statuses={taskStatuses} priorities={priorities}
-             onCreated={() => setRefreshTasks(prev => prev + 1)} />
+
       <div className={"all-tasks"}>
         {taskStatuses.map(taskStatus => {
           const filteredTasks = tasks.filter(

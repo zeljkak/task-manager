@@ -31,7 +31,10 @@ function CreateButtonComponent ({ isMobile, type, statuses, projects, priorities
                 </button>
             </div>
             {open && type === "project" && (
-                <CreateProjectComponent onClose={() => setOpen(false)} onCreated={onCreated} isMobile={isMobile} />
+                <div className={"modal-overlay"}>
+                    <CreateProjectComponent onClose={() => setOpen(false)}
+                        onCreated={onCreated} isMobile={isMobile} />
+                </div>
             )}
 
             {open && type === "task" && (

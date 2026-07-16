@@ -4,16 +4,16 @@ import SidebarComponent from "../components/SidebarComponent.jsx";
 
 export default function Layout() {
     const [isVisible, setIsVisible] = useState(
-        () => window.innerWidth > 500
+        () => window.innerWidth > 500 && window.innerHeight > 400
     );
     const [isMobile, setIsMobile] = useState(
-        () => window.innerWidth <= 500
+        () => window.innerWidth <= 500 && window.innerHeight <= 400
     );
     const [resetMyTasksKey, setResetMyTasksKey] = useState(0);
 
     useEffect(() => {
         const handleResize = () => {
-            const mobile = window.innerWidth <= 500;
+            const mobile = window.innerWidth <= 500 || window.innerHeight <= 400;
 
             setIsMobile(mobile);
 

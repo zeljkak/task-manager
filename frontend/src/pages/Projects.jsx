@@ -99,9 +99,9 @@ export default function Projects() {
                 createdAfter: createdAfter
             }))
           }
+          buttonOnCreated={() => setRefreshProjects(prev => prev + 1)}
       />
-      <CreateButtonComponent isMobile={isMobile} type={"project"}
-         onCreated={() => setRefreshProjects(prev => prev + 1)} />
+
       <div className={"all-projects"}>
         {sections.map(section => (
           <ProjectStatusComponent key={section.key}

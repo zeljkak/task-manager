@@ -116,6 +116,7 @@ a {
   width: inherit;
   max-width: 100%;
   height: 100vh;
+  box-sizing: border-box;
 }
 
 .user-data {
@@ -124,11 +125,22 @@ a {
 }
 
 .tasks-filter, .projects-filter {
+  display: grid;
+  grid-template-columns: 80% max-content;
+  justify-content: space-between;
+  align-items: center;
+  grid-template-rows: max-content;
+  width: 100%;
+}
+
+.separate-filters {
   display: flex;
   flex-direction: row;
   gap: 5px;
   z-index: 2;
   background-color: #121212;
+  align-items: center;
+
 }
 
 .filter-button-container,
@@ -183,7 +195,7 @@ a {
   width: 150px;
 }
 
-.filter-options,
+.filter-button-container > .filter-options,
 .created-by-options,
 .assigned-to-options,
 .followed-by-options,
@@ -229,17 +241,17 @@ a {
 
 .created-date-options,
 .due-date-options {
-  width: 175px;
+  width: min-content;
 }
 
 /* CREATED DATE AND DUE DATE INPUT FORMATTING */
 .date-grouped {
   display: grid;
-  column-gap: 3px;
-  grid-template-columns: 50px 80px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
   padding: 0 6px;
   align-items: center;
-  width: 165px;
+  box-sizing: border-box;
 }
 .wheel-interceptor-wrapper {
   width: min-content;
@@ -251,6 +263,10 @@ a {
   height: 28.8px !important;
   display: flex;
   align-items: center;
+}
+.due-date-option > div > div,
+.created-date-option > div > div {
+  padding: 0 5px;
 }
 .date-grouped [class*="rmp-container"] {
   height: 26px !important;
@@ -273,11 +289,6 @@ a {
 .date-grouped [class*="rmp-picker-item-selected"] {
   color: #dee2e6 !important;
   font-weight: 600;
-}
-
-#created-before, #created-after,
-#due-before, #due-after {
-  width: 96px;
 }
 
 .filter-button-container.open > .filter-options,
@@ -323,6 +334,7 @@ a {
   margin-top: 20px;
   padding-right: 15px;
   padding-bottom: 10px;
+  box-sizing: border-box;
 }
 
 .all-tasks {
@@ -342,22 +354,19 @@ a {
 }
 
 .create-button-container {
-  position: relative;
-  width: 100%;
+  display: grid;
+  align-self: center;
+  padding: 1px 15px 1px 6px;
 }
 
 .create-button {
-  width: max-content;
-  height: max-content;
-  display: block;
-  margin: auto;
-  padding: 0 6px;
-  position: fixed;
-  top: 0;
-  right: 0;
-  background-color: transparent;
+  justify-self: end;
   border: none;
-  z-index: 2;
+  background-color: transparent;
+}
+
+.create-button > svg {
+  margin: 0 !important;
 }
 
 .create-form, .task-details {
@@ -374,7 +383,7 @@ a {
   padding: 0 15px 15px 15px;
   background-color: #121212;
   border: 1px solid #555;
-  z-index: 9999;          /* Sits cleanly on top of the overlay */
+  z-index: 9999;
 
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
 }
@@ -460,6 +469,7 @@ a {
 
 .form-title > h4 > input {
   text-align: center;
+  width: 90%;
 }
 
 .form-input {
@@ -493,9 +503,8 @@ a {
 
 .form-element > .date-grouped {
   padding: 0;
-  width: min-content;
-  margin-right: -5px;
-
+  width: 100%;
+  display: block !important;
 }
 
 .form-element > .date-grouped > p {
@@ -504,6 +513,8 @@ a {
 
 .form-element > .date-grouped > .wheel-interceptor-wrapper {
   background-color: #212529;
+  width: 100% !important;
+  justify-content: center;
 }
 
 .form-element > textarea {
@@ -608,6 +619,7 @@ form > button:hover {
   top: 0;
   z-index: 1;
   background-color: #121212;
+  box-shadow: 0 -1px 0 0 #121212;
 }
 
 .fixed-status > h4 {
@@ -666,6 +678,14 @@ form > button:hover {
   justify-self: center;
 }
 
+.negative {
+  background-color: indianred !important;
+}
+
+.positive {
+  background-color: mediumseagreen !important;
+}
+
 .centered-page {
   width: 100%;
   min-width: max-content;
@@ -708,13 +728,9 @@ form > button:hover {
   min-width: min-content;
   white-space: nowrap;
   border-right: 1px solid rgba(255, 255, 255, 0.15);
-
-  height: 100vh;
-  overflow-y: auto;
 }
 
 #sidebar > a {
-  margin-bottom: 5px;
   padding: 5px 10px;
   font-weight: 500;
   color: inherit;
@@ -750,23 +766,18 @@ hr {
   width: 40%;
 }
 
-
-@media (max-width: 500px) {
-  .centered-page {
-
-  }
-
+@media (max-width: 500px), (max-height: 400px) {
   #sidebar {
     width: inherit;
     display: grid;
     grid-template-columns: repeat(6, 1fr);
+    align-content: center;
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 62px;
-    padding-bottom: 0;
-    padding-top: 5px;
+    height: 50px;
+    padding: 5px 10px;
   }
 
   #sidebar > button {
@@ -774,39 +785,20 @@ hr {
   }
 
   #sidebar > a {
-    padding-bottom: 0;
     display: flex;
     justify-content: center;
+    align-items: center;
+    padding: 5px;
+    scale: 0.95;
   }
 
   #content {
     flex: 1;
-    padding-bottom: 62px;
+    padding-bottom: 50px;
   }
 
-  .all-tasks, .all-projects {
-    display: grid;
-    align-items: stretch;
-    grid-template-columns: none;
-    grid-template-rows: repeat(5, 1fr);
-    overflow-y: scroll;
-    overflow-x: hidden;
-  }
-
-  .task-status, .project-status {
-    padding-bottom: 10px;
-  }
-
-  .task-status > br, .project-status > br {
-    display: none;
-  }
-
-  hr {
-    width: 80%;
-  }
-
-  .tasks-filter > .filter-button-container > button,
-  .projects-filter > .filter-button-container > button,
+  .tasks-filter > .separate-filters > .filter-button-container > button,
+  .projects-filter > .separate-filters > .filter-button-container > button,
   .clear-filter {
     font-size: 20px;
     padding-right: 20px;
@@ -814,10 +806,19 @@ hr {
 
   .text-filter {
     scale: 1.1;
-    margin-right: 20px;
+    margin-right: 15px;
+    width: 40%;
+    height: 80%;
   }
 
-  .filter-options,
+  .clear-filter {
+    padding: 2px 5px 0 3px;
+  }
+
+  .create-button-container {
+    padding: 0 5px 0 0;
+  }
+
   .created-by-options,
   .assigned-to-options,
   .followed-by-options,
@@ -856,6 +857,36 @@ hr {
 
   .filter-options > div > button {
     padding: 6px;
+  }
+
+  .modal-overlay > .filter-options {
+    position: relative;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none;
+
+    height: fit-content !important;
+    max-height: calc(100vh - 110px);
+    width: 70vw !important;
+    max-width: 320px;
+    overflow-y: auto;
+
+    display: grid !important;
+    grid-template-rows: auto 1fr;
+    align-items: center;
+    align-content: start !important;
+
+    padding: 12px;
+    border: 1px solid #555;
+    z-index: 9999 !important;
+
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  }
+
+  .modal-overlay > .filter-options > div {
+    justify-self: center;
   }
 
   .created-by-option,
@@ -908,23 +939,6 @@ hr {
     margin: 0 !important;
   }
 
-  .all-projects, .all-tasks {
-    margin-top: -48px;
-  }
-
-  .create-button {
-    margin-right: 15px;
-    position: sticky;
-  }
-
-  .create-form, .task-details, .confirmation-div {
-    width: 100% !important;
-    top: 0 !important;
-    height: 100% !important;
-    max-height: calc(100vh - 60px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-  }
-
   .form-title {
     display: grid !important;
     grid-template-columns: auto 1fr;
@@ -945,12 +959,50 @@ hr {
     width: 100% !important;
   }
 
-  .negative {
-    background-color: indianred !important;
+  .form-title > h4 > input {
+    width: 75%;
+  }
+}
+
+@media (max-width: 500px) {
+
+  .all-tasks, .all-projects {
+    display: grid;
+    align-items: stretch;
+    grid-template-columns: none;
+    grid-template-rows: repeat(5, 1fr);
+    overflow-y: scroll;
+    overflow-x: hidden;
   }
 
-  .positive {
-    background-color: mediumseagreen !important;
+  .task-status, .project-status {
+    padding-bottom: 10px;
+  }
+
+  .task-status > br, .project-status > br {
+    display: none;
+  }
+
+  hr {
+    width: 80%;
+  }
+
+  .create-form, .task-details, .confirmation-div {
+    width: 100% !important;
+    top: 0 !important;
+    height: 100% !important;
+    max-height: calc(100vh - 60px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  }
+
+}
+
+@media (max-width: 410px) {
+  .text-filter {
+    scale: 1.1;
+    margin-right: 15px;
+    width: 30%;
+    height: 80%;
   }
 }
 
