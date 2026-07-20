@@ -194,10 +194,10 @@ export default function Home() {
                   hasDueDate: hasDueDate
               }))
           }
-          buttonOnCreated={() => setRefreshProjects(prev => prev + 1)}
+          buttonOnCreated={() => setRefreshTasks(prev => prev + 1)}
       />
 
-      <div className={"all-tasks"}>
+      <div id={"all-tasks"}>
         {taskStatuses.map(taskStatus => {
           const filteredTasks = tasks.filter(
             task => task.statusId === taskStatus.id

@@ -11,16 +11,16 @@ function TaskData({ task }) {
     return (
         <div className={"task-data"}>
             <p className={"task-priority"}>
-                <PriorityIcon level={task.priority.level} size={18} />
-                {task.priority.level}
+                <PriorityIcon level={task.priority?.level} size={18} />
+                {task.priority?.level ?? "No priority"}
             </p>
             <p className={"task-assignee"}>
                 <UserIcon size={18} />
-                {task.assignedTo.firstName}
+                {task.assignedTo?.firstName}
             </p>
             <p className={"task-due-date"}>
                 <DueDateIcon size={18} />
-                {new Date(task.dueDate).toLocaleDateString("en-GB").replaceAll("/", ".").concat(".") ?? "No due date"}
+                {task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-GB").replaceAll("/", ".").concat(".") ?? "No due date" : "No due date"}
             </p>
             <p className={"task-project"}>
                 <ProjectIcon size={18} />
@@ -28,7 +28,7 @@ function TaskData({ task }) {
             </p>
             <p className={"task-estimated-hours"}>
                 <EstimatedHoursIcon size={18} />
-                {task.estimatedHours}
+                {task.estimatedHours ?? "No estimate"}
             </p>
         </div>
     );

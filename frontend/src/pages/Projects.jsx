@@ -102,7 +102,7 @@ export default function Projects() {
           buttonOnCreated={() => setRefreshProjects(prev => prev + 1)}
       />
 
-      <div className={"all-projects"}>
+      <div id={"all-projects"}>
         {sections.map(section => (
           <ProjectStatusComponent key={section.key}
             status={section.status} size={iconSize}

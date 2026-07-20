@@ -26,7 +26,7 @@ export const createTaskAttachment = (taskId, files) => {
 };
 
 export const getTask = (taskId) => {
-  return api.post(
+  return api.get(
     `/tasks/${taskId}`
   );
 };
@@ -35,3 +35,15 @@ export async function updateTask(taskId, update = {}) {
   const response = await api.patch(`/tasks/${taskId}`, update);
   return response.data;
 }
+
+export const getTaskComments = (taskId) => {
+  return api.get(
+    `/tasks/${taskId}/comments`
+  );
+};
+
+export const followTask = (taskId) => {
+  return api.post(
+    `/tasks/${taskId}/follow`
+  );
+};

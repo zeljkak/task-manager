@@ -87,14 +87,11 @@ class TaskService:
         if not assigned_user:
             raise NotFoundError("Assigned user not found")
 
+        project = None
         if data.get("project_id"):
-            project = ProjectRepository.get_by_id(data["project_id"])
-            if not project:
-                raise NotFoundError("Project not found")
-            if project.archived == True:
-                project = None
-            else:
-                project = project.id
+            db_project = ProjectRepository.get_by_id(data["project_id"])
+            if db_project and not db_project.archived:
+                project = db_project.id
 
         if data.get("priority_id"):
             if not PriorityRepository.get_by_id(data["priority_id"]):
@@ -157,7 +154,7 @@ class TaskService:
             raise NotFoundError("Assigned user not found")
 
         if data.get("priority_id"):
-            if not PriorityRepository.get_by_id(data["priority_id"]):
+            if data["priority_id"] != None and not PriorityRepository.get_by_id(data["priority_id"]):
                 raise NotFoundError("Priority not found")
 
         if data.get("status_id"):
@@ -213,7 +210,9 @@ class TaskService:
     def follow_task(task_id, current_user_id):
         user = UserService.get_user_by_id(current_user_id)
         task = TaskService.get_task_by_id(task_id)
-        if user in task.followers:
+        if user.id == task.assigned_to_id:
+            raise BadRequestError("Assignee cannot be a follower of this task")
+        elif user in task.followers:
             raise BadRequestError("User already followed this task")
         else:
             task.followers.append(user)

@@ -327,7 +327,7 @@ a {
   border-radius: 5px;
 }
 
-.all-tasks, .all-projects {
+#all-tasks, #all-projects {
   height: calc(100vh - 20px);
   display: grid;
   align-items: stretch;
@@ -337,13 +337,13 @@ a {
   box-sizing: border-box;
 }
 
-.all-tasks {
+#all-tasks {
   column-gap: 30px;
   grid-template-columns: repeat(5, 350px);
   overflow-x: scroll;
 }
 
-.all-projects {
+#all-projects {
   column-gap: 15px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   overflow-x: auto;
@@ -376,8 +376,7 @@ a {
   transform: none;
 
   max-height: calc(100vh - 110px);
-  width: 70vw !important;
-  max-width: 600px;
+  width: 95vw !important;
   overflow-y: auto;
 
   padding: 0 15px 15px 15px;
@@ -386,6 +385,54 @@ a {
   z-index: 9999;
 
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.create-form {
+  max-width: 600px;
+}
+
+.task-details {
+  flex-direction: row;
+  max-width: 1300px;
+}
+
+.task-edit {
+  flex: 1 0 auto;
+  height: 100%;
+  width: 80%;
+}
+
+.task-info {
+  opacity: 0.4;
+  flex: 1 0 20%;
+  min-width: 0;
+  max-width: 20%;
+  max-height: calc(100vh - 110px);
+  padding: 10px 5px;
+  box-sizing: border-box;
+}
+
+.task-info-box {
+  padding: 5px 0;
+  width: 100%;
+}
+.task-info-box > div > a {
+  display: block;
+}
+
+.task-info-box > p,
+.task-info-box > a,
+.task-info-box > div,
+.task-info > h4 {
+  width: 100%;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.task-info > h4 {
+  padding: 5px 0;
 }
 
 .modal-overlay, .confirmation-overlay {
@@ -494,6 +541,9 @@ a {
   background-color: #212529;
   min-width: 0;
   width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .inline-form-element {
@@ -501,17 +551,41 @@ a {
   grid-template-columns: repeat(2, 1fr);
 }
 
-.form-element > .date-grouped {
+input[id="new-task-no-due-date"] {
+  transform: scale(1.6);
+  transform-origin: left center;
+  margin-left: 5px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+label[for="new-task-no-due-date"] {
+  width: max-content;
+}
+
+.inline-due-date {
+  display: grid !important;
+  grid-template-columns: max-content;
+}
+
+.due-date-text {
+  width: max-content;
+  display: inline-block;
+  padding-right: 10px;
+  cursor: default;
+}
+
+.form-element > .inline-due-date > .date-grouped {
   padding: 0;
   width: 100%;
   display: block !important;
 }
 
-.form-element > .date-grouped > p {
+.form-element > .inline-due-date > .date-grouped > p {
   display: none;
 }
 
-.form-element > .date-grouped > .wheel-interceptor-wrapper {
+.form-element > .inline-due-date > .date-grouped > .wheel-interceptor-wrapper {
   background-color: #212529;
   width: 100% !important;
   justify-content: center;
@@ -549,6 +623,7 @@ a {
 
 .attach {
   display: block;
+
 }
 
 .attachments-title {
@@ -591,7 +666,7 @@ a {
   max-width: max-content;
 }
 
-.attachment-label:hover {
+.attachment-label:hover, #new-task-attachment, #new-task-attachment::file-selector-button {
   cursor: pointer;
 }
 
@@ -966,7 +1041,7 @@ hr {
 
 @media (max-width: 500px) {
 
-  .all-tasks, .all-projects {
+  #all-tasks, #all-projects {
     display: grid;
     align-items: stretch;
     grid-template-columns: none;
@@ -1005,9 +1080,31 @@ hr {
     height: 80%;
   }
 }
+@media (max-width: 630px) {
+  .task-details {
+    flex-direction: column;
+  }
+
+  .task-edit {
+    width: 100% !important;
+    height: max-content;
+  }
+
+  .task-info {
+    align-self: center;
+    width: 90%;
+    max-width: 100%;
+  }
+
+  .task-info-box {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
 @media (min-width: 501px) and (max-width: 700px) {
-  .all-projects {
+  #all-projects {
     display: grid;
     align-items: stretch;
     grid-template-columns: none;

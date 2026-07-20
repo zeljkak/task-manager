@@ -99,6 +99,9 @@ responses:
                 projectDescription:
                   type: string
                   example: This is an example of a project. It can be renamed or deleted.
+                archived:
+                  type: boolean
+                  example: False
             dueDate:
               type: string
               format: date

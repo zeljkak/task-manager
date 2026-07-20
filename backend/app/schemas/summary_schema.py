@@ -14,3 +14,4 @@ class ProjectSummarySchema(Schema):
     id = fields.Int()
     project_name = fields.Str(data_key="projectName")
     project_description = fields.Str(data_key="projectDescription")
+    archived = fields.Bool()

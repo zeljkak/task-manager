@@ -4,13 +4,13 @@ function ProjectData({ project }) {
         ))}
     return (
         <div className={"project-data"}>
-            <p className={"project-description"}>Description</p>
+            <p className={"project-description"}>Description:</p>
             <p>{project.projectDescription}</p><br />
-            <p className={"project-created-at"}>Date Created</p>
+            <p className={"project-created-at"}>Date Created:</p>
             <p>{new Date(project.createdAt).toLocaleDateString("en-GB").replaceAll("/", ".").concat(".")}</p><br />
-            <p className={"project-created-by"}>Created By</p>
+            <p className={"project-created-by"}>Created By:</p>
             <p><a href="#">{project.createdBy.firstName} {project.createdBy.lastName}</a></p><br/>
-            <p className={"project-attachments"}>Attachments</p>
+            <p className={"project-attachments"}>Attachments:</p>
             {project.attachments.map(attachment => (
                 <a href={attachment.fileUrl} key={attachment.id}
                 target="_blank" rel="noopener noreferrer" className="file-name">

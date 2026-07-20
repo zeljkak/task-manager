@@ -2,19 +2,24 @@ import {useEffect, useState} from "react";
 import DatePickerComponent from "./DatePickerComponent.jsx";
 import {createTask, createTaskAttachment} from "../services/taskService.js";
 import BackIcon from "./icons/BackIcon.jsx";
+import {useAuth} from "../context/AuthContext.jsx";
 
 function CreateTaskComponent({ onClose, statuses, projects, priorities, users, onCreated, isMobile }) {
+    const {user} = useAuth();
+    const {id: toDoStatus} = statuses.find(status => status.status === "to_do") || {};
+
     const [taskData, setTaskData] = useState({
         title: "",
         description: "",
-        assignedToId: "",
-        statusId: "",
+        assignedToId: user ? user.id : "",
+        statusId: toDoStatus,
         priorityId: "",
         projectId: "",
         estimatedHours: "",
         dueDate: "",
     });
 
+    const [noDueDate, setNoDueDate] = useState(true);
     const [attachments, setAttachments] = useState([]);
 
     const iconSize = isMobile ? 34 : 24;
@@ -42,11 +47,43 @@ function CreateTaskComponent({ onClose, statuses, projects, priorities, users, o
         );
     };
 
+    const handleCheckboxChange = (e) => {
+        const isChecked = e.target.checked;
+        const newNoDueDateStatus = !isChecked;
+        setNoDueDate(newNoDueDateStatus);
+
+        setTaskData(prev => {
+            let finalDate = "";
+            if (newNoDueDateStatus) {
+                finalDate = "";
+            } else {
+                const today = new Date();
+                finalDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+            }
+            return {
+                ...prev,
+                dueDate: finalDate
+            };
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
-            const taskResponse = await createTask(taskData);
+            const payload = taskData;
+            const processPayload = (payload) => {
+                return {
+                    ...payload,
+                    projectId: payload.projectId ? Number(payload.projectId) : null,
+                    priorityId: payload.priorityId ? Number(payload.priorityId) : null,
+                    estimatedHours: payload.estimatedHours ? Number(payload.estimatedHours) : null,
+                    dueDate: payload.dueDate ? payload.dueDate : null
+                };
+            };
+            const cleanPayload = processPayload(payload);
+
+            const taskResponse = await createTask(cleanPayload);
             const createdTask = taskResponse.data.task;
 
             if (attachments.length > 0) {
@@ -111,7 +148,6 @@ function CreateTaskComponent({ onClose, statuses, projects, priorities, users, o
                                 }))
                             }
                         >
-                            <option value={""}>Choose assignee</option>
                             {users.map(user => {
                               return (
                                   <option value={user.id} key={user.id}>{user.firstName} {user.lastName}</option>
@@ -130,7 +166,6 @@ function CreateTaskComponent({ onClose, statuses, projects, priorities, users, o
                                 }))
                             }
                         >
-                            <option value={""}>Choose task status</option>
                             {statuses.map(status => {
                               return (
                                   <option value={status.id} key={status.id}>{status.status.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}</option>
@@ -145,7 +180,7 @@ function CreateTaskComponent({ onClose, statuses, projects, priorities, users, o
                             onChange={(e) =>
                                 setTaskData(prev => ({
                                     ...prev,
-                                    priorityId: e.target.value ? Number(e.target.value) : ""
+                                    priorityId: e.target.value ? Number(e.target.value) : null
                                 }))
                             }
                         >
@@ -164,7 +199,7 @@ function CreateTaskComponent({ onClose, statuses, projects, priorities, users, o
                             onChange={(e) =>
                                 setTaskData(prev => ({
                                     ...prev,
-                                    projectId: e.target.value ? Number(e.target.value) : ""
+                                    projectId: e.target.value ? Number(e.target.value) : null
                                 }))
                             }
                         >
@@ -183,7 +218,7 @@ function CreateTaskComponent({ onClose, statuses, projects, priorities, users, o
                             onChange={(e) =>
                                 setTaskData(prev => ({
                                     ...prev,
-                                    estimatedHours: e.target.value ? Number(e.target.value) : ""
+                                    estimatedHours: e.target.value ? Number(e.target.value) : null
                                 }))
                             }
                         >
@@ -198,17 +233,26 @@ function CreateTaskComponent({ onClose, statuses, projects, priorities, users, o
                             <option value={8} key={8}>8</option>
                         </select>
                     </div>
-                    <div className={"form-element inline-form-element"}>
-                        <p>Due date:</p>
-                        <DatePickerComponent label={"due-before"}
-                            selected={taskData.dueDate}
-                            onChange={(date) =>
-                                setTaskData(prev => ({
-                                    ...prev,
-                                    dueDate: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
-                                }))
-                            }
-                        />
+                    <div className={"form-element inline-form-element"} id={"due-date-div"}>
+                        <div>
+                            <p className={"due-date-text"}>Due date:</p>
+                            <input type={"checkbox"} id={"new-task-no-due-date"} name={"no-due-date"}
+                               checked={!noDueDate} onChange={handleCheckboxChange}/>
+                        </div>
+                        <div className={"inline-due-date"}>
+                        <label htmlFor={"new-task-no-due-date"}>{noDueDate ? "Not set" : ""}</label>
+                            {!noDueDate && (
+                                <DatePickerComponent label={"due-before"}
+                                selected={taskData.dueDate}
+                                onChange={(date) =>
+                                    setTaskData(prev => ({
+                                        ...prev,
+                                        dueDate: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+                                    }))
+                                }
+                                />
+                            )}
+                        </div>
                     </div>
                     <div className={"form-element inline-form-element"}>
                         <label htmlFor={"new-task-attachment"} className={"attachment-label"}>Attachments:</label>
