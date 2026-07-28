@@ -9,8 +9,8 @@ function ProjectData({ project }) {
             <p className={"project-created-at"}>Date Created:</p>
             <p>{new Date(project.createdAt).toLocaleDateString("en-GB").replaceAll("/", ".").concat(".")}</p><br />
             <p className={"project-created-by"}>Created By:</p>
-            <p><a href="#">{project.createdBy.firstName} {project.createdBy.lastName}</a></p><br/>
-            <p className={"project-attachments"}>Attachments:</p>
+            <p><a href="#">{project.createdBy.firstName} {project.createdBy.lastName}</a></p>
+            {project.attachments.length > 0 ? <><br/><p className={"project-attachments"}>Attachments:</p></> : ""}
             {project.attachments.map(attachment => (
                 <a href={attachment.fileUrl} key={attachment.id}
                 target="_blank" rel="noopener noreferrer" className="file-name">

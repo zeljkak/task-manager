@@ -4,8 +4,6 @@ import EstimatedHoursIcon from "./icons/EstimatedHoursIcon.jsx";
 import ProjectIcon from "./icons/ProjectIcon.jsx";
 import DueDateIcon from "./icons/DueDateIcon.jsx";
 import UserIcon from "./icons/UserIcon.jsx";
-import {useState} from "react";
-import TaskDetails from "./TaskDetails.jsx";
 
 function TaskData({ task }) {
     return (
@@ -34,24 +32,19 @@ function TaskData({ task }) {
     );
 }
 
-function TaskCardComponent({ task, statuses, projects, priorities, users, isMobile, onChange }) {
+function TaskCardComponent({ task, onChange }) {
     const navigate = useNavigate();
-    const [open, setOpen] = useState(false);
 
     return (
         <>
             <div className="card" key={task.id}
-                onClick={() => setOpen(true)}>
+                onClick={() => navigate(`/tasks/${task.id}`)}>
                 <div className="card-body">
                     <h5 className="task-title">{task.title}</h5>
                     <TaskData task={task} />
                 </div>
             </div>
-            {open && (
-                <TaskDetails onClose={() => setOpen(false)} onChange={onChange}
-                    users={users} statuses={statuses} projects={projects}
-                    priorities={priorities} task={task} isMobile={isMobile} />
-            )}
+
         </>
     );
 }

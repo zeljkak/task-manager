@@ -1,38 +1,38 @@
 import { useState, useEffect, useRef } from 'react';
 import DatePickerComponent from "./DatePickerComponent.jsx";
 import BackIcon from "./icons/BackIcon.jsx";
-import {useAuth} from "../context/AuthContext.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 import CreateButtonComponent from "./CreateButtonComponent.jsx";
 
-function TaskFilterComponent({ text, users, statuses, priorities, projects,
-        selectedCreatedBefore, selectedCreatedAfter, selectedDueBefore,
-        selectedDueAfter, selectedOverdue, selectedAssigneeId,
-        selectedFollowerId, selectedStatusId, selectedPriorityId,
-        selectedProjectId, selectedHasProject, onChange,
-        onAssigneeSelect, onFollowerSelect, onStatusSelect, onPrioritySelect,
-        onProjectSelect, onHasProjectSelect, onCreatedBeforeSelect,
-        onCreatedAfterSelect, onDueBeforeSelect, onDueAfterSelect, onOverdueSelect,
-        selectedHasDueDate, onHasDueDateSelect, isMobile, buttonOnCreated }) {
+export default function TaskFilterComponent({ filters, onFilterChange,
+    onClearAll, options = {}, isMobile, buttonOnCreated }) {
+
+    const { users = [], statuses = [], priorities = [], projects = [] } = options;
 
     const [isMainOpen, setIsMainOpen] = useState(false);
     const [activeSubMenu, setActiveSubMenu] = useState(null);
 
     const filterRef = useRef(null);
-
-    const {user: currentUser} = useAuth();
-    const isUserSelected = (userId) => {
-        if (selectedAssigneeId === "me") {
-            return currentUser?.id === userId;
-        }
-        return selectedAssigneeId === userId;
-    };
-
-    const selectedBeforeDate = selectedCreatedBefore ? new Date(selectedCreatedBefore) : null;
-    const selectedAfterDate = selectedCreatedAfter ? new Date(selectedCreatedAfter) : null;
-    const selectedBeforeDue = selectedDueBefore ? new Date(selectedDueBefore) : null;
-    const selectedAfterDue = selectedDueAfter ? new Date(selectedDueAfter) : null;
+    const { user: currentUser } = useAuth();
 
     const iconSize = isMobile ? 34 : 24;
+
+    const formatDate = (dateStr) => {
+        return dateStr && !isNaN(new Date(dateStr)) ? new Date(dateStr).toISOString() : dateStr;
+    };
+
+    const isUserSelected = (userId) => {
+        if (filters.assignedToId === "me") {
+            return currentUser?.id === userId;
+        }
+        return filters.assignedToId === userId;
+    };
+
+    const parseDate = (dateStr) => {
+        if (!dateStr) return null;
+        const parsed = new Date(dateStr);
+        return !isNaN(parsed.getTime()) ? parsed : null;
+    };
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -67,154 +67,151 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
         );
     };
 
+    const formatStatus = (str) => {
+        if (!str) return "";
+        return str.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+    };
+
     const filterOptionsContent = (
-        <div className={"filter-options card"}>
+        <div className="filter-options card">
+            {/* Assignees */}
             <div className={`assigned-to-container ${activeSubMenu === 'assignee' ? 'open' : ''}`}>
-                <button type="button" className={"assigned-to-filter"}
+                <button type="button" className="assigned-to-filter"
                     onClick={() => toggleSubMenu('assignee')}>
                     Assignees
                 </button>
-                <div className={"assigned-to-options"}>
+                <div className="assigned-to-options">
                     {renderMobileBackButton()}
-                    <button key={""} type="button"
-                        className={selectedAssigneeId === ""
-                            ? "assigned-to-option no-option active"
-                            : "assigned-to-option no-option"}
-                        onClick={() => onAssigneeSelect("")}>
+                    <button type="button"
+                        className={`assigned-to-option no-option ${filters.assignedToId === "" ? "active" : ""}`}
+                        onClick={() => onFilterChange({ assignedToId: "" })}>
                         All assignees
                     </button>
                     {users.map(user => (
                         <button key={user.id} type="button"
-                                className={isUserSelected(user.id)
-                                ? "assigned-to-option active"
-                                : "assigned-to-option"}
-                                onClick={() => onAssigneeSelect(user.id)}>
+                            className={`assigned-to-option ${isUserSelected(user.id) ? "active" : ""}`}
+                            onClick={() => onFilterChange({ assignedToId: user.id })}>
                             {user.firstName} {user.lastName}
                         </button>
                     ))}
                 </div>
             </div>
+
+            {/* Followers */}
             <div className={`followed-by-container ${activeSubMenu === 'follower' ? 'open' : ''}`}>
-                <button type="button" className={"followed-by-filter"}
+                <button type="button" className="followed-by-filter"
                     onClick={() => toggleSubMenu('follower')}>
                     Followers
                 </button>
-                <div className={"followed-by-options"}>
+                <div className="followed-by-options">
                     {renderMobileBackButton()}
-                    <button key={""} type="button"
-                        className={"followed-by-option no-option"}
-                        onClick={() => onFollowerSelect("")}>
+                    <button type="button" className="followed-by-option no-option"
+                        onClick={() => onFilterChange({ followedById: "" })}>
                         Clear
                     </button>
                     {users.map(user => (
                         <button key={user.id} type="button"
-                                className={user.id === selectedFollowerId
-                                ? "followed-by-option active"
-                                : "followed-by-option"}
-                                onClick={() => onFollowerSelect(user.id)}>
+                            className={`followed-by-option ${user.id === filters.followedById ? "active" : ""}`}
+                            onClick={() => onFilterChange({ followedById: user.id })}>
                             {user.firstName} {user.lastName}
                         </button>
                     ))}
                 </div>
             </div>
+
+            {/* Status */}
             <div className={`status-container ${activeSubMenu === 'status' ? 'open' : ''}`}>
-                <button type="button" className={"status-filter"}
+                <button type="button" className="status-filter"
                     onClick={() => toggleSubMenu('status')}>
                     Status
                 </button>
-                <div className={"status-options"}>
+                <div className="status-options">
                     {renderMobileBackButton()}
-                    <button key={""} type="button"
-                        className={"status-option no-option"}
-                        onClick={() => onStatusSelect("")}>
+                    <button type="button" className="status-option no-option"
+                        onClick={() => onFilterChange({ statusId: "" })}>
                         Clear
                     </button>
                     {statuses.map(status => (
                         <button key={status.id} type="button"
-                                className={status.id === selectedStatusId
-                                ? "status-option active"
-                                : "status-option"}
-                                onClick={() => onStatusSelect(status.id)}>
-                            {status.status.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
+                            className={`status-option ${status.id === filters.statusId ? "active" : ""}`}
+                            onClick={() => onFilterChange({ statusId: status.id })}>
+                            {formatStatus(status.status)}
                         </button>
                     ))}
                 </div>
             </div>
+
+            {/* Priority */}
             <div className={`priority-container ${activeSubMenu === 'priority' ? 'open' : ''}`}>
-                <button type="button" className={"priority-filter"}
+                <button type="button" className="priority-filter"
                     onClick={() => toggleSubMenu('priority')}>
                     Priority
                 </button>
-                <div className={"priority-options"}>
+                <div className="priority-options">
                     {renderMobileBackButton()}
-                    <button key={""} type="button"
-                        className={"priority-option no-option"}
-                        onClick={() => onPrioritySelect("")}>
+                    <button type="button" className="priority-option no-option"
+                        onClick={() => onFilterChange({ priorityId: "" })}>
                         Clear
                     </button>
                     {priorities.map(priority => (
                         <button key={priority.id} type="button"
-                                className={priority.id === selectedPriorityId
-                                ? "priority-option active"
-                                : "priority-option"}
-                                onClick={() => onPrioritySelect(priority.id)}>
+                            className={`priority-option ${priority.id === filters.priorityId ? "active" : ""}`}
+                            onClick={() => onFilterChange({ priorityId: priority.id })}>
                             {priority.level.charAt(0).toUpperCase() + priority.level.slice(1)}
                         </button>
                     ))}
                 </div>
             </div>
+
+            {/* Project */}
             <div className={`project-container ${activeSubMenu === 'project' ? 'open' : ''}`}>
-                <button type="button" className={"project-filter"}
+                <button type="button" className="project-filter"
                     onClick={() => toggleSubMenu('project')}>
                     Project
                 </button>
-                <div className={"project-options"}>
+                <div className="project-options">
                     {renderMobileBackButton()}
-                    <button key={""} type="button"
-                        className={"project-option no-option"}
-                        onClick={() => { onProjectSelect(""); onHasProjectSelect(""); }}>
+                    <button type="button" className="project-option no-option"
+                        onClick={() => onFilterChange({ projectId: "", hasProject: "" })}>
                         Clear
                     </button>
-                    <button key={null} type="button"
-                        className={selectedHasProject === false ? "project-option active" : "project-option"}
-                        onClick={() => { onProjectSelect(""); onHasProjectSelect(false); }}>
+                    <button type="button"
+                        className={`project-option ${filters.hasProject === false || filters.hasProject === "false" ? "active" : ""}`}
+                        onClick={() => onFilterChange({ projectId: "", hasProject: false })}>
                         No project
                     </button>
                     {projects.map(project => (
                         <button key={project.id} type="button"
-                                className={project.id === selectedProjectId
-                                ? "project-option active"
-                                : "project-option"}
-                                onClick={() =>
-                                { onProjectSelect(project.id); onHasProjectSelect("") }}>
+                            className={`project-option ${project.id === filters.projectId ? "active" : ""}`}
+                            onClick={() => onFilterChange({ projectId: project.id, hasProject: "" })}>
                             {project.projectName}
                         </button>
                     ))}
                 </div>
             </div>
+
+            {/* Created Date */}
             <div className={`created-date-container ${activeSubMenu === 'createdDate' ? 'open' : ''}`}>
-                <button type="button"
-                    className="created-date-filter"
+                <button type="button" className="created-date-filter"
                     onClick={() => toggleSubMenu('createdDate')}>
                     Created
                 </button>
                 <div className="created-date-options">
                     {renderMobileBackButton()}
-                    <button key={""} type="button"
-                        className={"created-date-option no-option"}
-                        onClick={() => [onCreatedBeforeSelect(""), onCreatedAfterSelect("")]}>
+                    <button type="button" className="created-date-option no-option"
+                        onClick={() => onFilterChange({ createdBefore: "", createdAfter: "" })}>
                         Clear
                     </button>
-                    <DatePickerComponent label={"created-before"}
-                         selected={selectedBeforeDate && !isNaN(selectedBeforeDate.getTime()) ? selectedBeforeDate : null}
-                         onChange={(date) => onCreatedBeforeSelect(date)}
+                    <DatePickerComponent label="created-before" selected={parseDate(filters.createdBefore)}
+                        onChange={(date) => onFilterChange({ createdBefore: formatDate(date) })}
                     />
-                    <DatePickerComponent label={"created-after"}
-                         selected={selectedAfterDate && !isNaN(selectedAfterDate.getTime()) ? selectedAfterDate : null}
-                         onChange={(date) => onCreatedAfterSelect(date)}
+                    <DatePickerComponent label="created-after" selected={parseDate(filters.createdAfter)}
+                        onChange={(date) => onFilterChange({ createdAfter: formatDate(date) })}
                     />
                 </div>
             </div>
+
+            {/* Due Date */}
             <div className={`due-date-container ${activeSubMenu === 'dueDate' ? 'open' : ''}`}>
                 <button type="button" className="due-date-filter"
                     onClick={() => toggleSubMenu('dueDate')}>
@@ -222,28 +219,25 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
                 </button>
                 <div className="due-date-options">
                     {renderMobileBackButton()}
-                    <button key={""} type="button"
-                        className={"due-date-option no-option"}
-                        onClick={() => [onDueBeforeSelect(""), onDueAfterSelect(""), onOverdueSelect(""), onHasDueDateSelect("")]}>
+                    <button type="button" className="due-date-option no-option"
+                        onClick={() => onFilterChange({ dueBefore: "", dueAfter: "", overdue: "", hasDueDate: "" })}>
                         Clear
                     </button>
-                    <button key={"overdue"} type="button"
-                        className={selectedOverdue === true ? "overdue-option active" : "overdue-option"}
-                        onClick={() => [onOverdueSelect(true), onHasDueDateSelect("")]}>
+                    <button type="button"
+                        className={`overdue-option ${filters.overdue === true ? "active" : ""}`}
+                        onClick={() => onFilterChange({ overdue: true, hasDueDate: "" })}>
                         Overdue
                     </button>
-                    <button key={null} type="button"
-                        className={selectedHasDueDate === false ? "overdue-option active" : "overdue-option"}
-                        onClick={() => { onDueBeforeSelect(""); onDueAfterSelect(""); onOverdueSelect(""); onHasDueDateSelect(false); }}>
+                    <button type="button"
+                        className={`overdue-option ${filters.hasDueDate === false ? "active" : ""}`}
+                        onClick={() => onFilterChange({ dueBefore: "", dueAfter: "", overdue: "", hasDueDate: false })}>
                         No due date
                     </button>
-                    <DatePickerComponent label={"due-before"}
-                         selected={selectedBeforeDue && !isNaN(selectedBeforeDue.getTime()) ? selectedBeforeDue : null}
-                         onChange={(date) => [onDueBeforeSelect(date), onHasDueDateSelect("")]}
+                    <DatePickerComponent label="due-before" selected={parseDate(filters.dueBefore)}
+                        onChange={(date) => onFilterChange({ dueBefore: formatDate(date), hasDueDate: "" })}
                     />
-                    <DatePickerComponent label={"due-after"}
-                         selected={selectedAfterDue && !isNaN(selectedAfterDue.getTime()) ? selectedAfterDue : null}
-                         onChange={(date) => [onDueAfterSelect(date), onHasDueDateSelect("")]}
+                    <DatePickerComponent label="due-after" selected={parseDate(filters.dueAfter)}
+                        onChange={(date) => onFilterChange({ dueAfter: formatDate(date), hasDueDate: "" })}
                     />
                 </div>
             </div>
@@ -251,43 +245,39 @@ function TaskFilterComponent({ text, users, statuses, priorities, projects,
     );
 
     return (
-        <div className={"tasks-filter"} ref={filterRef}>
-            <div className={"separate-filters"}>
+        <div className="tasks-filter" ref={filterRef}>
+            <div className="separate-filters">
                 <div className={`filter-button-container ${isMainOpen ? 'open' : ''}`}>
-                    <button type={"button"} className={"filter-button"} onClick={toggleMainFilter}>
+                    <button type="button" className="filter-button" onClick={toggleMainFilter}>
                         Filter
                     </button>
-                    {isMainOpen && (isMobile ? (
-                          <div className="modal-overlay">
-                            {filterOptionsContent}
-                          </div>
-                      ) : (
-                        filterOptionsContent
-                      )
+                    {isMainOpen && (
+                        isMobile ? (
+                            <div className="modal-overlay">
+                                {filterOptionsContent}
+                            </div>
+                        ) : (
+                            filterOptionsContent
+                        )
                     )}
                 </div>
-                <input className={"text-filter"} name={"text-filter"}
-                       placeholder={"Search"} value={text}
-                       onChange={(e) => onChange(e.target.value)}
+
+                <input className="text-filter" name="text-filter"
+                    placeholder="Search" value={filters.text || ""}
+                    onChange={(e) => onFilterChange({ text: e.target.value })}
                 />
-                <div className={"clear-all-container"}>
-                    <button key={"clear-all"} type="button"
-                            className={"clear-filter"}
-                            onClick={() => [onChange(""), onAssigneeSelect(""), onFollowerSelect(""),
-                                onStatusSelect(""), onPrioritySelect(""), onProjectSelect(""),
-                                onCreatedBeforeSelect(""), onCreatedAfterSelect(""),
-                                onDueBeforeSelect(""), onDueAfterSelect(""), onOverdueSelect(""),
-                                onHasDueDateSelect(""), onHasProjectSelect("")
-                            ]}>
-                            Clear All
+
+                <div className="clear-all-container">
+                    <button type="button" className="clear-filter" onClick={onClearAll}>
+                        Clear All
                     </button>
                 </div>
             </div>
-            <CreateButtonComponent isMobile={isMobile} type={"task"} users={users}
-             projects={projects} statuses={statuses} priorities={priorities}
-             onCreated={buttonOnCreated} />
+
+            <CreateButtonComponent isMobile={isMobile} type="task" users={users}
+                projects={projects} statuses={statuses} priorities={priorities}
+                onCreated={buttonOnCreated}
+            />
         </div>
     );
 }
-
-export default TaskFilterComponent;

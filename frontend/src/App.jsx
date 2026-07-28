@@ -7,6 +7,7 @@ import Profile from "./pages/Profile.jsx";
 import Layout from "./pages/Layout.jsx";
 import Home from "./pages/Home.jsx";
 import Projects from "./pages/Projects.jsx";
+import Task from "./pages/Task.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/projects" element={<Projects />} />
+          <Route path="/tasks/:taskId" element={<Task />} />
         </Route>
       </Route>
 

@@ -1,38 +1,99 @@
-import {useEffect, useState, useRef} from "react";
+import {useEffect, useState, useRef, useCallback} from "react";
+import {useNavigate, useOutletContext, useParams} from "react-router-dom";
 import {createPortal} from "react-dom";
-import DatePickerComponent from "./DatePickerComponent.jsx";
-import {createTaskAttachment, updateTask} from "../services/taskService.js";
+import {getTask, createTaskAttachment, updateTask} from "../services/taskService.js";
 import {deleteAttachment} from "../services/attachmentService.js";
-import BackIcon from "./icons/BackIcon.jsx";
-import AttachmentIcon from "./icons/AttachmentIcon.jsx";
-import DeleteIcon from "./icons/DeleteIcon.jsx";
-import FollowTaskComponent from "./FollowTaskComponent.jsx";
+import BackIcon from "../components/icons/BackIcon.jsx";
+import AttachmentIcon from "../components/icons/AttachmentIcon.jsx";
+import DeleteIcon from "../components/icons/DeleteIcon.jsx";
+import DatePickerComponent from "../components/DatePickerComponent.jsx";
+import FollowTaskComponent from "../components/FollowTaskComponent.jsx";
 
-function TaskDetails ({onClose, onChange, task, statuses, projects, priorities, users, isMobile}) {
+
+function Task ({}) {
+    const { taskId } = useParams();
+    const { triggerTaskRefresh, isMobile, users = [], statuses = [], priorities = [], projects = [], refreshDropdowns } = useOutletContext();
+    const navigate = useNavigate();
+
+    const [task, setTask] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const [noDueDate, setNoDueDate] = useState(true);
+    const [attachments, setAttachments] = useState([]);
+    const [deletingAttachmentId, setDeletingAttachmentId] = useState(null);
+
+    const iconSize = isMobile ? 30 : 24;
+
     const [taskData, setTaskData] = useState({
-        title: task?.title || "",
-        description: task?.description || "",
-        assignedToId: task?.assignedTo.id || "",
-        statusId: task?.statusId || "",
-        priorityId: task?.priority?.id || null,
-        projectId: task?.project?.id || null,
-        estimatedHours: task?.estimatedHours || null,
-        dueDate: task?.dueDate || "",
+        title: "",
+        description: "",
+        assignedToId: "",
+        statusId: "",
+        priorityId: null,
+        projectId: null,
+        estimatedHours: null,
+        dueDate: "",
     });
 
     const dateTimeoutRef = useRef(null);
-    const [noDueDate, setNoDueDate] = useState(!taskData.dueDate);
 
-    const iconSize = isMobile ? 30 : 24;
-    const [attachments, setAttachments] = useState([]);
-    const [deletingAttachmentId, setDeletingAttachmentId] = useState(null);
+    useEffect(() => {
+        return () => {
+            if (dateTimeoutRef.current) {
+                clearTimeout(dateTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    const fetchTask = useCallback(async () => {
+        try {
+            const response = await getTask(taskId);
+            const fetchedTask = response.data?.task || response.task;
+
+            setTask(fetchedTask);
+            setTaskData({
+                title: fetchedTask?.title || "",
+                description: fetchedTask?.description || "",
+                assignedToId: fetchedTask?.assignedTo?.id || "",
+                statusId: fetchedTask?.statusId || "",
+                priorityId: fetchedTask?.priority?.id || null,
+                projectId: fetchedTask?.project?.id || null,
+                estimatedHours: fetchedTask?.estimatedHours || null,
+                dueDate: fetchedTask?.dueDate || "",
+            });
+            setNoDueDate(!fetchedTask?.dueDate);
+            setError(null);
+        } catch (err) {
+            console.error("Failed to fetch task details:", err);
+            setError(err.response?.data?.error || "Failed to load task");
+        } finally {
+            setLoading(false);
+        }
+    }, [taskId]);
+
+    useEffect(() => {
+        setLoading(true);
+        fetchTask();
+    }, [fetchTask]);
+
+    // Synchronize Task view & Home view
+    const syncUpdates = async () => {
+        await fetchTask(); // Updates this page
+        if (triggerTaskRefresh) triggerTaskRefresh(); // Updates Home page in background
+        //if (refreshDropdowns) refreshDropdowns(); // Updates global layout dropdowns
+    };
+
+    if (loading) return <div className="spinner"><p className={"loading"}>Loading task details...</p></div>;
+    if (error) return <div className="error-message"><p className={"error"}>{error}</p></div>;
+    if (!task) return <div>Task not found.</div>;
 
     const createdByDiv = (
         <>
             <div className={"task-info-box"}>
                 <p>Created by:</p>
                 <a href={"#"} target="_blank" rel="noopener noreferrer">
-                    {task.createdBy.firstName} {task.createdBy.lastName}
+                    {task?.createdBy?.firstName} {task?.createdBy?.lastName}
                 </a>
             </div>
         </>
@@ -42,7 +103,7 @@ function TaskDetails ({onClose, onChange, task, statuses, projects, priorities, 
         <>
             <div className={"task-info-box"}>
                 <p>Followed by:</p>
-                {task.followers.map(follower => (
+                {task?.followers?.map(follower => (
                     <a href={"#"} target="_blank" rel="noopener noreferrer"
                     key={follower.id}>
                         {follower.firstName} {follower.lastName}
@@ -57,7 +118,7 @@ function TaskDetails ({onClose, onChange, task, statuses, projects, priorities, 
             <div className={"task-info-box"}>
                 <p>Related tasks:</p>
                 <div>
-                    {task.related.map(relatedTask => (
+                    {task?.related?.map(relatedTask => (
                         <a href={"#"} target="_blank" rel="noopener noreferrer"
                         key={relatedTask.id}>
                             {relatedTask.title}
@@ -78,43 +139,18 @@ function TaskDetails ({onClose, onChange, task, statuses, projects, priorities, 
         if (!isMobile) return null;
         return (
             <button type="button" className="submenu-back-button"
-                onClick={onClose}>
+                onClick={() => navigate(-1)}>
                 <BackIcon size={iconSize} />
             </button>
         );
     };
 
-    useEffect(() => {
-        function handleClickOutside(event) {
-            const clickedConfirmation = event.target.closest('.confirmation-overlay');
-
-            if (clickedConfirmation) {
-                return
-            }
-
-            const clickedInsideTask = event.target.closest('.task-details');
-
-            if (!clickedInsideTask) {
-                onClose();
-            }
-        }
-        document.addEventListener('mousedown', handleClickOutside);
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-
-            if (dateTimeoutRef.current) {
-                clearTimeout(dateTimeoutRef.current);
-            }
-        };
-    }, [onClose]);
-
     const handleAttachmentDelete = async (attachmentId) => {
         try {
-            const response = await deleteAttachment(attachmentId);
-            onChange();
+            await deleteAttachment(attachmentId);
+            await syncUpdates();
         } catch (error) {
-            console.log(error);
+            console.log("Failed to delete attachment: ", error);
         }
     }
 
@@ -125,11 +161,11 @@ function TaskDetails ({onClose, onChange, task, statuses, projects, priorities, 
 
         let finalDate = "";
 
-        if (newNoDueDateStatus) {
-            finalDate = null;
-        } else {
+        if (!newNoDueDateStatus) {
             const today = new Date();
             finalDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        } else {
+            finalDate = null;
         }
 
         const updatedTaskData = {
@@ -153,11 +189,10 @@ function TaskDetails ({onClose, onChange, task, statuses, projects, priorities, 
             }
 
             await updateTask(task.id, payload);
-            onChange();
+            await syncUpdates();
         } catch (error) {
-            console.error("Failed to update due date:", error);
+            console.error("Failed to update due date: ", error);
         }
-
     };
 
     const handleChange = async (e) => {
@@ -177,9 +212,9 @@ function TaskDetails ({onClose, onChange, task, statuses, projects, priorities, 
 
                 await createTaskAttachment(task.id, attachmentData);
                 setAttachments([]);
-                onChange();
+                await syncUpdates();
             } catch (error) {
-                console.error("Failed to upload attachments:", error);
+                console.error("Failed to upload attachments: ", error);
             }
             return;
         }
@@ -205,28 +240,28 @@ function TaskDetails ({onClose, onChange, task, statuses, projects, priorities, 
             }
 
             await updateTask(task.id, payload);
-            onChange();
+            await syncUpdates();
+
         } catch (error) {
-            console.error(error);
+            console.error("Failed to update task: ", error);
         }
     };
 
     return (
-        createPortal(
-            <div className={"modal-overlay"}>
-                <div className={"task-details card"}>
+        <div className={"task-details"}>
                     <div className={"task-edit"}>
                         <form onSubmit={(e) => e.preventDefault()}>
                             <div className={"form-title"}>
                                 {renderMobileBackButton()}
                                 <h4>
                                     <input type={"text"} name={"title"}
-                                        value={taskData.title} onChange={handleChange} />
+                                        value={taskData.title} onChange={handleChange}
+                                    />
                                 </h4>
-                                <FollowTaskComponent task={task} size={iconSize} />
+                                <FollowTaskComponent task={task} size={iconSize} onFollowChange={syncUpdates} />
                             </div>
                             <div id={"form-message"}>
-                                
+
                             </div>
                             <div className={"form-input"}>
                                 <div className={"form-element"}>
@@ -252,7 +287,7 @@ function TaskDetails ({onClose, onChange, task, statuses, projects, priorities, 
                                     <select name={"statusId"} id={`task-status-task-${task.id}`}
                                         value={taskData.statusId} onChange={handleChange}
                                     >
-                                        {statuses.map(status => {
+                                        {statuses?.map(status => {
                                           return (
                                               <option value={status.id} key={status.id}>{status.status.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}</option>
                                           );
@@ -265,7 +300,7 @@ function TaskDetails ({onClose, onChange, task, statuses, projects, priorities, 
                                         value={taskData.priorityId ?? ""} onChange={handleChange}
                                     >
                                         <option value={""}>Choose priority</option>
-                                        {priorities.map(priority => {
+                                        {priorities?.map(priority => {
                                           return (
                                               <option value={priority.id} key={priority.id}>{priority.level.charAt(0).toUpperCase() + priority.level.slice(1)}</option>
                                           );
@@ -278,7 +313,7 @@ function TaskDetails ({onClose, onChange, task, statuses, projects, priorities, 
                                         value={taskData.projectId ?? ""} onChange={handleChange}
                                     >
                                         <option value={""}>Choose project</option>
-                                        {projects.filter(project => !project.archived).map(project => {
+                                        {projects?.filter(project => !project.archived).map(project => {
                                           return (
                                               <option value={project.id} key={project.id}>{project.projectName}</option>
                                           );
@@ -301,22 +336,18 @@ function TaskDetails ({onClose, onChange, task, statuses, projects, priorities, 
                                     <select name={"estimatedHours"} id={`estimated-hours-task-${task.id}`}
                                         value={taskData.estimatedHours ?? ""} onChange={handleChange}
                                     >
-                                        <option value={""}>Choose estimated hours</option>
-                                        <option value={1} key={1}>1</option>
-                                        <option value={2} key={2}>2</option>
-                                        <option value={3} key={3}>3</option>
-                                        <option value={4} key={4}>4</option>
-                                        <option value={5} key={5}>5</option>
-                                        <option value={6} key={6}>6</option>
-                                        <option value={7} key={7}>7</option>
-                                        <option value={8} key={8}>8</option>
+                                        <option value="">Choose estimated hours</option>
+                                        {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                                            <option value={num} key={num}>{num}</option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div className={"form-element inline-form-element"}>
                                     <div>
                                         <p className={"due-date-text"}>Due date:</p>
                                         <input type={"checkbox"} id={"new-task-no-due-date"} name={"no-due-date"}
-                                            checked={!noDueDate} onChange={handleCheckboxChange}/>
+                                            checked={!noDueDate} onChange={handleCheckboxChange}
+                                        />
                                     </div>
                                     <div className={"inline-due-date"}>
                                         <label htmlFor={"new-task-no-due-date"}>{noDueDate ? "Not set" : ""}</label>
@@ -344,9 +375,12 @@ function TaskDetails ({onClose, onChange, task, statuses, projects, priorities, 
                                 <div className={"form-element attach"}>
                                     <div className={"inline-form-element"}>
                                         <p className="attachments-title">Attachments:</p>
-                                        <label htmlFor={`task-${task.id}-attachment`} className={"attachment-label"}><AttachmentIcon size={iconSize} /></label>
+                                        <label htmlFor={`task-${task.id}-attachment`} className={"attachment-label"}>
+                                            <AttachmentIcon size={iconSize} />
+                                        </label>
                                         <input type={"file"} name={"attachments"} id={`task-${task.id}-attachment`} multiple
-                                        onChange={handleChange} style={{display: "none"}} />
+                                            onChange={handleChange} style={{display: "none"}}
+                                        />
                                     </div>
                                     {task?.attachments && task?.attachments.length > 0 && (
                                         <div className={"listed-attachments"}>
@@ -361,9 +395,7 @@ function TaskDetails ({onClose, onChange, task, statuses, projects, priorities, 
                                                                     </p>
                                                                     <div className={"confirmation-actions"}>
                                                                         <button type="button" className={"positive"} onClick={() => {
-                                                                            handleAttachmentDelete(file.id);
-                                                                            setDeletingAttachmentId(null);
-                                                                        }}>
+                                                                            handleAttachmentDelete(file.id); setDeletingAttachmentId(null); }}>
                                                                             Yes
                                                                         </button>
                                                                         <button type="button" className={"negative"} onClick={() => setDeletingAttachmentId(null)}>
@@ -395,19 +427,16 @@ function TaskDetails ({onClose, onChange, task, statuses, projects, priorities, 
                     </div>
                     <div className={'task-info'}>
                         <h4>Info</h4>
-                        {task.assignedTo.id !== task.createdBy.id ? createdByDiv : ""}
+                        {task?.assignedTo?.id !== task?.createdBy?.id ? createdByDiv : ""}
                         <div className={"task-info-box"}>
                             <p>Created date:</p>
                             <p>{new Date(task.createdAt).toLocaleDateString("en-GB").replaceAll("/", ".").concat(".")}</p>
                         </div>
-                        {task.related.length > 0 ? relatedToDiv : ""}
-                        {task.followers.length > 0 ? followersDiv : ""}
+                        {task?.related?.length > 0 ? relatedToDiv : ""}
+                        {task?.followers?.length > 0 ? followersDiv : ""}
                     </div>
                 </div>
-            </div>,
-            document.getElementById('content') || document.body
-        )
     );
 }
 
-export default TaskDetails;
+export default Task;

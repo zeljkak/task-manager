@@ -47,3 +47,9 @@ export const followTask = (taskId) => {
     `/tasks/${taskId}/follow`
   );
 };
+
+export const unfollowTask = (taskId) => {
+  return api.delete(
+    `/tasks/${taskId}/follow`
+  );
+};

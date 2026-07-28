@@ -1,54 +1,123 @@
-import {useEffect, useState, useMemo} from "react";
-import {useNavigate, useOutletContext} from "react-router-dom";
+import {useEffect, useState, useMemo, useCallback} from "react";
+import {useNavigate, useOutletContext, useSearchParams} from "react-router-dom";
 import ProjectCardComponent from "../components/ProjectCardComponent.jsx";
 import ProjectStatusComponent from "../components/ProjectStatusComponent.jsx";
 import ProjectFilterComponent from "../components/ProjectFilterComponent.jsx";
-import CreateButtonComponent from "../components/CreateButtonComponent.jsx";
 import {getProjects} from "../services/projectService.js";
-import {getUsers} from "../services/userService.js";
+
+const DEFAULT_FILTERS = {
+  projectText: "",
+  createdById: "",
+  createdBefore: "",
+  createdAfter: ""
+};
+
+const INT_KEYS = ["createdById"];
 
 export default function Projects() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const [projects, setProjects] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [filteredProjects, setFilteredProjects] = useState(null);
 
-  const [refreshProjects, setRefreshProjects] = useState(0);
-
-  const { isMobile } = useOutletContext();
+  const { isMobile, users = [], projects = [], refreshDropdowns } = useOutletContext();
   const iconSize = isMobile ? 34 : 24;
 
-  const [filters, setFilters] = useState({
-    projectText: "",
-    createdById: "",
-    createdBefore: "",
-    createdAfter: ""
-  });
+  const filters = useMemo(() => {
+    const current = { ...DEFAULT_FILTERS };
 
-  async function loadProjects() {
-    const apiFilters = { ...filters };
+    for (const key of Object.keys(DEFAULT_FILTERS)) {
+      if (!searchParams.has(key)) continue;
 
-    if (apiFilters.createdBefore && !isNaN(new Date(apiFilters.createdBefore))) {
-      apiFilters.createdBefore = new Date(apiFilters.createdBefore).toISOString();
+      const rawVal = searchParams.get(key);
+
+      if (INT_KEYS.includes(key) && rawVal !== "" && !isNaN(rawVal)) {
+        current[key] = parseInt(rawVal, 10);
+      } else {
+        current[key] = rawVal;
+      }
     }
-    if (apiFilters.createdAfter && !isNaN(new Date(apiFilters.createdAfter))) {
-      apiFilters.createdAfter = new Date(apiFilters.createdAfter).toISOString();
-    }
+    return current;
+  }, [searchParams]);
 
-    const data = await getProjects(apiFilters);
-    setProjects(data.projects);
-  }
+  const hasActiveFilters = useMemo(() => {
+    return Object.keys(DEFAULT_FILTERS).some((key) => {
+      const val = filters[key];
+      return val !== "" && val !== undefined && val !== null;
+    });
+  }, [filters]);
+
+  const updateFilters = useCallback((updates) => {
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+
+      Object.entries(updates).forEach(([key, val]) => {
+        if (val !== undefined && val !== null && val !== "") {
+          newParams.set(key, String(val));
+        } else {
+          newParams.delete(key);
+        }
+      });
+
+      return newParams;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const clearAllFilters = useCallback(() => {
+    setSearchParams({}, { replace: true });
+  }, [setSearchParams]);
+
+  const loadProjects = useCallback(async () => {
+      if (!hasActiveFilters) {
+          setFilteredProjects(null);
+          setError("");
+          return;
+      }
+
+      setLoading(true);
+      setError("");
+
+      try {
+          const apiFilters = {...filters};
+
+          if (apiFilters.createdBefore && !isNaN(new Date(apiFilters.createdBefore))) {
+              apiFilters.createdBefore = new Date(apiFilters.createdBefore).toISOString();
+          }
+          if (apiFilters.createdAfter && !isNaN(new Date(apiFilters.createdAfter))) {
+              apiFilters.createdAfter = new Date(apiFilters.createdAfter).toISOString();
+          }
+
+          const response = await getProjects(apiFilters);
+          setFilteredProjects(response.projects || []);
+      } catch (err) {
+          console.error("Failed to fetch filtered projects:", err);
+          setError(err.response?.data?.error || "Failed to load projects");
+      } finally {
+          setLoading(false);
+      }
+  }, [filters, hasActiveFilters]);
 
   useEffect(() => {
     loadProjects();
-  }, [filters, refreshProjects]);
+  }, [loadProjects]);
+
+  const activeProjectsList = hasActiveFilters ? (filteredProjects || []) : projects;
+
+  const handleProjectCreated = async () => {
+      if (hasActiveFilters) {
+          await loadProjects();
+      }
+      if (refreshDropdowns) {
+        await refreshDropdowns();
+      }
+  };
 
   const grouped = useMemo(() => {
-    return projects.reduce(
+    return (activeProjectsList || []).reduce(
       (acc, project) => {
         const key = project.archived ? "archived" : "active";
         (acc[key]).push(project);
@@ -56,13 +125,7 @@ export default function Projects() {
       },
       { active: [], archived: [] }
     );
-  }, [projects]);
-
-  useEffect(() => {
-    getUsers()
-    .then((res) => setUsers(res.data.users))
-    .catch((err) => console.error(err));
-  }, []);
+  }, [activeProjectsList]);
 
   const sections = [
     { key: "active", status: "active" },
@@ -71,60 +134,38 @@ export default function Projects() {
 
   return (
     <>
-      <ProjectFilterComponent isMobile={isMobile} text={filters.projectText}
-          users={users} selectedUserId={filters.createdById}
-          onChange={(value) =>
-            setFilters(prev => ({
-              ...prev,
-              projectText: value
-            }))
-          }
-          onUserSelect={(userId) =>
-            setFilters(prev => ({
-              ...prev,
-              createdById: userId
-            }))
-          }
-          selectedCreatedBefore={filters.createdBefore}
-          onCreatedBeforeSelect={(createdBefore) =>
-            setFilters(prev => ({
-                ...prev,
-                createdBefore: createdBefore
-            }))
-          }
-          selectedCreatedAfter={filters.createdAfter}
-          onCreatedAfterSelect={(createdAfter) =>
-            setFilters(prev => ({
-                ...prev,
-                createdAfter: createdAfter
-            }))
-          }
-          buttonOnCreated={() => setRefreshProjects(prev => prev + 1)}
+      <ProjectFilterComponent filters={filters}
+        onFilterChange={updateFilters}
+        onClearAll={clearAllFilters}
+        isMobile={isMobile}
+        options={{ users }}
+        buttonOnCreated={handleProjectCreated}
       />
 
-      <div id={"all-projects"}>
-        {sections.map(section => (
-          <ProjectStatusComponent key={section.key}
-            status={section.status} size={iconSize}
-            length={grouped[section.key].length}>
-              {grouped[section.key].map(project => (
-                <ProjectCardComponent key={project.id} project={project} />
-              ))}
-          </ProjectStatusComponent>
-        ))}
-      </div>
-
-      {message && (
-        <p className={"message"}>
-          {message}
-        </p>
+      {loading ? (
+        <div className="spinner">
+          <p className="loading">Loading projects...</p>
+        </div>
+      ) : error ? (
+        <div className="error-message">
+          <p className="error">{error}</p>
+        </div>
+      ) : (
+          <div id={"all-projects"}>
+            {sections.map(section => (
+              <ProjectStatusComponent key={section.key}
+                status={section.status} size={iconSize}
+                length={grouped[section.key].length}>
+                  {grouped[section.key].map(project => (
+                    <ProjectCardComponent key={project.id} project={project} />
+                  ))}
+              </ProjectStatusComponent>
+            ))}
+          </div>
       )}
 
-      {error && (
-        <p className={"error"}>
-          {error}
-        </p>
-      )}
+      {message && (<p className={"message"}>{message}</p>)}
+      {error && (<p className={"error"}>{error}</p>)}
     </>
   );
 }

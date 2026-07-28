@@ -114,7 +114,10 @@ class TaskService:
             estimated_hours=data.get("estimated_hours")
         )
 
-        return TaskRepository.create(task)
+        created_task = TaskRepository.create(task)
+        if created_task.assigned_to_id != current_user_id:
+            TaskService.follow_task(created_task.id, current_user_id)
+        return TaskRepository.get_by_id(created_task.id)
 
 
     @staticmethod
@@ -149,9 +152,15 @@ class TaskService:
             if project.archived == True:
                 raise BadRequestError("Cannot link a task to an archived project")
 
-        assigned_to = UserRepository.get_by_id(data.get("assigned_to_id"))
-        if not assigned_to:
-            raise NotFoundError("Assigned user not found")
+        new_assigned_id = data.get("assigned_to_id")
+        if new_assigned_id:
+            assigned_to = UserRepository.get_by_id(new_assigned_id)
+            if not assigned_to:
+                raise NotFoundError("Assigned user not found")
+            if task.assigned_to_id != new_assigned_id:
+                is_follower = any(follower.id == new_assigned_id for follower in task.followers)
+                if is_follower:
+                    TaskService.unfollow_task(task_id, new_assigned_id)
 
         if data.get("priority_id"):
             if data["priority_id"] != None and not PriorityRepository.get_by_id(data["priority_id"]):
@@ -211,7 +220,7 @@ class TaskService:
         user = UserService.get_user_by_id(current_user_id)
         task = TaskService.get_task_by_id(task_id)
         if user.id == task.assigned_to_id:
-            raise BadRequestError("Assignee cannot be a follower of this task")
+            raise BadRequestError("Assigneed user cannot also be a follower of a task")
         elif user in task.followers:
             raise BadRequestError("User already followed this task")
         else:
