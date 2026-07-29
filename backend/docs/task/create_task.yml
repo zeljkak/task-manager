@@ -1,10 +1,7 @@
 tags:
   - Task
 
-description: Create a new task.
-
-security:
-  - BearerAuth: []
+description: Create a new task. Requires an active session cookie
 
 parameters:
   - name: body
@@ -196,7 +193,7 @@ responses:
   400:
     description: Bad request (missing or invalid fields)
   401:
-    description: Authentication required
+    description: Unauthorized (missing or invalid session cookie)
   404:
     description: Related resource not found
   422:

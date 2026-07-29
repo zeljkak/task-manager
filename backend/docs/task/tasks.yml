@@ -2,10 +2,7 @@ tags:
   - Task
 
 description:
-  Retrieve tasks. Results can be filtered by title, description, assigned user, followers, status, priority, project, date of creation and due date. Requires a valid JWT token in Authorization header. Format: Bearer <token>
-
-security:
-  - BearerAuth: []
+  Retrieve tasks. Results can be filtered by title, description, assigned user, followers, status, priority, project, date of creation and due date. Requires an active session cookie
 
 parameters:
   - name: text
@@ -243,7 +240,7 @@ responses:
                           type: string
                           example: Smith
   401:
-    description: Unauthorized (missing or invalid token)
+    description: Unauthorized (missing or invalid session cookie)
   422:
     description: Validation error
   500:

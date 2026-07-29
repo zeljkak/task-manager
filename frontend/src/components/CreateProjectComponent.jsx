@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useState, useRef} from "react";
 import {createProject, createProjectAttachment} from "../services/projectService.js";
 import BackIcon from "./icons/BackIcon.jsx";
 
@@ -9,8 +9,17 @@ function CreateProjectComponent({ onClose, onCreated, isMobile }) {
     });
 
     const [attachments, setAttachments] = useState([]);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const errorRef = useRef(null);
     const iconSize = isMobile ? 34 : 24;
+
+    useEffect(() => {
+        if (errorMessage && errorRef.current) {
+            errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }, [errorMessage]);
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -37,6 +46,14 @@ function CreateProjectComponent({ onClose, onCreated, isMobile }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setErrorMessage("");
+
+        if (!projectData.projectName.trim()) {
+            setErrorMessage("Project name is required.");
+            return;
+        }
+
+        setIsSubmitting(true);
 
         try {
             const projectResponse = await createProject(projectData);
@@ -58,6 +75,9 @@ function CreateProjectComponent({ onClose, onCreated, isMobile }) {
             onClose();
         } catch (error) {
             console.log(error);
+            setErrorMessage(error.response?.data?.error || "Failed to create project.")
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -68,17 +88,24 @@ function CreateProjectComponent({ onClose, onCreated, isMobile }) {
                     {renderMobileBackButton()}
                     <h4>New project</h4>
                 </div>
+                {errorMessage && (
+                    <div ref={errorRef} className={"error-message"}>
+                        <p className={"error"}>{errorMessage}</p>
+                    </div>
+                )}
                 <div className={"form-input"}>
                     <div className={"form-element"}>
-                        <label htmlFor={"new-project-name"}>Name:</label>
+                        <label htmlFor={"new-project-name"}>Name: <span style={{ color: "#d9534f" }}>*</span></label>
                         <input name={"project-name"} id={"new-project-name"}
                            placeholder={"Enter name"} value={projectData.projectName}
-                           onChange={(e) =>
+                           className={errorMessage && !projectData.projectName.trim() ? "input-error" : ""}
+                           onChange={(e) => {
+                               if (errorMessage) setErrorMessage("");
                                setProjectData(prev => ({
                                    ...prev,
                                    projectName: e.target.value
-                               }))
-                           }
+                               }));
+                           }}
                         />
                     </div>
                     <div className={"form-element"}>
@@ -99,7 +126,7 @@ function CreateProjectComponent({ onClose, onCreated, isMobile }) {
                         onChange={(e) => setAttachments([...e.target.files])} />
                     </div>
                 </div>
-                <button type={"submit"}>Create</button>
+                <button type={"submit"} disabled={isSubmitting}>{isSubmitting ? "Creating..." : "Create"}</button>
             </form>
         </div>
     );

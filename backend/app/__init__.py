@@ -22,11 +22,8 @@ from backend.app.routes.attachment import attachment_bp
 from backend.app.routes.file import file_bp
 
 from backend.app import models
-
 from backend.config import Config
-
 from backend.app.errors.handlers import register_error_handlers
-
 
 swagger_template = {
     "swagger": "2.0",
@@ -34,14 +31,6 @@ swagger_template = {
         "title": "Task Manager API",
         "description": "API documentation",
         "version": "1.0"
-    },
-    "securityDefinitions": {
-        "BearerAuth": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header",
-            "description": "Enter: Bearer <your_token>"
-        }
     }
 }
 

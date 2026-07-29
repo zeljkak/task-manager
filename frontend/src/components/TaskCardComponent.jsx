@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { Draggable } from "@hello-pangea/dnd";
 import PriorityIcon from "./icons/PriorityIcon.jsx";
 import EstimatedHoursIcon from "./icons/EstimatedHoursIcon.jsx";
 import ProjectIcon from "./icons/ProjectIcon.jsx";
@@ -32,20 +33,30 @@ function TaskData({ task }) {
     );
 }
 
-function TaskCardComponent({ task, onChange }) {
+function TaskCardComponent({ task, index, onChange }) {
     const navigate = useNavigate();
 
-    return (
-        <>
-            <div className="card" key={task.id}
-                onClick={() => navigate(`/tasks/${task.id}`)}>
-                <div className="card-body">
-                    <h5 className="task-title">{task.title}</h5>
-                    <TaskData task={task} />
-                </div>
-            </div>
+    const handleClick = () => {
+        navigate(`/tasks/${task.id}`);
+    };
 
-        </>
+    return (
+        <Draggable draggableId={String(task.id)} index={index}>
+          {(provided, snapshot) => (
+            <div ref={provided.innerRef}
+              {...provided.draggableProps}
+              {...provided.dragHandleProps}
+              className={`card ${snapshot.isDragging ? "dragging" : ""}`}
+              onClick={handleClick}
+              style={{ userSelect: "none", marginBottom: "8px",
+                ...provided.draggableProps.style }}>
+              <div className="card-body">
+                <h5 className="task-title">{task.title}</h5>
+                <TaskData task={task} />
+              </div>
+            </div>
+          )}
+        </Draggable>
     );
 }
 

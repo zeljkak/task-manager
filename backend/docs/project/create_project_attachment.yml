@@ -2,10 +2,7 @@ tags:
   - Project
 
 description:
-  Create an attachment for a specific project that matches the ID. Requires a valid JWT token in Authorization header. Format: Bearer <token>
-
-security:
-  - BearerAuth: []
+  Create an attachment for a specific project that matches the ID. Requires an active session cookie
 
 consumes:
   - multipart/form-data
@@ -65,7 +62,7 @@ responses:
   400:
     description: Bad request (missing or invalid fields)
   401:
-    description: Authentication required
+    description: Unauthorized (missing or invalid session cookie)
   404:
     description: Related resource not found
   500:

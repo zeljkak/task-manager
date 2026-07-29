@@ -65,7 +65,7 @@ class TaskRepository:
             if followed_by_id is not None:
                 tasks = tasks.join(Task.followers).filter(User.id == followed_by_id)
 
-            return tasks.order_by(Task.created_at.desc()).all()
+            return tasks.order_by(Task.updated_at.desc()).all()
 
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
@@ -129,7 +129,7 @@ class TaskRepository:
             if followed_by_id is not None:
                 tasks = tasks.join(Task.followers).filter(User.id == followed_by_id)
 
-            return tasks.order_by(Task.created_at.desc()).all()
+            return tasks.order_by(Task.updated_at.desc()).all()
 
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e

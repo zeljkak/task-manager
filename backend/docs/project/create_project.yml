@@ -1,10 +1,7 @@
 tags:
   - Project
 
-description: Create a new project.
-
-security:
-  - BearerAuth: []
+description: Create a new project. Requires an active session cookie
 
 parameters:
   - name: body
@@ -112,7 +109,7 @@ responses:
   400:
     description: Bad request (missing or invalid fields)
   401:
-    description: Authentication required
+    description: Unauthorized (missing or invalid session cookie)
   403:
     description: Forbidden (unallowed action)
   422:

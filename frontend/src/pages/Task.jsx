@@ -1,17 +1,20 @@
 import {useEffect, useState, useRef, useCallback} from "react";
-import {useNavigate, useOutletContext, useParams} from "react-router-dom";
+import {useNavigate, useOutletContext, useParams, Link} from "react-router-dom";
 import {createPortal} from "react-dom";
-import {getTask, createTaskAttachment, updateTask} from "../services/taskService.js";
+import {getTask, createTaskAttachment, updateTask, getTaskComments, createTaskComment} from "../services/taskService.js";
 import {deleteAttachment} from "../services/attachmentService.js";
 import BackIcon from "../components/icons/BackIcon.jsx";
 import AttachmentIcon from "../components/icons/AttachmentIcon.jsx";
 import DeleteIcon from "../components/icons/DeleteIcon.jsx";
 import DatePickerComponent from "../components/DatePickerComponent.jsx";
 import FollowTaskComponent from "../components/FollowTaskComponent.jsx";
+import {useAuth} from "../context/AuthContext.jsx";
+import EditIcon from "../components/icons/EditIcon.jsx";
 
 
 function Task ({}) {
     const { taskId } = useParams();
+    const {user} = useAuth();
     const { triggerTaskRefresh, isMobile, users = [], statuses = [], priorities = [], projects = [], refreshDropdowns } = useOutletContext();
     const navigate = useNavigate();
 
@@ -19,9 +22,18 @@ function Task ({}) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const [errorMessage, setErrorMessage] = useState("");
+    const lastValidTitleRef = useRef("");
+
     const [noDueDate, setNoDueDate] = useState(true);
     const [attachments, setAttachments] = useState([]);
     const [deletingAttachmentId, setDeletingAttachmentId] = useState(null);
+
+    const [comments, setComments] = useState([]);
+    const [commentsLoading, setCommentsLoading] = useState(true);
+    const [newCommentText, setNewCommentText] = useState("");
+    const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+    const [commentError, setCommentError] = useState("");
 
     const iconSize = isMobile ? 30 : 24;
 
@@ -46,6 +58,19 @@ function Task ({}) {
         };
     }, []);
 
+    const fetchComments = useCallback(async () => {
+        setCommentsLoading(true);
+        try {
+            const response = await getTaskComments(taskId);
+            const fetchedComments = response.data?.comments || [];
+            setComments(fetchedComments);
+        } catch (err) {
+            console.error("Failed to fetch comments:", err);
+        } finally {
+            setCommentsLoading(false);
+        }
+    }, [taskId]);
+
     const fetchTask = useCallback(async () => {
         try {
             const response = await getTask(taskId);
@@ -62,6 +87,7 @@ function Task ({}) {
                 estimatedHours: fetchedTask?.estimatedHours || null,
                 dueDate: fetchedTask?.dueDate || "",
             });
+            lastValidTitleRef.current = fetchedTask?.title || "";
             setNoDueDate(!fetchedTask?.dueDate);
             setError(null);
         } catch (err) {
@@ -75,13 +101,46 @@ function Task ({}) {
     useEffect(() => {
         setLoading(true);
         fetchTask();
-    }, [fetchTask]);
+        fetchComments();
+    }, [fetchTask, fetchComments]);
+
+    useEffect(() => {
+        if (errorMessage) {
+            requestAnimationFrame(() => {
+                const scrollContainer = document.querySelector(".task-details");
+
+                if (scrollContainer) {
+                    scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
+                }
+            });
+        }
+    }, [errorMessage]);
 
     // Synchronize Task view & Home view
     const syncUpdates = async () => {
         await fetchTask(); // Updates this page
+        await fetchComments();
         if (triggerTaskRefresh) triggerTaskRefresh(); // Updates Home page in background
         //if (refreshDropdowns) refreshDropdowns(); // Updates global layout dropdowns
+    };
+
+    const handleCommentSubmit = async (e) => {
+        e.preventDefault();
+        if (!newCommentText.trim()) return;
+
+        setIsSubmittingComment(true);
+        setCommentError("");
+
+        try {
+            await createTaskComment(taskId, { comment: newCommentText });
+            setNewCommentText("");
+            await syncUpdates();
+        } catch (err) {
+            console.error("Failed to post comment:", err);
+            setCommentError(err.response?.data?.error || "Failed to post comment.");
+        } finally {
+            setIsSubmittingComment(false);
+        }
     };
 
     if (loading) return <div className="spinner"><p className={"loading"}>Loading task details...</p></div>;
@@ -119,10 +178,9 @@ function Task ({}) {
                 <p>Related tasks:</p>
                 <div>
                     {task?.related?.map(relatedTask => (
-                        <a href={"#"} target="_blank" rel="noopener noreferrer"
-                        key={relatedTask.id}>
+                        <Link to={`/tasks/${relatedTask.id}`} key={relatedTask.id}>
                             {relatedTask.title}
-                        </a>
+                        </Link>
                     ))}
                 </div>
 
@@ -130,8 +188,60 @@ function Task ({}) {
         </>
     );
 
-    const comments = (
+    const commentsDiv = (
         <div className={"task-comments"}>
+            <h4>Comments</h4>
+
+            {commentsLoading ? (
+                <p>Loading comments...</p>
+            ) : comments.length === 0 ? (
+                <p className="no-comments">No comments yet.</p>
+            ) : (
+                <div className="comments-list">
+                    {comments.map((c) => (
+                        <div key={c.id} className="comment-item">
+                            <div className="comment-header">
+                                <strong>{c.user ? `${c.user.firstName} ${c.user.lastName}` : "User"}</strong>
+                                {c.createdAt && (
+                                    <span className="comment-date">
+                                        {new Date(c.createdAt).toLocaleString("en-GB")
+                                            .replaceAll("/", ".")
+                                            .replaceAll(",", ".")
+                                            .concat(".").slice(0, -1)}
+                                    </span>
+                                )}
+                                {c.user.id !== user.id ? "" : (
+                                    <button className={"edit-button"}><EditIcon size={iconSize} /></button>
+                                )}
+                            </div>
+                            <p className="comment-text">{c.comment}</p>
+                            <div className={"comment-attachments"}>
+                                {c.attachments.length <= 0 ? "" : (c.attachments.map((a) => (
+                                    <a href={a.fileUrl} key={a.id} target="_blank"
+                                       rel="noopener noreferrer" className="file-name">
+                                        {a.fileName}
+                                    </a>
+                                )))}
+                            </div>
+                            <hr />
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {commentError && <p className="error">{commentError}</p>}
+
+            <form onSubmit={handleCommentSubmit} className="add-comment-form">
+                <textarea
+                    placeholder="Write a comment..."
+                    value={newCommentText}
+                    onChange={(e) => setNewCommentText(e.target.value)}
+                    rows={3}
+                />
+                <button type="submit" disabled={isSubmittingComment || !newCommentText.trim()}>
+                    {isSubmittingComment ? "Posting..." : "Post Comment"}
+                </button>
+            </form>
         </div>
     );
 
@@ -150,7 +260,7 @@ function Task ({}) {
             await deleteAttachment(attachmentId);
             await syncUpdates();
         } catch (error) {
-            console.log("Failed to delete attachment: ", error);
+            console.error("Failed to delete attachment: ", error);
         }
     }
 
@@ -198,6 +308,29 @@ function Task ({}) {
     const handleChange = async (e) => {
         const { name, value: rawValue, files } = e.target;
 
+        if (name === "title") {
+            if (!rawValue.trim()) {
+                setErrorMessage("Title is required.");
+
+                // Revert back to the last valid title
+                setTaskData(prev => ({
+                    ...prev,
+                    title: lastValidTitleRef.current
+                }));
+
+                // Clear error after 3 seconds
+                setTimeout(() => {
+                    setErrorMessage("");
+                }, 3000);
+
+                return;
+            }
+
+            // Keep track of valid title entries
+            lastValidTitleRef.current = rawValue;
+            setErrorMessage("");
+        }
+
         if (name === "attachments") {
             const fileList = [...files];
             if (fileList.length === 0) return;
@@ -219,7 +352,7 @@ function Task ({}) {
             return;
         }
 
-        const value = (name.endsWith("Id") || name === "estimatedHours") && rawValue === "" ? null : rawValue;
+        const value = (name.endsWith("Id") || name === "estimatedHours" || name === "dueDate") && rawValue === "" ? null : rawValue;
 
         const updatedTaskData = {
             ...taskData,
@@ -230,6 +363,10 @@ function Task ({}) {
 
         try {
             const payload = { ...updatedTaskData };
+
+            if (!payload.dueDate) {
+                payload.dueDate = null;
+            }
 
             const isArchivedProjectSelected = payload.projectId && projects.some(
                 project => project.archived && project.id === Number(payload.projectId)
@@ -260,9 +397,11 @@ function Task ({}) {
                                 </h4>
                                 <FollowTaskComponent task={task} size={iconSize} onFollowChange={syncUpdates} />
                             </div>
-                            <div id={"form-message"}>
-
-                            </div>
+                            {errorMessage && (
+                                <div className={"error-message"}>
+                                    <p className={"error"}>{errorMessage}</p>
+                                </div>
+                            )}
                             <div className={"form-input"}>
                                 <div className={"form-element"}>
                                     <textarea name={"description"} className={"inline-form-element"}
@@ -423,7 +562,7 @@ function Task ({}) {
                                 </div>
                             </div>
                         </form>
-
+                        {commentsDiv}
                     </div>
                     <div className={'task-info'}>
                         <h4>Info</h4>

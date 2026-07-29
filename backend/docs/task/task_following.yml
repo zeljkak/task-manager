@@ -2,10 +2,7 @@ tags:
   - Task
 
 description:
-  Follow/unfollow a specific task that matches the id. Requires a valid JWT token in Authorization header. Format: Bearer <token>
-
-security:
-  - BearerAuth: []
+  Follow/unfollow a specific task that matches the id. Requires an active session cookie
 
 parameters:
   - name: taskId
@@ -44,7 +41,7 @@ responses:
   400:
     description: Bad request (state hasn't changed)
   401:
-    description: Unauthorized (missing or invalid token)
+    description: Unauthorized (missing or invalid session cookie)
   404:
     description: Related resource not found
   422:

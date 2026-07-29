@@ -2,10 +2,7 @@ tags:
   - Admin
 
 description:
-  Retrieve activity logs. Results can be filtered by task ID and/or user ID. Requires a valid JWT token in Authorization header. Format: Bearer <token>
-
-security:
-  - BearerAuth: []
+  Retrieve activity logs. Results can be filtered by task ID and/or user ID. Requires an active session cookie
 
 parameters:
   - name: taskId
@@ -84,7 +81,7 @@ responses:
                 type: datetime
                 example: "2026-05-28T13:54:55.729333+02:00"
   401:
-    description: Unauthorized (missing or invalid token)
+    description: Unauthorized (missing or invalid session cookie)
   403:
     description: Forbidden (unallowed action)
   500:

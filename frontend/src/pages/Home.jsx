@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
+import { DragDropContext } from "@hello-pangea/dnd";
 import TaskCardComponent from "../components/TaskCardComponent.jsx";
 import TaskStatusComponent from "../components/TaskStatusComponent.jsx";
 import TaskFilterComponent from "../components/TaskFilterComponent.jsx";
-import { getTasks } from "../services/taskService.js";
+import { getTasks, updateTask } from "../services/taskService.js";
 
 const DEFAULT_FILTERS = {
   text: "",
@@ -98,6 +99,45 @@ export default function Home() {
     }
   }, [filters]);
 
+  const handleDragEnd = async (result) => {
+    const { destination, source, draggableId } = result;
+
+    // Dropped outside a valid droppable column or dropped in the same droppable column
+    if (!destination) return;
+    if (destination.droppableId === source.droppableId) {
+      return;
+    }
+
+    const taskId = parseInt(draggableId, 10);
+    const newStatusId = parseInt(destination.droppableId, 10);
+
+    const targetTask = tasks.find((t) => t.id === taskId);
+    if (!targetTask) return;
+
+    const nowIso = new Date().toISOString();
+
+    setTasks((prevTasks) => {
+        const remainingTasks = prevTasks.filter((t) => t.id !== taskId);
+        const updatedTask = {
+            ...targetTask,
+            statusId: newStatusId,
+            updatedAt: nowIso,
+        };
+
+        return [updatedTask, ...remainingTasks];
+    });
+
+    try {
+      await updateTask(taskId, {
+        title: targetTask.title,
+        statusId: newStatusId
+      });
+    } catch (err) {
+      console.error("Failed to update status on drag drop:", err);
+      loadTasks();
+    }
+  };
+
   useEffect(() => {
     if (resetMyTasksKey > 0 && resetMyTasksKey !== prevResetKeyRef.current) {
       prevResetKeyRef.current = resetMyTasksKey;
@@ -117,6 +157,7 @@ export default function Home() {
             onClearAll={clearAllFilters}
             isMobile={isMobile}
             options={{users, statuses, priorities, projects}}
+            buttonOnCreated={loadTasks}
         />
 
         {loading ? (
@@ -128,29 +169,31 @@ export default function Home() {
               <p className="error">{error}</p>
             </div>
         ) : (
-            <div id="all-tasks">
-              {statuses.map(taskStatus => {
-                const filteredTasks = tasks.filter(task => task.statusId === taskStatus.id);
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <div id="all-tasks">
+                {statuses.map(taskStatus => {
+                  const filteredTasks = tasks.filter(task => task.statusId === taskStatus.id);
 
-                return (
-                    <TaskStatusComponent
-                        key={taskStatus.id}
-                        status={taskStatus}
-                        filter={filters.statusId}
-                        length={filteredTasks.length}
-                        size={iconSize}
-                    >
-                      {filteredTasks.map(task => (
-                          <TaskCardComponent
-                              key={task.id}
-                              task={task}
-                              onChange={loadTasks}
-                          />
-                      ))}
-                    </TaskStatusComponent>
-                );
-              })}
-            </div>
+                  return (
+                      <TaskStatusComponent
+                          key={taskStatus.id}
+                          status={taskStatus}
+                          filter={filters.statusId}
+                          length={filteredTasks.length}
+                          size={iconSize}
+                      >
+                        {filteredTasks.map((task, index) => (
+                            <TaskCardComponent
+                                key={task.id}
+                                task={task}
+                                index={index}
+                            />
+                        ))}
+                      </TaskStatusComponent>
+                  );
+                })}
+              </div>
+            </DragDropContext>
         )}
       </>
   );

@@ -2,10 +2,7 @@ tags:
   - Role
 
 description:
-  Get all roles. Requires a valid JWT token in Authorization header. Format: Bearer <token>
-
-security:
-  - BearerAuth: []
+  Get all roles. Requires an active session cookie
 
 responses:
   200:
@@ -26,7 +23,7 @@ responses:
                 example: user
 
   401:
-    description: Unauthorized (missing or invalid token)
+    description: Unauthorized (missing or invalid session cookie)
   403:
     description: Forbidden (unallowed action)
   500:

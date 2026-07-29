@@ -274,9 +274,8 @@ export default function TaskFilterComponent({ filters, onFilterChange,
                 </div>
             </div>
 
-            <CreateButtonComponent isMobile={isMobile} type="task" users={users}
-                projects={projects} statuses={statuses} priorities={priorities}
-                onCreated={buttonOnCreated}
+            <CreateButtonComponent isMobile={isMobile}
+                type="task" onCreated={buttonOnCreated}
             />
         </div>
     );

@@ -2,10 +2,7 @@ tags:
   - Task Status
 
 description:
-  Get a specific task status that matches the id. Requires a valid JWT token in Authorization header. Format: Bearer <token>
-
-security:
-  - BearerAuth: []
+  Get a specific task status that matches the id. Requires an active session cookie
 
 parameters:
   - name: taskStatusId
@@ -32,7 +29,7 @@ responses:
               example: To Do
 
   401:
-    description: Unauthorized (missing or invalid token)
+    description: Unauthorized (missing or invalid session cookie)
   404:
     description: Related resource not found
   422:

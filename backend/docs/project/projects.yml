@@ -2,10 +2,7 @@ tags:
   - Project
 
 description:
-  Retrieve projects. Results can be filtered by name, description, creator and date of creation. Requires a valid JWT token in Authorization header. Format: Bearer <token>
-
-security:
-  - BearerAuth: []
+  Retrieve projects. Results can be filtered by name, description, creator and date of creation. Requires an active session cookie
 
 parameters:
   - name: projectText
@@ -122,7 +119,7 @@ responses:
                           example: Smith
 
   401:
-    description: Unauthorized (missing or invalid token)
+    description: Unauthorized (missing or invalid session cookie)
   500:
     description: Internal server error
   503:

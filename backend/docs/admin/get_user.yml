@@ -2,10 +2,7 @@ tags:
   - Admin
 
 description:
-  Get a specific user that matches the ID. Requires a valid JWT token in Authorization header. Format: Bearer <token>
-
-security:
-  - BearerAuth: []
+  Get a specific user that matches the ID. Requires an active session cookie
 
 parameters:
   - name: userId
@@ -71,7 +68,7 @@ responses:
                         type: string
                         example: Smith
   401:
-    description: Unauthorized (missing or invalid token)
+    description: Unauthorized (missing or invalid session cookie)
   403:
     description: Forbidden (unallowed action)
   404:

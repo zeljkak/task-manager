@@ -2,10 +2,7 @@ tags:
   - Task
 
 description:
-  Create a new comment on a task. Requires a valid JWT token in Authorization header. Format: Bearer <token>
-
-security:
-  - BearerAuth: []
+  Create a new comment on a task. Requires an active session cookie
 
 parameters:
   - name: taskId
@@ -100,7 +97,7 @@ responses:
   400:
     description: Bad request (missing or invalid fields)
   401:
-    description: Authentication required
+    description: Unauthorized (missing or invalid session cookie)
   404:
     description: Related resource not found
   422:

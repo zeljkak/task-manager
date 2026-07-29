@@ -2,10 +2,7 @@ tags:
   - Admin
 
 description:
-  Get all users. Requires a valid JWT token in Authorization header. Format: Bearer <token>
-
-security:
-  - BearerAuth: []
+  Get all users. Requires an active session cookie
 
 responses:
   200:
@@ -66,7 +63,7 @@ responses:
                           type: string
                           example: Smith
   401:
-    description: Unauthorized (missing or invalid token)
+    description: Unauthorized (missing or invalid session cookie)
   403:
     description: Forbidden (unallowed action)
   500:

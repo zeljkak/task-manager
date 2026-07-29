@@ -371,13 +371,13 @@ svg {
   padding: 1px 15px 1px 6px;
 }
 
-.create-button {
+.create-button, .edit-button {
   justify-self: end;
   border: none;
   background-color: transparent;
 }
 
-.create-button > svg {
+.create-button > svg, .edit-button > svg {
   margin: 0 !important;
 }
 
@@ -412,15 +412,51 @@ svg {
 .task-edit {
   flex: 1 0 auto;
   height: 100%;
-  width: 80%;
+  width: 70%;
   align-self: center;
+}
+
+.task-comments {
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.comment-header > *:nth-child(2) {
+  margin-left: auto;
+}
+
+.comment-date {
+  justify-self: end;
+  opacity: 0.4;
+}
+
+.task-info > h4, .task-comments > h4, .comment-header, .comment-text {
+  padding: 5px 0;
+}
+
+.comment-item > hr {
+  width: 100%;
+}
+
+.add-comment-form > textarea {
+  width: 100%;
+  margin-top: 15px;
+}
+
+.comment-attachments {
+  opacity: 0.7;
 }
 
 .task-info {
   opacity: 0.4;
-  flex: 1 0 20%;
+  flex: 1 0 30%;
   min-width: 0;
-  max-width: 20%;
+  max-width: 30%;
   max-height: calc(100vh - 110px);
   padding: 10px 5px;
   box-sizing: border-box;
@@ -443,10 +479,6 @@ svg {
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: normal;
-}
-
-.task-info > h4 {
-  padding: 5px 0;
 }
 
 .modal-overlay, .confirmation-overlay {
@@ -639,7 +671,8 @@ label[for="new-task-no-due-date"] {
 .form-element > textarea,
 .form-element > select,
 .form-title > h4 > input,
-.form-element > textarea {
+.form-element > textarea,
+.add-comment-form > textarea {
   background-color: #212529;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 5px !important;
@@ -756,10 +789,6 @@ form > button:hover {
   color: lightgrey;
   margin-bottom: 2px;
   padding-left: 5px;
-}
-
-.task-status > .card {
-  cursor: grab;
 }
 
 .card {

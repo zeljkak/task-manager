@@ -1,11 +1,13 @@
-import {useEffect, useState} from "react";
+import {useEffect, useState, useRef} from "react";
 import DatePickerComponent from "./DatePickerComponent.jsx";
 import {createTask, createTaskAttachment} from "../services/taskService.js";
 import BackIcon from "./icons/BackIcon.jsx";
 import {useAuth} from "../context/AuthContext.jsx";
+import {useOutletContext} from "react-router-dom";
 
-function CreateTaskComponent({ onClose, statuses, projects, priorities, users, onCreated, isMobile }) {
+function CreateTaskComponent({ onClose, onCreated, isMobile }) {
     const {user} = useAuth();
+    const {users = [], statuses = [], priorities = [], projects = []} = useOutletContext();
     const {id: toDoStatus} = statuses.find(status => status.status === "to_do") || {};
 
     const [taskData, setTaskData] = useState({
@@ -21,8 +23,17 @@ function CreateTaskComponent({ onClose, statuses, projects, priorities, users, o
 
     const [noDueDate, setNoDueDate] = useState(true);
     const [attachments, setAttachments] = useState([]);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const errorRef = useRef(null);
     const iconSize = isMobile ? 34 : 24;
+
+    useEffect(() => {
+        if (errorMessage && errorRef.current) {
+            errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }, [errorMessage]);
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -69,6 +80,14 @@ function CreateTaskComponent({ onClose, statuses, projects, priorities, users, o
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setErrorMessage("");
+
+        if (!taskData.title.trim()) {
+            setErrorMessage("Title is required.");
+            return;
+        }
+
+        setIsSubmitting(true);
 
         try {
             const payload = taskData;
@@ -102,6 +121,9 @@ function CreateTaskComponent({ onClose, statuses, projects, priorities, users, o
             onClose();
         } catch (error) {
             console.error(error);
+            setErrorMessage(error.response?.data?.error || "Failed to create task.")
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -112,17 +134,24 @@ function CreateTaskComponent({ onClose, statuses, projects, priorities, users, o
                     {renderMobileBackButton()}
                     <h4>New task</h4>
                 </div>
+                {errorMessage && (
+                    <div ref={errorRef} className={"error-message"}>
+                        <p className={"error"}>{errorMessage}</p>
+                    </div>
+                )}
                 <div className={"form-input"}>
                     <div className={"form-element"}>
-                        <label htmlFor={"new-task-title"}>Title:</label>
+                        <label htmlFor={"new-task-title"}>Title: <span style={{ color: "#d9534f" }}>*</span></label>
                         <input name={"task-title"} id={"new-task-title"}
                             placeholder={"Enter title"} value={taskData.title}
-                            onChange={(e) =>
+                            className={errorMessage && !taskData.title.trim() ? "input-error" : ""}
+                            onChange={(e) => {
+                                if (errorMessage) setErrorMessage("");
                                 setTaskData(prev => ({
                                     ...prev,
                                     title: e.target.value
-                                }))
-                            }
+                                }));
+                            }}
                         />
                     </div>
                     <div className={"form-element"}>
@@ -260,7 +289,7 @@ function CreateTaskComponent({ onClose, statuses, projects, priorities, users, o
                         onChange={(e) => setAttachments([...e.target.files])} />
                     </div>
                 </div>
-                <button type={"submit"}>Create</button>
+                <button type={"submit"} disabled={isSubmitting}>{isSubmitting ? "Creating..." : "Create"}</button>
             </form>
         </div>
     );

@@ -42,6 +42,12 @@ export const getTaskComments = (taskId) => {
   );
 };
 
+export const createTaskComment = (taskId, comment) => {
+  return api.post(
+    `/tasks/${taskId}/comments`, comment
+  );
+};
+
 export const followTask = (taskId) => {
   return api.post(
     `/tasks/${taskId}/follow`

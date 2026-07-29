@@ -2,10 +2,7 @@ tags:
   - Task
 
 description:
-  Restore a specific deleted task that matches the id. Requires a valid JWT token in Authorization header. Format: Bearer <token>
-
-security:
-  - BearerAuth: []
+  Restore a specific deleted task that matches the id. Requires an active session cookie
 
 parameters:
   - name: taskId
@@ -166,7 +163,7 @@ responses:
                         type: string
                         example: Smith
   401:
-    description: Unauthorized (missing or invalid token)
+    description: Unauthorized (missing or invalid session cookie)
   403:
     description: Forbidden (unallowed action)
   404:

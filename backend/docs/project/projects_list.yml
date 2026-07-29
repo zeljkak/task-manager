@@ -2,10 +2,7 @@ tags:
   - Project
 
 description:
-  Retrieve basic projects list. Requires a valid JWT token in Authorization header. Format: Bearer <token>
-
-security:
-  - BearerAuth: []
+  Retrieve basic projects list. Requires an active session cookie
 
 responses:
   200:
@@ -32,7 +29,7 @@ responses:
                 example: True
 
   401:
-    description: Unauthorized (missing or invalid token)
+    description: Unauthorized (missing or invalid session cookie)
   500:
     description: Internal server error
   503:

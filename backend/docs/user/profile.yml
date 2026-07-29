@@ -2,10 +2,7 @@ tags:
   - User
 
 description:
-  Get current user's profile. Requires a valid JWT token in Authorization header. Format: Bearer <token>
-
-security:
-  - BearerAuth: []
+  Get current user's profile. Requires an active session cookie
 
 responses:
   200:
@@ -64,7 +61,7 @@ responses:
                         type: string
                         example: Smith
   401:
-    description: Unauthorized (missing or invalid token)
+    description: Unauthorized (missing or invalid session cookie)
   500:
     description: Internal server error
   503:
