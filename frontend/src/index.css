@@ -127,7 +127,6 @@ svg {
 }
 
 .user-data {
-  overflow-x: auto;
   padding: 0 15px 15px 0;
 }
 
@@ -404,7 +403,6 @@ svg {
 .task-details {
   display: flex;
   flex-direction: row;
-  overflow-y: auto;
   /*max-height: calc(100vh - 110px);*/
   width: 100%;
 }
@@ -443,13 +441,34 @@ svg {
   width: 100%;
 }
 
-.add-comment-form > textarea {
-  width: 100%;
-  margin-top: 15px;
+.textarea-wrapper {
+  position: relative;
+  margin-top: 5px;
+}
+
+.textarea-wrapper:focus-within {
+    border-color: white;
+    outline: 1px solid white;
+}
+
+.textarea-wrapper > textarea {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding-right: 2rem;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.textarea-wrapper > .attachment-label {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.2rem;
 }
 
 .comment-attachments {
-  opacity: 0.7;
+  opacity: 0.9;
 }
 
 .task-info {
@@ -457,7 +476,7 @@ svg {
   flex: 1 0 30%;
   min-width: 0;
   max-width: 30%;
-  max-height: calc(100vh - 110px);
+  max-height: max-content;
   padding: 10px 5px;
   box-sizing: border-box;
 }
@@ -547,7 +566,7 @@ svg {
   width: 100%;
   position: sticky;
   top: 0;
-  padding: 10px;
+  padding: 15px 10px 10px 10px;
   background-color: #121212;
   z-index: 1;
   display: flex;
@@ -575,7 +594,8 @@ svg {
   padding: 5px;
 }
 
-.follow-button > svg {
+.follow-button > svg,
+.delete-comment-btn > svg {
   margin: 0 !important;
 }
 
@@ -661,9 +681,14 @@ label[for="new-task-no-due-date"] {
   justify-content: center;
 }
 
-.form-element > textarea {
+.form-element > textarea,
+.comment-item > textarea {
   height: 30vh;
   overflow-y: auto;
+}
+
+.comment-item > textarea {
+  width: 100%;
 }
 
 .form-element > input:not([type="file"]),
@@ -672,16 +697,26 @@ label[for="new-task-no-due-date"] {
 .form-element > select,
 .form-title > h4 > input,
 .form-element > textarea,
-.add-comment-form > textarea {
+.add-comment-form > textarea,
+.textarea-wrapper,
+.comment-item > textarea {
   background-color: #212529;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 5px !important;
   padding: 2px 5px;
 }
 
+#submit-new-comment-button {
+  width: max-content;
+}
+
 .form-element > input[type="file"] {
   grid-column: auto;
   width: 100%;
+}
+
+.attachment-input {
+  display: none;
 }
 
 .form-element > input[type="file"]::file-selector-button {
@@ -706,10 +741,12 @@ label[for="new-task-no-due-date"] {
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 5px !important;
   padding: 2px 5px;
+  opacity: 0.9;
 }
 
 .attachment-chip {
   padding-bottom: 5px;
+  padding-right: 10px;
   align-items: center;
   display: inline-flex;
   white-space: nowrap;
@@ -727,7 +764,8 @@ label[for="new-task-no-due-date"] {
   margin: 5px !important;
 }
 
-.attachment-chip > button {
+.attachment-chip > button,
+.delete-comment-btn {
   background-color: transparent;
   border: none;
   padding: 0;
@@ -737,7 +775,11 @@ label[for="new-task-no-due-date"] {
   max-width: max-content;
 }
 
-.attachment-label:hover, #new-task-attachment, #new-task-attachment::file-selector-button {
+.attachment-label:hover,
+#new-task-attachment,
+#new-task-attachment::file-selector-button,
+#new-task-attachment,
+#new-task-attachment::file-selector-button {
   cursor: pointer;
 }
 

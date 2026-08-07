@@ -1,40 +1,44 @@
 import {useEffect, useState, useRef, useCallback} from "react";
 import {useNavigate, useOutletContext, useParams, Link} from "react-router-dom";
 import {createPortal} from "react-dom";
+import {useAuth} from "../context/AuthContext.jsx";
 import {getTask, createTaskAttachment, updateTask, getTaskComments, createTaskComment} from "../services/taskService.js";
+import {createCommentAttachment, updateComment, deleteComment} from "../services/commentService.js";
 import {deleteAttachment} from "../services/attachmentService.js";
 import BackIcon from "../components/icons/BackIcon.jsx";
 import AttachmentIcon from "../components/icons/AttachmentIcon.jsx";
 import DeleteIcon from "../components/icons/DeleteIcon.jsx";
 import DatePickerComponent from "../components/DatePickerComponent.jsx";
 import FollowTaskComponent from "../components/FollowTaskComponent.jsx";
-import {useAuth} from "../context/AuthContext.jsx";
-import EditIcon from "../components/icons/EditIcon.jsx";
-
 
 function Task ({}) {
     const { taskId } = useParams();
-    const {user} = useAuth();
+    const { user } = useAuth();
     const { triggerTaskRefresh, isMobile, users = [], statuses = [], priorities = [], projects = [], refreshDropdowns } = useOutletContext();
-    const navigate = useNavigate();
 
-    const [task, setTask] = useState(null);
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
     const [errorMessage, setErrorMessage] = useState("");
-    const lastValidTitleRef = useRef("");
 
+    const [task, setTask] = useState(null);
     const [noDueDate, setNoDueDate] = useState(true);
-    const [attachments, setAttachments] = useState([]);
+    const [taskAttachments, setTaskAttachments] = useState([]);
+    const [commentAttachments, setCommentAttachments] = useState([]);
     const [deletingAttachmentId, setDeletingAttachmentId] = useState(null);
 
     const [comments, setComments] = useState([]);
     const [commentsLoading, setCommentsLoading] = useState(true);
     const [newCommentText, setNewCommentText] = useState("");
     const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+    const [deletingCommentId, setDeletingCommentId] = useState(null);
     const [commentError, setCommentError] = useState("");
+    const [commentItemErrors, setCommentItemErrors] = useState({});
 
+    const dateTimeoutRef = useRef(null);
+    const lastValidTitleRef = useRef("");
+    const fileInputRef = useRef(null);
+    const editFileInputRef = useRef(null);
     const iconSize = isMobile ? 30 : 24;
 
     const [taskData, setTaskData] = useState({
@@ -47,8 +51,6 @@ function Task ({}) {
         estimatedHours: null,
         dueDate: "",
     });
-
-    const dateTimeoutRef = useRef(null);
 
     useEffect(() => {
         return () => {
@@ -124,16 +126,108 @@ function Task ({}) {
         //if (refreshDropdowns) refreshDropdowns(); // Updates global layout dropdowns
     };
 
+    const handleNewCommentFileChange = (e) => {
+        const files = Array.from(e.target.files || []);
+        setCommentAttachments(prev => [...prev, ...files]);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    };
+
+    const removeNewCommentAttachment = (indexToRemove) => {
+        setCommentAttachments(prev => prev.filter((_, index) => index !== indexToRemove));
+    };
+
+    const handleEditCommentFileChange = async (e, commentId) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+
+        try {
+            const commentAttachmentData = new FormData();
+            files.forEach(file => {
+                commentAttachmentData.append("file", file);
+            });
+
+            await createCommentAttachment(commentId, commentAttachmentData);
+            await syncUpdates();
+        } catch (err) {
+            console.error("Failed to add attachment to existing comment:", err);
+        } finally {
+            if (editFileInputRef.current) {
+                editFileInputRef.current.value = "";
+            }
+        }
+    };
+
+    const handleEditCommentTextChange = async (commentId, newText) => {
+        const currentComment = comments.find(c => c.id === commentId);
+        if (!currentComment) return;
+
+        const previousText = currentComment.comment || "";
+        const hasExistingAttachments = currentComment?.attachments && currentComment.attachments.length > 0;
+
+        setComments(prevComments =>
+            prevComments.map(c =>
+                c.id === commentId ? { ...c, comment: newText } : c
+            )
+        );
+
+        try {
+            await updateComment(commentId, { comment: newText, hasAttachments: hasExistingAttachments });
+            setCommentItemErrors(prev => ({ ...prev, [commentId]: "" }));
+        } catch (err) {
+            setComments(prevComments =>
+                prevComments.map(c =>
+                    c.id === commentId ? { ...c, comment: previousText } : c
+                )
+            );
+
+            const errorMsg = err.response?.data?.error || "Failed to update comment.";
+            setCommentItemErrors(prev => ({ ...prev, [commentId]: errorMsg }));
+
+            setTimeout(() => {
+                setCommentItemErrors(prev => ({ ...prev, [commentId]: "" }));
+            }, 3000);
+        }
+    };
+
     const handleCommentSubmit = async (e) => {
         e.preventDefault();
-        if (!newCommentText.trim()) return;
+
+        const hasText = newCommentText.trim().length > 0;
+        const hasAttachments = commentAttachments.length > 0;
+
+        if (!hasText && !hasAttachments) return;
 
         setIsSubmittingComment(true);
         setCommentError("");
 
         try {
-            await createTaskComment(taskId, { comment: newCommentText });
+            const payload = {
+                comment: newCommentText,
+                hasAttachments: hasAttachments
+            };
+
+            const commentResponse = await createTaskComment(taskId, payload);
+            const createdComment = commentResponse.data?.comment;
+
+            if(hasAttachments && createdComment?.id) {
+                const commentAttachmentData = new FormData();
+                commentAttachments.forEach(file => {
+                    commentAttachmentData.append("file", file);
+                });
+
+                await createCommentAttachment(
+                    createdComment.id,
+                    commentAttachmentData
+                );
+            }
             setNewCommentText("");
+            setCommentAttachments([]);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+
             await syncUpdates();
         } catch (err) {
             console.error("Failed to post comment:", err);
@@ -143,9 +237,34 @@ function Task ({}) {
         }
     };
 
+    const handleCommentDelete = async (commentId) => {
+        try {
+            await deleteComment(commentId);
+            await syncUpdates();
+        } catch (error) {
+            console.error("Failed to delete comment: ", error);
+            const errorMsg = error.response?.data?.error || "Failed to delete comment.";
+            setCommentItemErrors(prev => ({ ...prev, [commentId]: errorMsg }));
+            setTimeout(() => {
+                setCommentItemErrors(prev => ({ ...prev, [commentId]: "" }));
+            }, 3000);
+        } finally {
+            setDeletingCommentId(null);
+        }
+    };
+
     if (loading) return <div className="spinner"><p className={"loading"}>Loading task details...</p></div>;
     if (error) return <div className="error-message"><p className={"error"}>{error}</p></div>;
     if (!task) return <div>Task not found.</div>;
+
+    const handleAttachmentDelete = async (attachmentId) => {
+        try {
+            await deleteAttachment(attachmentId);
+            await syncUpdates();
+        } catch (error) {
+            console.error("Failed to delete attachment: ", error);
+        }
+    }
 
     const createdByDiv = (
         <>
@@ -198,49 +317,167 @@ function Task ({}) {
                 <p className="no-comments">No comments yet.</p>
             ) : (
                 <div className="comments-list">
-                    {comments.map((c) => (
-                        <div key={c.id} className="comment-item">
-                            <div className="comment-header">
-                                <strong>{c.user ? `${c.user.firstName} ${c.user.lastName}` : "User"}</strong>
-                                {c.createdAt && (
-                                    <span className="comment-date">
-                                        {new Date(c.createdAt).toLocaleString("en-GB")
-                                            .replaceAll("/", ".")
-                                            .replaceAll(",", ".")
-                                            .concat(".").slice(0, -1)}
-                                    </span>
+                    {comments.map((c) => {
+                        const isAuthor = c.user?.id === user.id;
+                        return (
+                            <div key={c.id} className="comment-item">
+                                <div className="comment-header">
+                                    <strong>{c.user ? `${c.user.firstName} ${c.user.lastName}` : "User"}</strong>
+                                    {c.createdAt && (
+                                        <span className="comment-date">
+                                            {new Date(c.createdAt).toLocaleString("en-GB")
+                                                .replaceAll("/", ".")
+                                                .replaceAll(",", ".")
+                                                .concat(".").slice(0, -1)}
+                                        </span>
+                                    )}
+                                    {isAuthor && (
+                                        <button type="button" className="delete-comment-btn"
+                                            onClick={() => setDeletingCommentId(c.id)}>
+                                            <DeleteIcon size={iconSize} />
+                                        </button>
+                                    )}
+                                </div>
+                                {deletingCommentId === c.id && (
+                                    createPortal(
+                                        <div className="confirmation-overlay">
+                                            <div className="confirmation-div">
+                                                <p>Are you sure you want to delete this comment?</p>
+                                                <div className="confirmation-actions">
+                                                    <button type="button" className="positive"
+                                                        onClick={() => handleCommentDelete(c.id)}>
+                                                        Yes
+                                                    </button>
+                                                    <button type="button" className="negative"
+                                                        onClick={() => setDeletingCommentId(null)}>
+                                                        No
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>,
+                                        document.getElementById("content") || document.body
+                                    )
                                 )}
-                                {c.user.id !== user.id ? "" : (
-                                    <button className={"edit-button"}><EditIcon size={iconSize} /></button>
+                                {isAuthor ? (
+                                    <>
+                                        <div className={"textarea-wrapper"}>
+                                            <textarea className="comment-text-input" value={c.comment || ""}
+                                                onChange={(e) => handleEditCommentTextChange(c.id, e.target.value)}
+                                            />
+                                            {c.attachments && c.attachments.length > 0 && (
+                                                <div className={"comment-attachments"}>
+                                                    {c.attachments.map((a) => (
+                                                        <div key={a.id} className={"attachment-chip"}>
+                                                            {deletingAttachmentId === a.id ? (
+                                                                createPortal(
+                                                                    <div className={"confirmation-overlay"}>
+                                                                        <div className="confirmation-div">
+                                                                            <p>Delete <a href={a.fileUrl} target="_blank"
+                                                                                         rel="noopener noreferrer"
+                                                                                         className="file-name">{a.fileName}</a>?</p>
+                                                                            <div className={"confirmation-actions"}>
+                                                                                <button type="button" className={"positive"}
+                                                                                        onClick={() => {
+                                                                                            handleAttachmentDelete(a.id);
+                                                                                            setDeletingAttachmentId(null);
+                                                                                        }}>
+                                                                                    Yes
+                                                                                </button>
+                                                                                <button type="button" className={"negative"}
+                                                                                        onClick={() => setDeletingAttachmentId(null)}>
+                                                                                    No
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>,
+                                                                    document.getElementById("content") || document.body
+                                                                )
+                                                            ) : (
+                                                                <>
+                                                                    <button type="button" onClick={() => setDeletingAttachmentId(a.id)}>
+                                                                        <DeleteIcon size={iconSize}/>
+                                                                    </button>
+                                                                    <a href={a.fileUrl} target="_blank" rel="noopener noreferrer"
+                                                                       className="file-name">
+                                                                        {a.fileName}
+                                                                    </a>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <label htmlFor={`edit-comment-attachment-${c.id}`} className={"attachment-label"}>
+                                                <AttachmentIcon size={iconSize} />
+                                            </label>
+                                            <input type={"file"} name={`edit-comment-attachment-${c.id}`}
+                                                className={"attachment-input"} id={`edit-comment-attachment-${c.id}`}
+                                                multiple ref={editFileInputRef}
+                                                onChange={(e) => handleEditCommentFileChange(e, c.id)}
+                                            />
+                                        </div>
+                                        {commentItemErrors[c.id] && (
+                                            <p className="error comment-item-error">{commentItemErrors[c.id]}</p>
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="comment-text">{c.comment ? c.comment : ""}</p>
+                                        {c.attachments && c.attachments.length > 0 && (
+                                            <div className={"comment-attachments"}>
+                                                {c.attachments.map((a) => (
+                                                    <div key={a.id} className={"attachment-chip"}>
+                                                        <AttachmentIcon size={iconSize}/>
+                                                        <a href={a.fileUrl} target="_blank" rel="noopener noreferrer"
+                                                           className="file-name">
+                                                            {a.fileName}
+                                                        </a>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </>
                                 )}
+                                <hr/>
                             </div>
-                            <p className="comment-text">{c.comment}</p>
-                            <div className={"comment-attachments"}>
-                                {c.attachments.length <= 0 ? "" : (c.attachments.map((a) => (
-                                    <a href={a.fileUrl} key={a.id} target="_blank"
-                                       rel="noopener noreferrer" className="file-name">
-                                        {a.fileName}
-                                    </a>
-                                )))}
-                            </div>
-                            <hr />
-                        </div>
-                    ))}
+                        )
+                    })}
                 </div>
             )}
 
             {commentError && <p className="error">{commentError}</p>}
 
             <form onSubmit={handleCommentSubmit} className="add-comment-form">
-                <textarea
-                    placeholder="Write a comment..."
-                    value={newCommentText}
-                    onChange={(e) => setNewCommentText(e.target.value)}
-                    rows={3}
-                />
-                <button type="submit" disabled={isSubmittingComment || !newCommentText.trim()}>
-                    {isSubmittingComment ? "Posting..." : "Post Comment"}
+                <div className={"textarea-wrapper"}>
+                    <textarea placeholder="Write a comment..."
+                        value={newCommentText} rows={3} name={"new-comment-text"}
+                        onChange={(e) => setNewCommentText(e.target.value)}
+                    />
+                    {commentAttachments.length > 0 && (
+                        <div className="selected-comment-attachments">
+                            {commentAttachments.map((file, idx) => (
+                                <div key={idx} className={"attachment-chip"}>
+                                    <button type="button" onClick={() => removeNewCommentAttachment(idx)}>
+                                        <DeleteIcon size={iconSize} />
+                                    </button>
+                                    <a href={"#"} target="_blank" rel="noopener noreferrer" className="file-name">
+                                        {file.name}
+                                    </a>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    <label htmlFor={"new-comment-attachment"} className={"attachment-label"}>
+                        <AttachmentIcon size={iconSize} />
+                    </label>
+                </div>
+                <input type={"file"} name={"comment-attachments"} className={"attachment-input"}
+                   id={"new-comment-attachment"} multiple ref={fileInputRef} onChange={handleNewCommentFileChange} />
+                <button type="submit" id={"submit-new-comment-button"}
+                    disabled={isSubmittingComment || (!newCommentText.trim() && commentAttachments.length === 0)}>
+                    {isSubmittingComment ? "Commenting..." : "Comment"}
                 </button>
+
             </form>
         </div>
     );
@@ -254,15 +491,6 @@ function Task ({}) {
             </button>
         );
     };
-
-    const handleAttachmentDelete = async (attachmentId) => {
-        try {
-            await deleteAttachment(attachmentId);
-            await syncUpdates();
-        } catch (error) {
-            console.error("Failed to delete attachment: ", error);
-        }
-    }
 
     const handleCheckboxChange = async (e) => {
         const isChecked = e.target.checked;
@@ -335,7 +563,7 @@ function Task ({}) {
             const fileList = [...files];
             if (fileList.length === 0) return;
 
-            setAttachments(fileList);
+            setTaskAttachments(fileList);
 
             try {
                 const attachmentData = new FormData();
@@ -344,7 +572,7 @@ function Task ({}) {
                 });
 
                 await createTaskAttachment(task.id, attachmentData);
-                setAttachments([]);
+                setTaskAttachments([]);
                 await syncUpdates();
             } catch (error) {
                 console.error("Failed to upload attachments: ", error);
@@ -517,8 +745,9 @@ function Task ({}) {
                                         <label htmlFor={`task-${task.id}-attachment`} className={"attachment-label"}>
                                             <AttachmentIcon size={iconSize} />
                                         </label>
-                                        <input type={"file"} name={"attachments"} id={`task-${task.id}-attachment`} multiple
-                                            onChange={handleChange} style={{display: "none"}}
+                                        <input type={"file"} name={"attachments"}
+                                           className={"attachment-input"} id={`task-${task.id}-attachment`} multiple
+                                            onChange={handleChange}
                                         />
                                     </div>
                                     {task?.attachments && task?.attachments.length > 0 && (

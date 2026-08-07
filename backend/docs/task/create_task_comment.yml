@@ -16,12 +16,14 @@ parameters:
     required: true
     schema:
       type: object
-      required:
-        - comment
       properties:
         comment:
           type: string
+          nullable: true
           example: Implemented login endpoint
+        hasAttachments:
+          type: boolean
+          example: true
 
 responses:
   201:

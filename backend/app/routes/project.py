@@ -7,7 +7,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from backend.app.decorators.roles_required import roles_required
 
 from backend.app.utils.file_storage import save_file
-from backend.app.utils.diff import parse_bool, parse_date
+from backend.app.utils.diff import parse_date
 
 from backend.app.services.project_service import ProjectService
 from backend.app.services.attachment_service import AttachmentService
@@ -104,11 +104,11 @@ def create_project_attachment(projectId):
         attachments.append(attachment)
 
     return jsonify({
-        "message": "Attachment created successfully",
-        "attachment": AttachmentResponseSchema(many=True).dump(attachments)
+        "message": "Attachments created successfully",
+        "attachments": AttachmentResponseSchema(many=True).dump(attachments)
     }), 201
 
-@project_bp.route('<int:projectId>', methods=['PATCH'])
+@project_bp.route('/<int:projectId>', methods=['PATCH'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/project/update_project.yml"))
 @limiter.limit("10 per minute")
 @jwt_required()

@@ -1,7 +1,8 @@
-from backend.app.exceptions.http_exceptions import NotFoundError, ForbiddenError
+from backend.app.exceptions.http_exceptions import NotFoundError, ForbiddenError, ServiceUnavailableError
 from backend.app.models.comment_model import Comment
 from backend.app.repositories.comment_repository import CommentRepository
 from backend.app.services.task_service import TaskService
+from backend.app.utils.file_storage import delete_file
 
 
 class CommentService:
@@ -51,5 +52,12 @@ class CommentService:
         comment = CommentService.get_comment_by_id(comment_id)
         if comment.user_id != current_user_id:
             raise ForbiddenError("Cannot delete comment")
+
+        if comment.attachments:
+            for attachment in comment.attachments:
+                try:
+                    delete_file(attachment.file_url)
+                except Exception as e:
+                    raise ServiceUnavailableError("Problem with file system") from e
 
         return CommentRepository.delete(comment)

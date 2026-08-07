@@ -3,7 +3,6 @@ from flasgger import swag_from
 import os
 
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from sqlalchemy.sql.functions import current_user
 
 from backend.app.decorators.roles_required import roles_required
 
@@ -103,8 +102,8 @@ def create_task_attachment(taskId):
         attachments.append(attachment)
 
     return jsonify({
-        "message": "Attachment created successfully",
-        "attachment": AttachmentResponseSchema(many=True).dump(attachments)
+        "message": "Attachments created successfully",
+        "attachments": AttachmentResponseSchema(many=True).dump(attachments)
     }), 201
 
 @task_bp.route('/<int:taskId>/comments', methods=['GET'])
@@ -125,6 +124,11 @@ def get_comments(taskId):
 def create_comment(taskId):
     current_user = int(get_jwt_identity())
     data = CommentSchema().load(request.get_json())
+
+    comment_text = data.get("comment")
+    if comment_text and not comment_text.strip():
+        data["comment"] = None
+
     comment = CommentService.create_comment(data, current_user, taskId)
 
     return jsonify({

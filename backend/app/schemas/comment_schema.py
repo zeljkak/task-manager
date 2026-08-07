@@ -1,16 +1,23 @@
 from marshmallow import Schema, fields
-from marshmallow import validates, ValidationError
+from marshmallow import validates_schema, ValidationError
 
 from backend.app.schemas.summary_schema import UserSummarySchema
 from backend.app.schemas.attachment_schema import AttachmentResponseSchema
 
 class CommentSchema(Schema):
-    comment = fields.Str(required=True)
+    comment = fields.Str(allow_none=True)
+    has_attachments = fields.Boolean(data_key="hasAttachments", load_default=False)
 
-    @validates("comment")
-    def validate_role_name(self, value, **kwargs):
-        if len(value.strip()) < 1:
-            raise ValidationError("Comment cannot be blank.")
+    @validates_schema
+    def validate_comment_or_attachments(self, data, **kwargs):
+        comment_text = (data.get("comment") or "").strip()
+        has_attachments = data.get("has_attachments", False)
+
+        if not comment_text and not has_attachments:
+            raise ValidationError(
+                "Comment cannot be empty unless attachments are uploaded.",
+                field_name="comment"
+            )
 
 class CommentResponseSchema(Schema):
     id = fields.Int()

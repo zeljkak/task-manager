@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify
 from flasgger import swag_from
 import os
 
@@ -19,12 +19,16 @@ comment_bp = Blueprint('comment', __name__, url_prefix='/comments')
 
 @comment_bp.route('/<int:commentId>', methods=['PATCH'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/comment/update_comment.yml"))
-@limiter.limit("10 per minute")
 @jwt_required()
 
 def change_comment(commentId):
     current_user = int(get_jwt_identity())
     data = CommentSchema().load(request.get_json())
+
+    comment_text = data.get("comment")
+    if comment_text and not comment_text.strip():
+        data["comment"] = None
+
     comment = CommentService.update_comment(data, commentId, current_user)
 
     return jsonify({
@@ -38,25 +42,28 @@ def change_comment(commentId):
 
 def create_comment_attachment(commentId):
     current_user = int(get_jwt_identity())
-    file = request.files.get("file")
-    if not file:
+    files = request.files.getlist("file")
+    if not files:
         return jsonify({"error": "No file provided"}), 400
 
-    unique_name, original_name, file_type = save_file(file)
+    attachments = []
+    for file in files:
+        if file.filename == "":
+            continue
+        unique_name, original_name, file_type = save_file(file)
 
-    file_url = unique_name
+        file_data = {
+            "file_url": unique_name,
+            "file_name": original_name,
+            "file_type": file_type
+        }
 
-    file_data = {
-        "file_url": file_url,
-        "file_name": original_name,
-        "file_type": file_type
-    }
-
-    attachment = AttachmentService.create_comment_attachment(commentId, current_user, file_data)
+        attachment = AttachmentService.create_comment_attachment(commentId, current_user, file_data)
+        attachments.append(attachment)
 
     return jsonify({
-        "message": "Attachment created successfully",
-        "attachment": AttachmentResponseSchema().dump(attachment)
+        "message": "Attachments created successfully",
+        "attachments": AttachmentResponseSchema(many=True).dump(attachments)
     }), 201
 
 @comment_bp.route('/<int:commentId>', methods=['DELETE'])
