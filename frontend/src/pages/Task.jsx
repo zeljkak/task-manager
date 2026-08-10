@@ -257,6 +257,15 @@ function Task ({}) {
     if (error) return <div className="error-message"><p className={"error"}>{error}</p></div>;
     if (!task) return <div>Task not found.</div>;
 
+    const canEdit = Boolean(
+        user &&
+        (
+            task?.createdBy?.id === user.id ||
+            task?.assignedTo?.id === user.id ||
+            user.roleId === 1
+        )
+    );
+
     const handleAttachmentDelete = async (attachmentId) => {
         try {
             await deleteAttachment(attachmentId);
@@ -612,198 +621,259 @@ function Task ({}) {
         }
     };
 
+    const selectedStatus = statuses.find(s => s.id === taskData.statusId);
+    const selectedPriority = priorities.find(p => p.id === taskData.priorityId);
+    const selectedProject = projects.find(p => p.id === taskData.projectId);
+
     return (
         <div className={"task-details"}>
-                    <div className={"task-edit"}>
-                        <form onSubmit={(e) => e.preventDefault()}>
-                            <div className={"form-title"}>
-                                {renderMobileBackButton()}
-                                <h4>
-                                    <input type={"text"} name={"title"}
-                                        value={taskData.title} onChange={handleChange}
-                                    />
-                                </h4>
-                                <FollowTaskComponent task={task} size={iconSize} onFollowChange={syncUpdates} />
+            {canEdit ? (
+                <div className={"task-edit"}>
+                    <form onSubmit={(e) => e.preventDefault()}>
+                        <div className={"form-title"}>
+                            {renderMobileBackButton()}
+                            <h4>
+                                <input type={"text"} name={"title"}
+                                    value={taskData.title} onChange={handleChange}
+                                />
+                            </h4>
+                            <FollowTaskComponent task={task} size={iconSize} onFollowChange={syncUpdates} />
+                        </div>
+                        {errorMessage && (
+                            <div className={"error-message"}>
+                                <p className={"error"}>{errorMessage}</p>
                             </div>
-                            {errorMessage && (
-                                <div className={"error-message"}>
-                                    <p className={"error"}>{errorMessage}</p>
+                        )}
+                        <div className={"form-input"}>
+                            <div className={"form-element"}>
+                                <textarea name={"description"} className={"inline-form-element"}
+                                    placeholder={"Enter description"} value={taskData.description}
+                                    onChange={handleChange}
+                                />
+                            </div>
+                            <div className={"form-element inline-form-element"}>
+                                <label htmlFor={`assignee-task-${task.id}`}>Assignee:</label>
+                                <select name={"assignedToId"} id={`assignee-task-${task.id}`}
+                                    value={taskData.assignedToId} onChange={handleChange}
+                                >
+                                    {users.map(user => {
+                                      return (
+                                          <option value={user.id} key={user.id}>{user.firstName} {user.lastName}</option>
+                                      );
+                                    })}
+                                </select>
+                            </div>
+                            <div className={"form-element inline-form-element"}>
+                                <label htmlFor={`task-status-task-${task.id}`}>Task status:</label>
+                                <select name={"statusId"} id={`task-status-task-${task.id}`}
+                                    value={taskData.statusId} onChange={handleChange}
+                                >
+                                    {statuses?.map(status => {
+                                      return (
+                                          <option value={status.id} key={status.id}>{status.status.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}</option>
+                                      );
+                                    })}
+                                </select>
+                            </div>
+                            <div className={"form-element inline-form-element"}>
+                                <label htmlFor={`priority-task-${task.id}`}>Priority:</label>
+                                <select name={"priorityId"} id={`priority-task-${task.id}`}
+                                    value={taskData.priorityId ?? ""} onChange={handleChange}
+                                >
+                                    <option value={""}>Choose priority</option>
+                                    {priorities?.map(priority => {
+                                      return (
+                                          <option value={priority.id} key={priority.id}>{priority.level.charAt(0).toUpperCase() + priority.level.slice(1)}</option>
+                                      );
+                                    })}
+                                </select>
+                            </div>
+                            <div className={"form-element inline-form-element"}>
+                                <label htmlFor={`project-task-${task.id}`}>Project:</label>
+                                <select name={"projectId"} id={`project-task-${task.id}`}
+                                    value={taskData.projectId ?? ""} onChange={handleChange}
+                                >
+                                    <option value={""}>Choose project</option>
+                                    {projects?.filter(project => !project.archived).map(project => {
+                                      return (
+                                          <option value={project.id} key={project.id}>{project.projectName}</option>
+                                      );
+                                    })}
+                                    {(() => {
+                                        const archivedProject = projects.find(
+                                            project => project.archived && project.id === task.project?.id
+                                        );
+
+                                        return archivedProject ? (
+                                            <option value={archivedProject.id} key={archivedProject.id}>
+                                                {archivedProject.projectName} (Archived)
+                                            </option>
+                                        ) : null;
+                                    })()}
+                                </select>
+                            </div>
+                            <div className={"form-element inline-form-element"}>
+                                <label htmlFor={`estimated-hours-task-${task.id}`}>Estimated hours:</label>
+                                <select name={"estimatedHours"} id={`estimated-hours-task-${task.id}`}
+                                    value={taskData.estimatedHours ?? ""} onChange={handleChange}
+                                >
+                                    <option value="">Choose estimated hours</option>
+                                    {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                                        <option value={num} key={num}>{num}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={"form-element inline-form-element"}>
+                                <div>
+                                    <p className={"due-date-text"}>Due date:</p>
+                                    <input type={"checkbox"} id={"new-task-no-due-date"} name={"no-due-date"}
+                                        checked={!noDueDate} onChange={handleCheckboxChange}
+                                    />
                                 </div>
-                            )}
-                            <div className={"form-input"}>
-                                <div className={"form-element"}>
-                                    <textarea name={"description"} className={"inline-form-element"}
-                                        placeholder={"Enter description"} value={taskData.description}
+                                <div className={"inline-due-date"}>
+                                    <label htmlFor={"new-task-no-due-date"}>{noDueDate ? "Not set" : ""}</label>
+                                    {!noDueDate && (
+                                        <DatePickerComponent label={"due-before"}
+                                            selected={taskData.dueDate}
+                                            onChange={(date) => {
+                                                if (!date) return;
+                                                const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+                                                setTaskData(prev => ({
+                                                    ...prev,
+                                                    dueDate: formattedDate
+                                                }));
+                                                if (dateTimeoutRef.current) {
+                                                    clearTimeout(dateTimeoutRef.current);
+                                                }
+                                                dateTimeoutRef.current = setTimeout(() => {
+                                                    handleChange({ target: { name: "dueDate", value: formattedDate } });
+                                                }, 200);
+                                            }}
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                            <div className={"form-element attach"}>
+                                <div className={"inline-form-element"}>
+                                    <p className="attachments-title">Attachments:</p>
+                                    <label htmlFor={`task-${task.id}-attachment`} className={"attachment-label"}>
+                                        <AttachmentIcon size={iconSize} />
+                                    </label>
+                                    <input type={"file"} name={"attachments"}
+                                       className={"attachment-input"} id={`task-${task.id}-attachment`} multiple
                                         onChange={handleChange}
                                     />
                                 </div>
-                                <div className={"form-element inline-form-element"}>
-                                    <label htmlFor={`assignee-task-${task.id}`}>Assignee:</label>
-                                    <select name={"assignedToId"} id={`assignee-task-${task.id}`}
-                                        value={taskData.assignedToId} onChange={handleChange}
-                                    >
-                                        {users.map(user => {
-                                          return (
-                                              <option value={user.id} key={user.id}>{user.firstName} {user.lastName}</option>
-                                          );
-                                        })}
-                                    </select>
-                                </div>
-                                <div className={"form-element inline-form-element"}>
-                                    <label htmlFor={`task-status-task-${task.id}`}>Task status:</label>
-                                    <select name={"statusId"} id={`task-status-task-${task.id}`}
-                                        value={taskData.statusId} onChange={handleChange}
-                                    >
-                                        {statuses?.map(status => {
-                                          return (
-                                              <option value={status.id} key={status.id}>{status.status.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}</option>
-                                          );
-                                        })}
-                                    </select>
-                                </div>
-                                <div className={"form-element inline-form-element"}>
-                                    <label htmlFor={`priority-task-${task.id}`}>Priority:</label>
-                                    <select name={"priorityId"} id={`priority-task-${task.id}`}
-                                        value={taskData.priorityId ?? ""} onChange={handleChange}
-                                    >
-                                        <option value={""}>Choose priority</option>
-                                        {priorities?.map(priority => {
-                                          return (
-                                              <option value={priority.id} key={priority.id}>{priority.level.charAt(0).toUpperCase() + priority.level.slice(1)}</option>
-                                          );
-                                        })}
-                                    </select>
-                                </div>
-                                <div className={"form-element inline-form-element"}>
-                                    <label htmlFor={`project-task-${task.id}`}>Project:</label>
-                                    <select name={"projectId"} id={`project-task-${task.id}`}
-                                        value={taskData.projectId ?? ""} onChange={handleChange}
-                                    >
-                                        <option value={""}>Choose project</option>
-                                        {projects?.filter(project => !project.archived).map(project => {
-                                          return (
-                                              <option value={project.id} key={project.id}>{project.projectName}</option>
-                                          );
-                                        })}
-                                        {(() => {
-                                            const archivedProject = projects.find(
-                                                project => project.archived && project.id === task.project?.id
-                                            );
-
-                                            return archivedProject ? (
-                                                <option value={archivedProject.id} key={archivedProject.id}>
-                                                    {archivedProject.projectName} (Archived)
-                                                </option>
-                                            ) : null;
-                                        })()}
-                                    </select>
-                                </div>
-                                <div className={"form-element inline-form-element"}>
-                                    <label htmlFor={`estimated-hours-task-${task.id}`}>Estimated hours:</label>
-                                    <select name={"estimatedHours"} id={`estimated-hours-task-${task.id}`}
-                                        value={taskData.estimatedHours ?? ""} onChange={handleChange}
-                                    >
-                                        <option value="">Choose estimated hours</option>
-                                        {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
-                                            <option value={num} key={num}>{num}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className={"form-element inline-form-element"}>
-                                    <div>
-                                        <p className={"due-date-text"}>Due date:</p>
-                                        <input type={"checkbox"} id={"new-task-no-due-date"} name={"no-due-date"}
-                                            checked={!noDueDate} onChange={handleCheckboxChange}
-                                        />
-                                    </div>
-                                    <div className={"inline-due-date"}>
-                                        <label htmlFor={"new-task-no-due-date"}>{noDueDate ? "Not set" : ""}</label>
-                                        {!noDueDate && (
-                                            <DatePickerComponent label={"due-before"}
-                                                selected={taskData.dueDate}
-                                                onChange={(date) => {
-                                                    if (!date) return;
-                                                    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-                                                    setTaskData(prev => ({
-                                                        ...prev,
-                                                        dueDate: formattedDate
-                                                    }));
-                                                    if (dateTimeoutRef.current) {
-                                                        clearTimeout(dateTimeoutRef.current);
-                                                    }
-                                                    dateTimeoutRef.current = setTimeout(() => {
-                                                        handleChange({ target: { name: "dueDate", value: formattedDate } });
-                                                    }, 200);
-                                                }}
-                                            />
-                                        )}
-                                    </div>
-                                </div>
-                                <div className={"form-element attach"}>
-                                    <div className={"inline-form-element"}>
-                                        <p className="attachments-title">Attachments:</p>
-                                        <label htmlFor={`task-${task.id}-attachment`} className={"attachment-label"}>
-                                            <AttachmentIcon size={iconSize} />
-                                        </label>
-                                        <input type={"file"} name={"attachments"}
-                                           className={"attachment-input"} id={`task-${task.id}-attachment`} multiple
-                                            onChange={handleChange}
-                                        />
-                                    </div>
-                                    {task?.attachments && task?.attachments.length > 0 && (
-                                        <div className={"listed-attachments"}>
-                                            {task.attachments.map((file) => (
-                                                <div key={file.id} className="attachment-chip">
-                                                    {deletingAttachmentId === file.id ? (
-                                                        createPortal(
-                                                            <div className={"confirmation-overlay"}>
-                                                                <div className="confirmation-div">
-                                                                    <p>Delete <a href={file.fileUrl} target="_blank" rel="noopener noreferrer"
-                                                                           className="file-name">{file.fileName}</a>?
-                                                                    </p>
-                                                                    <div className={"confirmation-actions"}>
-                                                                        <button type="button" className={"positive"} onClick={() => {
-                                                                            handleAttachmentDelete(file.id); setDeletingAttachmentId(null); }}>
-                                                                            Yes
-                                                                        </button>
-                                                                        <button type="button" className={"negative"} onClick={() => setDeletingAttachmentId(null)}>
-                                                                            No
-                                                                        </button>
-                                                                    </div>
+                                {task?.attachments && task?.attachments.length > 0 && (
+                                    <div className={"listed-attachments"}>
+                                        {task.attachments.map((file) => (
+                                            <div key={file.id} className="attachment-chip">
+                                                {deletingAttachmentId === file.id ? (
+                                                    createPortal(
+                                                        <div className={"confirmation-overlay"}>
+                                                            <div className="confirmation-div">
+                                                                <p>Delete <a href={file.fileUrl} target="_blank" rel="noopener noreferrer"
+                                                                       className="file-name">{file.fileName}</a>?
+                                                                </p>
+                                                                <div className={"confirmation-actions"}>
+                                                                    <button type="button" className={"positive"} onClick={() => {
+                                                                        handleAttachmentDelete(file.id); setDeletingAttachmentId(null); }}>
+                                                                        Yes
+                                                                    </button>
+                                                                    <button type="button" className={"negative"} onClick={() => setDeletingAttachmentId(null)}>
+                                                                        No
+                                                                    </button>
                                                                 </div>
-                                                            </div>,
-                                                            document.getElementById("content") || document.body
-                                                        )
-                                                    ) : (
-                                                        <>
-                                                            <button type="button" onClick={() => setDeletingAttachmentId(file.id)}>
-                                                                <DeleteIcon size={iconSize} />
-                                                            </button>
-                                                            <a href={file.fileUrl} target="_blank" rel="noopener noreferrer" className="file-name">
-                                                                {file.fileName}
-                                                            </a>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>)
-                                    }
+                                                            </div>
+                                                        </div>,
+                                                        document.getElementById("content") || document.body
+                                                    )
+                                                ) : (
+                                                    <>
+                                                        <button type="button" onClick={() => setDeletingAttachmentId(file.id)}>
+                                                            <DeleteIcon size={iconSize} />
+                                                        </button>
+                                                        <a href={file.fileUrl} target="_blank" rel="noopener noreferrer" className="file-name">
+                                                            {file.fileName}
+                                                        </a>
+                                                    </>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>)
+                                }
+                            </div>
+                        </div>
+                    </form>
+                    {commentsDiv}
+                </div>
+            ) : (
+                <div className={"task-display"}>
+                    <div className={"display-title"}>
+                        {renderMobileBackButton()}
+                        <h4>{task.title}</h4>
+                        <FollowTaskComponent task={task} size={iconSize} onFollowChange={syncUpdates} />
+                    </div>
+                    <div className={"display-task-data"}>
+                        <div className={"display-element"}>
+                            <p className={"description-text"}>{task.description || "No description provided."}</p>
+                        </div>
+                        <div className={"display-element inline-display-element"}>
+                            <p><strong>Assignee:</strong></p>
+                            <p>{task.assignedTo ? `${task.assignedTo.firstName} ${task.assignedTo.lastName}` : "Unassigned"}</p>
+                        </div>
+                        <div className={"display-element inline-display-element"}>
+                            <p><strong>Task status:</strong></p>
+                            <p>{selectedStatus?.status ? selectedStatus.status.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ") : "Not set"}</p>
+                        </div>
+                        <div className={"display-element inline-display-element"}>
+                            <p><strong>Priority:</strong></p>
+                            <p>{selectedPriority?.level ? selectedPriority.level.charAt(0).toUpperCase() + selectedPriority.level.slice(1) : "None"}</p>
+                        </div>
+                        <div className={"display-element inline-display-element"}>
+                            <p><strong>Project:</strong></p>
+                            <p>{selectedProject?.projectName || task.project?.projectName || "None"}</p>
+                        </div>
+                        <div className={"display-element inline-display-element"}>
+                            <p><strong>Estimated hours:</strong></p>
+                            <p>{task.estimatedHours || "Not set"}</p>
+                        </div>
+                        <div className={"display-element inline-display-element"}>
+                            <p><strong>Due date:</strong></p>
+                            <p>{task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-GB").replaceAll("/", ".").concat(".") : "Not set"}</p>
+                        </div>
+                        {task?.attachments && task?.attachments.length > 0 && (
+                            <div className={"display-element attach"}>
+                                <p className="attachments-title"><strong>Attachments:</strong></p>
+                                <div className={"listed-attachments"}>
+                                    {task.attachments.map((file) => (
+                                        <div key={file.id} className="attachment-chip">
+                                            <AttachmentIcon size={iconSize} />
+                                            <a href={file.fileUrl} target="_blank" rel="noopener noreferrer" className="file-name">
+                                                {file.fileName}
+                                            </a>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                        </form>
-                        {commentsDiv}
+                        )}
                     </div>
-                    <div className={'task-info'}>
-                        <h4>Info</h4>
-                        {task?.assignedTo?.id !== task?.createdBy?.id ? createdByDiv : ""}
-                        <div className={"task-info-box"}>
-                            <p>Created date:</p>
-                            <p>{new Date(task.createdAt).toLocaleDateString("en-GB").replaceAll("/", ".").concat(".")}</p>
-                        </div>
-                        {task?.related?.length > 0 ? relatedToDiv : ""}
-                        {task?.followers?.length > 0 ? followersDiv : ""}
-                    </div>
+                    {commentsDiv}
                 </div>
+            )}
+            <div className={"task-info"}>
+                <div className={"task-info-header"}>
+                    <h4>Info</h4>
+                </div>
+                {task?.assignedTo?.id !== task?.createdBy?.id ? createdByDiv : ""}
+                <div className={"task-info-box"}>
+                    <p>Created date:</p>
+                    <p>{new Date(task.createdAt).toLocaleDateString("en-GB").replaceAll("/", ".").concat(".")}</p>
+                </div>
+                {task?.related?.length > 0 ? relatedToDiv : ""}
+                {task?.followers?.length > 0 ? followersDiv : ""}
+            </div>
+        </div>
     );
 }
 
