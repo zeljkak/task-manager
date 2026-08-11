@@ -3,8 +3,8 @@ import {useNavigate, useOutletContext, useParams, Link} from "react-router-dom";
 import {useAuth} from "../context/AuthContext.jsx";
 import {getTask} from "../services/taskService.js";
 import BackIcon from "../components/icons/BackIcon.jsx";
-import TaskEdit from "../components/TaskEdit.jsx";
-import TaskView from "../components/TaskView.jsx";
+import TaskEditComponent from "../components/TaskEditComponent.jsx";
+import TaskViewComponent from "../components/TaskViewComponent.jsx";
 
 function Task ({}) {
     const { taskId } = useParams();
@@ -117,14 +117,14 @@ function Task ({}) {
     return (
         <div className={"task-details"}>
             {canEdit ? (
-                <TaskEdit task={task} renderMobileBackButton={renderMobileBackButton}
-                    iconSize={iconSize} syncUpdates={syncUpdates} users={users} user={user}
-                    statuses={statuses} priorities={priorities} projects={projects}
+                <TaskEditComponent task={task} renderMobileBackButton={renderMobileBackButton}
+                                   iconSize={iconSize} syncUpdates={syncUpdates} users={users} user={user}
+                                   statuses={statuses} priorities={priorities} projects={projects}
                 />
             ) : (
-                <TaskView task={task} renderMobileBackButton={renderMobileBackButton} user={user}
-                    iconSize={iconSize} syncUpdates={syncUpdates} selectedStatus={selectedStatus}
-                    selectedPriority={selectedPriority} selectedProject={selectedProject}
+                <TaskViewComponent task={task} renderMobileBackButton={renderMobileBackButton} user={user}
+                                   iconSize={iconSize} syncUpdates={syncUpdates} selectedStatus={selectedStatus}
+                                   selectedPriority={selectedPriority} selectedProject={selectedProject}
                 />
             )}
             <div className={"task-info"}>

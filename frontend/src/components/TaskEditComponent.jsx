@@ -1,20 +1,25 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import FollowTaskComponent from "../components/FollowTaskComponent.jsx";
-import AttachmentIcon from "../components/icons/AttachmentIcon.jsx";
-import DeleteIcon from "../components/icons/DeleteIcon.jsx";
-import DatePickerComponent from "../components/DatePickerComponent.jsx";
+import { isFileAllowed } from "../utils/fileValidation.js";
 import { createTaskAttachment, updateTask } from "../services/taskService.js";
 import { deleteAttachment } from "../services/attachmentService.js";
-import TaskComments from "./TaskComments.jsx";
+import TaskCommentsComponent from "./TaskCommentsComponent.jsx";
+import FollowTaskComponent from "../components/FollowTaskComponent.jsx";
+import DatePickerComponent from "../components/DatePickerComponent.jsx";
+import AttachmentIcon from "../components/icons/AttachmentIcon.jsx";
+import DeleteIcon from "../components/icons/DeleteIcon.jsx";
 
-function TaskEdit({ task, renderMobileBackButton, iconSize, user,
+function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
     syncUpdates, users = [], statuses = [],
     priorities = [], projects = [] }) {
 
-    const [errorMessage, setErrorMessage] = useState("");
+    const [titleError, setTitleError] = useState("");
+    const [attachmentError, setAttachmentError] = useState("");
     const [noDueDate, setNoDueDate] = useState(!task?.dueDate);
     const [deletingAttachmentId, setDeletingAttachmentId] = useState(null);
+
+    const titleErrorRef = useRef(null);
+    const attachmentErrorRef = useRef(null);
 
     const [taskData, setTaskData] = useState({
         title: task?.title || "",
@@ -54,15 +59,20 @@ function TaskEdit({ task, renderMobileBackButton, iconSize, user,
     }, []);
 
     useEffect(() => {
-        if (errorMessage) {
+        if (titleError && titleErrorRef.current) {
             requestAnimationFrame(() => {
-                const scrollContainer = document.querySelector(".task-details");
-                if (scrollContainer) {
-                    scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
-                }
+                titleErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
             });
         }
-    }, [errorMessage]);
+    }, [titleError]);
+
+    useEffect(() => {
+        if (attachmentError && attachmentErrorRef.current) {
+            requestAnimationFrame(() => {
+                attachmentErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            });
+        }
+    }, [attachmentError]);
 
     const handleCheckboxChange = async (e) => {
         const isChecked = e.target.checked;
@@ -110,7 +120,7 @@ function TaskEdit({ task, renderMobileBackButton, iconSize, user,
 
         if (name === "title") {
             if (!rawValue.trim()) {
-                setErrorMessage("Title is required.");
+                setTitleError("Title is required.");
 
                 setTaskData(prev => ({
                     ...prev,
@@ -118,19 +128,37 @@ function TaskEdit({ task, renderMobileBackButton, iconSize, user,
                 }));
 
                 setTimeout(() => {
-                    setErrorMessage("");
+                    setTitleError("");
                 }, 3000);
 
                 return;
             }
 
             lastValidTitleRef.current = rawValue;
-            setErrorMessage("");
+            setTitleError("");
         }
 
         if (name === "attachments") {
             const fileList = [...files];
             if (fileList.length === 0) return;
+
+            const MAX_SIZE = 10 * 1024 * 1024;
+            const oversizedFile = fileList.find(file => file.size > MAX_SIZE);
+            const invalidFile = fileList.find(file => !isFileAllowed(file));
+
+            if (invalidFile) {
+                setAttachmentError(`"${invalidFile.name}" has an invalid file type.`);
+                setTimeout(() => setAttachmentError(""), 4000);
+                e.target.value = "";
+                return;
+            }
+
+            if (oversizedFile) {
+                setAttachmentError(`"${oversizedFile.name}" exceeds the 10 MB limit.`);
+                setTimeout(() => setAttachmentError(""), 4000);
+                e.target.value = ""; // Reset input
+                return;
+            }
 
             try {
                 const attachmentData = new FormData();
@@ -139,9 +167,15 @@ function TaskEdit({ task, renderMobileBackButton, iconSize, user,
                 });
 
                 await createTaskAttachment(task.id, attachmentData);
+                setAttachmentError("");
                 await syncUpdates();
             } catch (error) {
                 console.error("Failed to upload attachments: ", error);
+                const serverError = error.response?.data?.message || error.response?.data?.error || "Failed to upload file.";
+                setAttachmentError(serverError);
+                setTimeout(() => setAttachmentError(""), 4000);
+            } finally {
+                e.target.value = ""; // Reset input so re-selecting same file works
             }
             return;
         }
@@ -199,9 +233,9 @@ function TaskEdit({ task, renderMobileBackButton, iconSize, user,
                     </h4>
                     <FollowTaskComponent task={task} size={iconSize} onFollowChange={syncUpdates} />
                 </div>
-                {errorMessage && (
-                    <div className="error-message">
-                        <p className="error">{errorMessage}</p>
+                {titleError && (
+                    <div className="error-message" ref={titleErrorRef}>
+                        <p className="error">{titleError}</p>
                     </div>
                 )}
                 <div className="form-input">
@@ -316,6 +350,7 @@ function TaskEdit({ task, renderMobileBackButton, iconSize, user,
                                 <AttachmentIcon size={iconSize} />
                             </label>
                             <input type="file" name="attachments" className="attachment-input"
+                                accept=".png,.jpg,.jpeg,.gif,.svg,.webp,.pdf,.docx,.txt,.csv,.xlsx,.xls,.pptx"
                                 id={`task-${task.id}-attachment`} multiple onChange={handleChange}
                             />
                         </div>
@@ -382,12 +417,17 @@ function TaskEdit({ task, renderMobileBackButton, iconSize, user,
                                 })}
                             </div>
                         )}
+                        {attachmentError && (
+                            <div className="error-message" ref={attachmentErrorRef}>
+                                <p className="error">{attachmentError}</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </form>
-            <TaskComments taskId={task.id} user={user} iconSize={iconSize} onCommentUpdated={syncUpdates} />
+            <TaskCommentsComponent taskId={task.id} user={user} iconSize={iconSize} onCommentUpdated={syncUpdates} />
         </div>
     );
 }
 
-export default TaskEdit;
+export default TaskEditComponent;

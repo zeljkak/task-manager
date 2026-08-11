@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { isFileAllowed } from "../utils/fileValidation.js";
 import { getTaskComments, createTaskComment } from "../services/taskService.js";
 import { createCommentAttachment, updateComment, deleteComment } from "../services/commentService.js";
 import { deleteAttachment } from "../services/attachmentService.js";
 import AttachmentIcon from "../components/icons/AttachmentIcon.jsx";
 import DeleteIcon from "../components/icons/DeleteIcon.jsx";
 
-function TaskComments({ taskId, user, iconSize, onCommentUpdated }) {
+function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated }) {
 
     const [comments, setComments] = useState([]);
     const [commentsLoading, setCommentsLoading] = useState(true);
@@ -20,6 +21,7 @@ function TaskComments({ taskId, user, iconSize, onCommentUpdated }) {
 
     const fileInputRef = useRef(null);
     const editFileInputRef = useRef(null);
+    const newCommentErrorRef = useRef(null);
 
     const fetchComments = useCallback(async () => {
         setCommentsLoading(true);
@@ -37,6 +39,26 @@ function TaskComments({ taskId, user, iconSize, onCommentUpdated }) {
         fetchComments();
     }, [fetchComments]);
 
+    useEffect(() => {
+        if (commentError && newCommentErrorRef.current) {
+            requestAnimationFrame(() => {
+                newCommentErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            });
+        }
+    }, [commentError]);
+
+    useEffect(() => {
+        const hasActiveError = Object.values(commentItemErrors).some(err => Boolean(err));
+        if (hasActiveError) {
+            requestAnimationFrame(() => {
+                const errorElement = document.querySelector(".comment-item-error");
+                if (errorElement) {
+                    errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+            });
+        }
+    }, [commentItemErrors]);
+
     const handleSync = async () => {
         await fetchComments();
         if (onCommentUpdated) await onCommentUpdated();
@@ -44,6 +66,27 @@ function TaskComments({ taskId, user, iconSize, onCommentUpdated }) {
 
     const handleNewCommentFileChange = (e) => {
         const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+
+        const MAX_SIZE = 10 * 1024 * 1024;
+        const oversizedFile = files.find(file => file.size > MAX_SIZE);
+        const invalidFile = files.find(file => !isFileAllowed(file));
+
+        if (invalidFile) {
+            setCommentError(`"${invalidFile.name}" has an invalid file type.`);
+            setTimeout(() => setCommentError(""), 4000);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+            return;
+          }
+
+        if (oversizedFile) {
+            setCommentError(`"${oversizedFile.name}" exceeds the 10 MB limit.`);
+            setTimeout(() => setCommentError(""), 4000);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+            return;
+        }
+
+        setCommentError(""); // Clear error on valid selection
         setCommentAttachments(prev => [...prev, ...files]);
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
@@ -56,14 +99,42 @@ function TaskComments({ taskId, user, iconSize, onCommentUpdated }) {
         const files = Array.from(e.target.files || []);
         if (files.length === 0) return;
 
+        const MAX_SIZE = 10 * 1024 * 1024;
+        const oversizedFile = files.find(file => file.size > MAX_SIZE);
+        const invalidFile = files.find(file => !isFileAllowed(file));
+
+        if (invalidFile) {
+            setCommentItemErrors(prev => ({
+              ...prev,
+              [commentId]: `"${invalidFile.name}" has an invalid file type.`
+            }));
+            setTimeout(() => setCommentItemErrors(prev => ({ ...prev, [commentId]: "" })), 4000);
+            if (e.target) e.target.value = "";
+            return;
+          }
+
+        if (oversizedFile) {
+            setCommentItemErrors(prev => ({
+                ...prev,
+                [commentId]: `"${oversizedFile.name}" exceeds the 10 MB limit.`
+            }));
+            setTimeout(() => setCommentItemErrors(prev => ({ ...prev, [commentId]: "" })), 4000);
+            if (e.target) e.target.value = "";
+            return;
+        }
+
         try {
             const commentAttachmentData = new FormData();
             files.forEach(file => commentAttachmentData.append("file", file));
 
             await createCommentAttachment(commentId, commentAttachmentData);
+            setCommentItemErrors(prev => ({ ...prev, [commentId]: "" }));
             await handleSync();
         } catch (err) {
             console.error("Failed to add attachment to existing comment:", err);
+            const errorMsg = err.response?.data?.error || err.response?.data?.message || "Failed to upload file.";
+            setCommentItemErrors(prev => ({ ...prev, [commentId]: errorMsg }));
+            setTimeout(() => setCommentItemErrors(prev => ({ ...prev, [commentId]: "" })), 4000);
         } finally {
             if (editFileInputRef.current) editFileInputRef.current.value = "";
         }
@@ -84,6 +155,7 @@ function TaskComments({ taskId, user, iconSize, onCommentUpdated }) {
             await updateComment(commentId, { comment: newText, hasAttachments: hasExistingAttachments });
             setCommentItemErrors(prev => ({ ...prev, [commentId]: "" }));
         } catch (err) {
+            console.error("Failed to update comment text:", err);
             setComments(prevComments =>
                 prevComments.map(c => c.id === commentId ? { ...c, comment: previousText } : c)
             );
@@ -118,7 +190,9 @@ function TaskComments({ taskId, user, iconSize, onCommentUpdated }) {
 
             await handleSync();
         } catch (err) {
-            setCommentError(err.response?.data?.error || "Failed to post comment.");
+            const errorMsg = err.response?.data?.error || err.response?.data?.message || "Failed to post comment.";
+            setCommentError(errorMsg);
+            setTimeout(() => setCommentError(""), 4000);
         } finally {
             setIsSubmittingComment(false);
         }
@@ -252,6 +326,7 @@ function TaskComments({ taskId, user, iconSize, onCommentUpdated }) {
                                                 <AttachmentIcon size={iconSize} />
                                             </label>
                                             <input type="file" name={`edit-comment-attachment-${c.id}`}
+                                                accept=".png,.jpg,.jpeg,.gif,.svg,.webp,.pdf,.docx,.txt,.csv,.xlsx,.xls,.pptx"
                                                 className="attachment-input" ref={editFileInputRef}
                                                 id={`edit-comment-attachment-${c.id}`} multiple
                                                 onChange={(e) => handleEditCommentFileChange(e, c.id)}
@@ -282,9 +357,11 @@ function TaskComments({ taskId, user, iconSize, onCommentUpdated }) {
                     })}
                 </div>
             )}
-
-            {commentError && <p className="error">{commentError}</p>}
-
+            {commentError && (
+                <div className="error-message" ref={newCommentErrorRef}>
+                    <p className="error">{commentError}</p>
+                </div>
+            )}
             <form onSubmit={handleCommentSubmit} className="add-comment-form">
                 <div className="textarea-wrapper">
                     <textarea placeholder="Write a comment..." rows={3}
@@ -310,6 +387,7 @@ function TaskComments({ taskId, user, iconSize, onCommentUpdated }) {
                     </label>
                 </div>
                 <input type="file" name="comment-attachments" multiple
+                    accept=".png,.jpg,.jpeg,.gif,.svg,.webp,.pdf,.docx,.txt,.csv,.xlsx,.xls,.pptx"
                     className="attachment-input" id="new-comment-attachment"
                     ref={fileInputRef} onChange={handleNewCommentFileChange}
                 />
@@ -323,4 +401,4 @@ function TaskComments({ taskId, user, iconSize, onCommentUpdated }) {
     );
 }
 
-export default TaskComments;
+export default TaskCommentsComponent;

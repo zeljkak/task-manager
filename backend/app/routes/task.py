@@ -31,7 +31,6 @@ def get_tasks():
     text = request.args.get("text", type=str)
     assigned_to_id = parse_user_id(request.args.get("assignedToId", type=str), current_user_id)
     status_id = request.args.get("statusId", type=int)
-    status_id = request.args.get("statusId", type=int)
     priority_id = request.args.get("priorityId", type=int)
     project_id = request.args.get("projectId", type=int)
     has_project = request.args.get("hasProject", type=bool)

@@ -1,8 +1,8 @@
 import FollowTaskComponent from "../components/FollowTaskComponent.jsx";
 import AttachmentIcon from "../components/icons/AttachmentIcon.jsx";
-import TaskComments from "./TaskComments.jsx";
+import TaskCommentsComponent from "./TaskCommentsComponent.jsx";
 
-function TaskView({ task, renderMobileBackButton, iconSize, user,
+function TaskViewComponent({ task, renderMobileBackButton, iconSize, user,
     syncUpdates, selectedStatus, selectedPriority, selectedProject }) {
     return (
         <div className={"task-display"}>
@@ -55,9 +55,9 @@ function TaskView({ task, renderMobileBackButton, iconSize, user,
                     </div>
                 )}
             </div>
-            <TaskComments taskId={task.id} user={user} iconSize={iconSize} onCommentUpdated={syncUpdates} />
+            <TaskCommentsComponent taskId={task.id} user={user} iconSize={iconSize} onCommentUpdated={syncUpdates} />
         </div>
     );
 }
 
-export default TaskView;
+export default TaskViewComponent;
