@@ -1,11 +1,19 @@
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 load_dotenv()
 
 class Config:
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
     JWT_TOKEN_LOCATION = ['cookies']
+    JWT_SESSION_COOKIE = False
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=15)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    JWT_ACCESS_COOKIE_PATH = "/"
+    JWT_REFRESH_COOKIE_PATH = "/auth/refresh"  # Limits refresh cookie exposure to refresh route only
+    JWT_ACCESS_COOKIE_NAME = "access_token_cookie"
+    JWT_REFRESH_COOKIE_NAME = "refresh_token_cookie"
     JWT_COOKIE_SECURE = False #set to True in production (HTTPS)
     JWT_COOKIE_CSRF_PROTECT = False #set to True later if you want CSRF protection
 

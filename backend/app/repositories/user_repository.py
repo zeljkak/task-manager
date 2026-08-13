@@ -4,6 +4,17 @@ from backend.app.extensions.db import db
 
 class UserRepository:
     @staticmethod
+    def get_user_auth_metadata(user_id: int):
+        try:
+            return db.session.query(
+                User.id,
+                User.token_version,
+                User.is_deleted
+            ).filter(User.id == user_id).first()
+        except Exception as e:
+            raise ServiceUnavailableError("Database unavailable") from e
+
+    @staticmethod
     def get_by_id(user_id):
         try:
             user = User.query.filter_by(id=user_id, is_deleted=False).first()
@@ -76,6 +87,16 @@ class UserRepository:
         try:
             return User.query.filter_by(is_deleted=True).all()
 
+        except Exception as e:
+            raise ServiceUnavailableError("Database unavailable") from e
+
+    @staticmethod
+    def get_by_id_including_deleted(id):
+        try:
+            user = User.query.filter_by(id=id).first()
+            if not user:
+                return None
+            return user
         except Exception as e:
             raise ServiceUnavailableError("Database unavailable") from e
 

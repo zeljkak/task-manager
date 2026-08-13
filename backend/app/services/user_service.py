@@ -87,6 +87,15 @@ class UserService:
     def get_deleted_users():
         return UserRepository.get_deleted_all()
 
+    @staticmethod
+    def get_user_by_id_including_deleted(id):
+        user = UserRepository.get_by_id_including_deleted(id)
+
+        if not user:
+            raise NotFoundError('User not found')
+
+        return user
+
 
     @staticmethod
     def get_user_by_email_including_deleted(email):
@@ -105,6 +114,12 @@ class UserService:
         if not user:
             raise NotFoundError('User not found')
 
+        return user
+
+
+    @staticmethod
+    def invalidate_user_sessions(user):
+        user.token_version += 1
         return user
 
 
@@ -170,7 +185,9 @@ class UserService:
         user = UserService.get_user_by_id(user_id)
         role = RoleService.get_role_by_name(role_name)
 
-        user.role_id = role.id
+        if user.role_id != role.id:
+            user.role_id = role.id
+            UserService.invalidate_user_sessions(user)
         return UserRepository.update(user)
 
 
@@ -178,6 +195,7 @@ class UserService:
     def delete_user(user_id):
         user = UserService.get_user_by_id(user_id)
         user.is_deleted = True
+        UserService.invalidate_user_sessions(user)
 
         ActivityLogService.deletion_activity(user_id, "USER_DELETED")
         return UserRepository.update(user)
@@ -198,6 +216,7 @@ class UserService:
         user = UserService.get_deleted_user_by_token(token)
         user.is_deleted = False
         user.verification_token = None
+        UserService.invalidate_user_sessions(user)
 
         ActivityLogService.deletion_activity(user.id, "USER_RESTORED")
         return UserRepository.update(user)

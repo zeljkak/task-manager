@@ -8,3 +8,4 @@ from backend.app.models.task_status_model import TaskStatus
 from backend.app.models.activity_log_model import ActivityLog
 from backend.app.models.attachment_model import Attachment
 from backend.app.models.association_tables import task_followers, task_relations
+from backend.app.models.revoked_token_model import RevokedToken

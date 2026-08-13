@@ -1,8 +1,22 @@
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import set_access_cookies, jwt_required, unset_jwt_cookies
+from flask import Blueprint, request, jsonify, current_app
+from flask_jwt_extended import (
+    get_jwt,
+    set_access_cookies,
+    jwt_required,
+    get_jwt_identity,
+    unset_jwt_cookies,
+    set_refresh_cookies,
+    create_access_token,
+    create_refresh_token,
+    decode_token, verify_jwt_in_request
+)
 from flasgger import swag_from
+from datetime import timedelta
 import os
+import logging
 
+from backend.app.extensions.token_blocklist import add_jti_to_blocklist
+from backend.app.repositories.user_repository import UserRepository
 from backend.app.services.auth_service import AuthService
 from backend.app.services.user_service import UserService
 from backend.app.schemas.auth_schema import RegisterSchema, LoginSchema, EnterEmailSchema, PasswordResetSchema
@@ -12,6 +26,7 @@ from backend.app.extensions.limiter import limiter
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+logger = logging.getLogger(__name__)
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 register_schema = RegisterSchema()
@@ -72,17 +87,67 @@ def change_password(token):
 
 @auth_bp.route('/login', methods=['POST'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/auth/login.yml"))
-@limiter.limit("2 per minute")
+#@limiter.limit("2 per minute")
 
 def login():
     data = login_schema.load(request.get_json())
-    token = AuthService.login_user(data["email"], data["password"])
+    access_token, refresh_token = AuthService.login_user(data["email"], data["password"])
 
     response = jsonify({
         "message": "Login successful"
     })
 
-    set_access_cookies(response, token)
+    set_access_cookies(response, access_token)
+    set_refresh_cookies(response, refresh_token)
+
+    return response, 200
+
+@auth_bp.route('/refresh', methods=['POST'])
+@jwt_required(refresh=True)
+def refresh():
+    current_user_id = get_jwt_identity()
+    jwt_claims = get_jwt()
+    token_version_in_jwt = jwt_claims.get("token_version")
+    jti = jwt_claims.get("jti")
+    exp = jwt_claims.get("exp")
+
+    user = UserRepository.get_by_id_including_deleted(current_user_id)
+
+    if not user or user.is_deleted:
+        response = jsonify({
+            "error": "token_revoked",
+            "message": "Session expired or revoked. Please log in again."
+        })
+        unset_jwt_cookies(response)
+        return response, 401
+
+    # Refresh Token Rotation: Revoke current refresh token's JTI
+    if jti and exp is not None:
+        added = add_jti_to_blocklist(str(jti), float(exp))
+        if not added:
+            # JTI was already revoked / rotated (potential replay attempt)
+            logger.warning(f"Replay attempt detected for JTI {jti} by user {current_user_id}")
+            response = jsonify({
+                "error": "token_revoked",
+                "message": "Token has been revoked or already used."
+            })
+            unset_jwt_cookies(response)
+            return response, 401
+
+    # Issue fresh 15-minute access token with live role from DB
+    new_access_token = create_access_token(
+        identity=str(user.id),
+        additional_claims={"role": user.role.role_name, "token_version": user.token_version}
+    )
+    new_refresh_token = create_refresh_token(
+        identity=str(user.id),
+        additional_claims={"token_version": user.token_version},
+        expires_delta=timedelta(days=30)
+    )
+
+    response = jsonify({"message": "Token refreshed successfully"})
+    set_access_cookies(response, new_access_token)
+    set_refresh_cookies(response, new_refresh_token)
 
     return response, 200
 
@@ -90,6 +155,40 @@ def login():
 @swag_from(os.path.join(BASE_DIR, "../../docs/auth/logout.yml"))
 
 def logout():
+    user_id = None
+
+    # attempt to get identity from access token
+    try:
+        verify_jwt_in_request(optional=True)
+        user_id = get_jwt_identity()
+    except Exception as e:
+        logger.debug(f"Optional access token check during logout: {e}")
+
+    # if access token is missing/expired, fall back to decoding refresh cookie
+    if not user_id:
+        refresh_cookie_name = current_app.config.get("JWT_REFRESH_COOKIE_NAME", "refresh_token_cookie")
+        refresh_token = request.cookies.get(refresh_cookie_name)
+        if refresh_token:
+            try:
+                decoded_refresh = decode_token(refresh_token)
+                user_id = decoded_refresh.get("sub")
+
+                # Blocklist the current refresh token's JTI directly
+                jti = decoded_refresh.get("jti")
+                exp = decoded_refresh.get("exp")
+                if jti and exp:
+                    add_jti_to_blocklist(str(jti), float(exp))
+            except Exception as e:
+                logger.debug(f"Failed to decode refresh token on logout: {e}")
+                user_id = None
+
+    # invalidate user sessions if user identity was established
+    if user_id:
+        user = UserRepository.get_by_id_including_deleted(user_id)
+        if user:
+            UserService.invalidate_user_sessions(user)
+            UserRepository.update(user)
+
     response = jsonify({
         "message": "Logout successful"
     })

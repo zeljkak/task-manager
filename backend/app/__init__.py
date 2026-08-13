@@ -2,7 +2,7 @@ from flask import Flask
 from flasgger import Swagger
 from flask_cors import CORS
 
-from backend.app.extensions.jwt import jwt
+from backend.app.extensions.jwt import jwt, configure_jwt
 from backend.app.extensions.db import db
 from backend.app.extensions.ma import ma
 from backend.app.extensions.limiter import limiter
@@ -51,6 +51,7 @@ def create_app():
     # Initialize Swagger
     swagger.init_app(app)
     jwt.init_app(app)
+    configure_jwt(jwt)
     db.init_app(app)
     ma.init_app(app)
     limiter.init_app(app)

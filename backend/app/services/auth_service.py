@@ -1,4 +1,4 @@
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, create_refresh_token
 from datetime import timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -30,9 +30,10 @@ class AuthService:
         if not check_password_hash(user.password, password):
             raise AuthenticationError("Invalid credentials")
 
-        token = create_access_token(identity=str(user.id), additional_claims={"role": user.role.role_name}, expires_delta=timedelta(days=30))
+        access_token = create_access_token(identity=str(user.id), additional_claims={"role": user.role.role_name, "token_version": user.token_version})
+        refresh_token = create_refresh_token(identity=str(user.id), additional_claims={"token_version": user.token_version}, expires_delta=timedelta(days=30))
 
-        return token
+        return access_token, refresh_token
 
     @staticmethod
     def verify_email(token):
@@ -69,5 +70,6 @@ class AuthService:
 
         user.password = data['password']
         user.verification_token = None
+        UserService.invalidate_user_sessions(user)
 
         return UserRepository.update(user)
