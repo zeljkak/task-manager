@@ -4,6 +4,9 @@ tags:
 description:
   Update a current user's profile. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 parameters:
   - name: body
     in: body

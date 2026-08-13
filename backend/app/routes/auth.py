@@ -87,7 +87,7 @@ def change_password(token):
 
 @auth_bp.route('/login', methods=['POST'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/auth/login.yml"))
-#@limiter.limit("2 per minute")
+@limiter.limit("10 per day")
 
 def login():
     data = login_schema.load(request.get_json())
@@ -103,6 +103,7 @@ def login():
     return response, 200
 
 @auth_bp.route('/refresh', methods=['POST'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/auth/refresh.yml"))
 @jwt_required(refresh=True)
 def refresh():
     current_user_id = get_jwt_identity()
@@ -121,7 +122,7 @@ def refresh():
         unset_jwt_cookies(response)
         return response, 401
 
-    # Refresh Token Rotation: Revoke current refresh token's JTI
+    # refresh token rotation: revoke current refresh token's JTI
     if jti and exp is not None:
         added = add_jti_to_blocklist(str(jti), float(exp))
         if not added:
@@ -134,7 +135,7 @@ def refresh():
             unset_jwt_cookies(response)
             return response, 401
 
-    # Issue fresh 15-minute access token with live role from DB
+    # issue fresh 15-minute access token with live role from DB
     new_access_token = create_access_token(
         identity=str(user.id),
         additional_claims={"role": user.role.role_name, "token_version": user.token_version}
@@ -173,7 +174,7 @@ def logout():
                 decoded_refresh = decode_token(refresh_token)
                 user_id = decoded_refresh.get("sub")
 
-                # Blocklist the current refresh token's JTI directly
+                # blocklist the current refresh token's JTI directly
                 jti = decoded_refresh.get("jti")
                 exp = decoded_refresh.get("exp")
                 if jti and exp:

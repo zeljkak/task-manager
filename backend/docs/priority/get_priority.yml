@@ -4,6 +4,9 @@ tags:
 description:
   Get a specific priority that matches the id. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 parameters:
   - name: priorityId
     in: path

@@ -1,7 +1,7 @@
 tags:
   - Auth
 
-description: Login a user. Email must exist in the system. Password must match the stored password
+description: Authenticate user and issue JWT cookies. Email must exist in the system. Password must match the stored password.
 
 parameters:
   - name: body
@@ -23,7 +23,11 @@ parameters:
           example: 123456Yy.
 responses:
   200:
-    description: Login successful (returns user or token)
+    description: Login successful. Access and refresh JWT cookies are attached to the response.
+    headers:
+      Set-Cookie:
+        type: string
+        description: Sets access_token_cookie and refresh_token_cookie.
     schema:
       type: object
       properties:
@@ -34,8 +38,6 @@ responses:
     description: Bad request (missing or invalid fields)
   401:
     description: Authentication required (email not verified or account deleted)
-  404:
-    description: Related resource not found
   422:
     description: Validation error (invalid email format)
   429:

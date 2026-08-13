@@ -8,17 +8,17 @@ def configure_jwt(jwt_manager: JWTManager) -> None:
 
     @jwt_manager.token_in_blocklist_loader
     def check_if_token_is_revoked(jwt_header, jwt_payload: dict) -> bool:
-        # Skip relative imports to avoid circular dependency issues
+        # skip relative imports to avoid circular dependency issues
         from backend.app.repositories.user_repository import UserRepository
 
         token_type = jwt_payload.get("type")
         jti = jwt_payload.get("jti")
 
-        # Check explicitly revoked JTI (used for single-use refresh token rotation)
+        # check explicitly revoked JTI (used for single-use refresh token rotation)
         if jti and is_jti_blocklisted(str(jti)):
             return True
 
-        # Skip token_version check for refresh tokens
+        # skip token_version check for refresh tokens
         if token_type == "refresh":
             return False
 
@@ -30,7 +30,7 @@ def configure_jwt(jwt_manager: JWTManager) -> None:
 
         user_meta = UserRepository.get_user_auth_metadata(int(user_id))
 
-        # Revoke if user does not exist, is soft-deleted, or token version is stale
+        # revoke if user does not exist, is soft-deleted, or token version is stale
         if not user_meta or user_meta.is_deleted:
             return True
 

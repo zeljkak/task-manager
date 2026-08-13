@@ -3,6 +3,9 @@ tags:
 
 description: Create a new task. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 parameters:
   - name: body
     in: body

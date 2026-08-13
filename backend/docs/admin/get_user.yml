@@ -4,6 +4,9 @@ tags:
 description:
   Get a specific user that matches the ID. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 parameters:
   - name: userId
     in: path

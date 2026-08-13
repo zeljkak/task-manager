@@ -14,7 +14,7 @@ class RevokedToken(db.Model):
 
     @classmethod
     def add_jti(cls, jti: str, exp_timestamp: float):
-        #inserts a revoked JTI, returns True on success or False if the JTI already exists
+        # inserts a revoked JTI, returns True on success or False if the JTI already exists
         try:
             token = cls(jti=jti, exp=exp_timestamp)
             db.session.add(token)
@@ -30,13 +30,13 @@ class RevokedToken(db.Model):
 
     @classmethod
     def is_jti_blocklisted(cls, jti: str) -> bool:
-        #checks if JTI is blocklisted, returns True if a db error occurs
+        # checks if JTI is blocklisted, returns True if a db error occurs
         try:
             token = cls.query.filter_by(jti=jti).first()
             if not token:
                 return False
 
-            # Auto-clean expired entries
+            # auto-clean expired entries
             if time.time() > token.exp:
                 db.session.delete(token)
                 db.session.commit()
@@ -49,7 +49,7 @@ class RevokedToken(db.Model):
 
     @classmethod
     def delete_expired_tokens(cls) -> int:
-        #utility method for cleanup, should be scheduled
+        # utility method for cleanup, should be scheduled
         try:
             now = time.time()
             deleted = cls.query.filter(cls.exp < now).delete()

@@ -1,11 +1,24 @@
 tags:
   - Auth
 
-description: Log out the current user and clear secure session cookies.
+summary: Log out user and clear session
+description: >
+  Logs out the current user by revoking active JWT tokens and clearing HTTP-only session cookies.
+  
+  The endpoint attempts to identify the user via access token or refresh cookie.
+  If identified, the refresh token JTI is added to the blocklist and user session versions are invalidated.
+  This endpoint is idempotent and always returns 200 OK to ensure client cookies are cleared regardless of session status.
+
+security:
+  - cookieAuth: []
 
 responses:
   200:
-    description: Logout successful (session cookies cleared)
+    description: Logout successful. Access and refresh cookies are cleared from the client.
+    headers:
+      Set-Cookie:
+        type: string
+        description: Set-Cookie headers that expire access_token_cookie and refresh_token_cookie.
     schema:
       type: object
       properties:

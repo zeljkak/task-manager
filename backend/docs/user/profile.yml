@@ -4,6 +4,9 @@ tags:
 description:
   Get current user's profile. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 responses:
   200:
     description: User profile retrieved successfully

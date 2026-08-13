@@ -4,6 +4,9 @@ tags:
 description:
   Create a new comment on a task. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 parameters:
   - name: taskId
     in: path

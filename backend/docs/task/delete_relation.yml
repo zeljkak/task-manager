@@ -4,6 +4,9 @@ tags:
 description:
   Delete a specific relation between tasks. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 parameters:
   - name: taskId
     in: path

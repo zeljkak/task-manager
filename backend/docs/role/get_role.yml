@@ -4,6 +4,9 @@ tags:
 description:
   Get a specific role that matches the id. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 parameters:
   - name: roleId
     in: path

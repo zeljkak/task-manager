@@ -4,6 +4,9 @@ tags:
 description:
   Create a relation between two tasks. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 parameters:
   - name: taskId
     in: path

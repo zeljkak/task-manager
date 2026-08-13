@@ -11,12 +11,6 @@ export function AuthProvider({ children }) {
   // Check if user is logged in on app mount/refresh
   useEffect(() => {
     async function checkAuthStatus() {
-      if (window.location.pathname === "/login") {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
       try {
         const res = await getProfile();
         setUser(res.data.user);

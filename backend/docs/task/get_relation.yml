@@ -4,6 +4,9 @@ tags:
 description:
   Get related tasks for a specific task. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 parameters:
   - name: taskId
     in: path

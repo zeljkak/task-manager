@@ -9,6 +9,7 @@ import Home from "./pages/Home.jsx";
 import Projects from "./pages/Projects.jsx";
 import Task from "./pages/Task.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import {GuestRoute} from "./routes/GuestRoute.jsx";
 
 function App() {
 
@@ -27,9 +28,12 @@ function App() {
         </Route>
       </Route>
 
-      <Route path="/login" element={<Login />} />
+      <Route element={<GuestRoute />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/restore-account/:token" element={<RestoreAccount />} />
+      </Route>
+
       <Route path="/reset-password/:token" element={<ResetPassword />} />
-      <Route path="/restore-account/:token" element={<RestoreAccount />} />
       <Route path="*" element={<div>404 Not Found</div>} />
     </Routes>
   )

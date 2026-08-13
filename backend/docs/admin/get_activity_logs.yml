@@ -4,6 +4,9 @@ tags:
 description:
   Retrieve activity logs. Results can be filtered by task ID and/or user ID. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 parameters:
   - name: taskId
     in: query

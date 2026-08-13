@@ -4,6 +4,9 @@ tags:
 description:
   Get all task statuses. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 responses:
   200:
     description: Task statuses retrieved successfully

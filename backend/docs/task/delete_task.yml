@@ -4,6 +4,9 @@ tags:
 description:
   Delete a specific task that matches the id. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 parameters:
   - name: taskId
     in: path

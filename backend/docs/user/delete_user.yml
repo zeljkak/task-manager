@@ -4,6 +4,9 @@ tags:
 description:
   Delete the users profile. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 responses:
   204:
     description: User deleted successfully

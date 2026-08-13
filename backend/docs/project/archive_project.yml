@@ -4,6 +4,9 @@ tags:
 description:
   Archive a specific project that matches the id. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 parameters:
   - name: projectId
     in: path

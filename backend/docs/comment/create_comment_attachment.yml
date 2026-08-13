@@ -4,6 +4,9 @@ tags:
 description:
   Create attachments for a specific comment that matches the ID. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 consumes:
   - multipart/form-data
 

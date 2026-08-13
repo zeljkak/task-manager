@@ -4,6 +4,9 @@ tags:
 description:
   Update a specific user. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 parameters:
   - name: userId
     in: path

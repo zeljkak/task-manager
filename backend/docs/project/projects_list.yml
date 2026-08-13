@@ -4,6 +4,9 @@ tags:
 description:
   Retrieve basic projects list. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 responses:
   200:
     description: Projects retrieved successfully

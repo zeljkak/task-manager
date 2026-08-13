@@ -4,6 +4,9 @@ tags:
 description:
   Delete a specific comment that matches the id. Requires an active session cookie
 
+security:
+  - cookieAuth: []
+
 parameters:
   - name: commentId
     in: path
