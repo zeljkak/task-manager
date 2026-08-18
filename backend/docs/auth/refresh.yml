@@ -15,45 +15,40 @@ security:
 responses:
   200:
     description: Tokens refreshed successfully. New JWT cookies set in response headers.
-    content:
-      application/json:
-        schema:
-          type: object
-          properties:
-            message:
-              type: string
-              example: Token refreshed successfully
     headers:
       Set-Cookie:
-        schema:
-          type: string
+        type: string
         description: Sets fresh access_token_cookie and refresh_token_cookie.
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Token refreshed successfully
   401:
     description: Unauthorized. Occurs if the refresh token is missing/expired, the user is deleted or a replay attack is detected.
-    content:
-      application/json:
-        schema:
-          type: object
-          properties:
-            error:
-              type: string
-              example: token_revoked
-            message:
-              type: string
-              example: Session expired or revoked. Please log in again.
-        examples:
-          user_deleted_or_revoked:
-            summary: User deleted or token revoked
-            value:
-              error: "token_revoked"
-              message: "Session expired or revoked. Please log in again."
-          replay_attack:
-            summary: Replay attempt detected (JTI already revoked)
-            value:
-              error: "token_revoked"
-              message: "Token has been revoked or already used."
-          authorization_required:
-            summary: Unauthorized user
-            value:
-              error: "authorization_required"
-              message: "Request does not contain a valid authentication token."
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: token_revoked
+        message:
+          type: string
+          example: Session expired or revoked. Please log in again.
+    examples:
+      user_deleted_or_revoked:
+        summary: User deleted or token revoked
+        value:
+          error: "token_revoked"
+          message: "Session expired or revoked. Please log in again."
+      replay_attack:
+        summary: Replay attempt detected (JTI already revoked)
+        value:
+          error: "token_revoked"
+          message: "Token has been revoked or already used."
+      authorization_required:
+        summary: Unauthorized user
+        value:
+          error: "authorization_required"
+          message: "Request does not contain a valid authentication token."

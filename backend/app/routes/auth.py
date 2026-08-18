@@ -108,7 +108,6 @@ def login():
 def refresh():
     current_user_id = get_jwt_identity()
     jwt_claims = get_jwt()
-    token_version_in_jwt = jwt_claims.get("token_version")
     jti = jwt_claims.get("jti")
     exp = jwt_claims.get("exp")
 
@@ -158,37 +157,64 @@ def refresh():
 def logout():
     user_id = None
 
-    # attempt to get identity from access token
-    try:
-        verify_jwt_in_request(optional=True)
-        user_id = get_jwt_identity()
-    except Exception as e:
-        logger.debug(f"Optional access token check during logout: {e}")
+    access_cookie_name = current_app.config.get(
+        "JWT_ACCESS_COOKIE_NAME",
+        "access_token_cookie"
+    )
 
-    # if access token is missing/expired, fall back to decoding refresh cookie
-    if not user_id:
-        refresh_cookie_name = current_app.config.get("JWT_REFRESH_COOKIE_NAME", "refresh_token_cookie")
-        refresh_token = request.cookies.get(refresh_cookie_name)
-        if refresh_token:
-            try:
-                decoded_refresh = decode_token(refresh_token)
-                user_id = decoded_refresh.get("sub")
+    refresh_cookie_name = current_app.config.get(
+        "JWT_REFRESH_COOKIE_NAME",
+        "refresh_token_cookie"
+    )
 
-                # blocklist the current refresh token's JTI directly
-                jti = decoded_refresh.get("jti")
-                exp = decoded_refresh.get("exp")
-                if jti and exp:
-                    add_jti_to_blocklist(str(jti), float(exp))
-            except Exception as e:
-                logger.debug(f"Failed to decode refresh token on logout: {e}")
-                user_id = None
+    # first try the access token
+    access_token = request.cookies.get(access_cookie_name)
 
-    # invalidate user sessions if user identity was established
+    if access_token:
+        try:
+            decoded_access = decode_token(access_token)
+
+            user_id = decoded_access.get("sub")
+
+        except Exception as e:
+            logger.debug(
+                f"Failed to decode access token on logout: {e}"
+            )
+
+    # if the access token is missing
+    refresh_token = request.cookies.get(refresh_cookie_name)
+    if not user_id and refresh_token:
+        try:
+            decoded_refresh = decode_token(refresh_token)
+            user_id = decoded_refresh.get("sub")
+
+            # blocklist the current refresh token
+            jti = decoded_refresh.get("jti")
+            exp = decoded_refresh.get("exp")
+
+            if jti and exp:
+                add_jti_to_blocklist(
+                    str(jti),
+                    float(exp)
+                )
+
+        except Exception as e:
+            logger.debug(
+                f"Failed to decode refresh token on logout: {e}"
+            )
+    # if user is identified, invalidate all sessions
     if user_id:
-        user = UserRepository.get_by_id_including_deleted(user_id)
-        if user:
-            UserService.invalidate_user_sessions(user)
-            UserRepository.update(user)
+        try:
+            user = UserRepository.get_by_id_including_deleted(user_id)
+
+            if user:
+                UserService.invalidate_user_sessions(user)
+                UserRepository.update(user)
+
+        except Exception as e:
+            logger.exception(
+                f"Failed to invalidate user session during logout: {e}"
+            )
 
     response = jsonify({
         "message": "Logout successful"

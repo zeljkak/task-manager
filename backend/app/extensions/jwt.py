@@ -59,6 +59,11 @@ def configure_jwt(jwt_manager: JWTManager) -> None:
 
     @jwt_manager.unauthorized_loader
     def missing_token_callback(error_string):
+        if "csrf" in str(error_string).lower():
+            return jsonify({
+                "error": "csrf_missing",
+                "message": "Missing CSRF token."
+            }), 401
         return jsonify({
             "error": "authorization_required",
             "message": "Request does not contain a valid authentication token."

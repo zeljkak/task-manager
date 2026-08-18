@@ -2,7 +2,7 @@ import {useEffect, useState, useRef} from "react";
 import DatePickerComponent from "./DatePickerComponent.jsx";
 import {createTask, createTaskAttachment} from "../services/taskService.js";
 import BackIcon from "./icons/BackIcon.jsx";
-import {useAuth} from "../context/AuthContext.jsx";
+import {useAuth} from "../context/useAuth.js";
 import {useOutletContext} from "react-router-dom";
 
 function CreateTaskComponent({ onClose, onCreated, isMobile }) {

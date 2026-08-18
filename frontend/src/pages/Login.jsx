@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {Navigate, useNavigate} from "react-router-dom";
 import {login} from "../services/authService.js";
-import {useAuth} from "../context/AuthContext.jsx";
+import {useAuth} from "../context/useAuth.js";
 
 export default function Login() {
   const {user, loginUser} = useAuth();

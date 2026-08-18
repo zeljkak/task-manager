@@ -8,8 +8,9 @@ export const restoreAccount = (token) => {
 
 export const getProfile = () => {
   return api.get(
-    `/users/profile`
-  );
+    `/users/profile`, {
+      skipAuthRefresh: true,
+    });
 };
 
 export const getUsers = () => {

@@ -7,10 +7,7 @@ description: >
   
   The endpoint attempts to identify the user via access token or refresh cookie.
   If identified, the refresh token JTI is added to the blocklist and user session versions are invalidated.
-  This endpoint is idempotent and always returns 200 OK to ensure client cookies are cleared regardless of session status.
-
-security:
-  - cookieAuth: []
+  This endpoint always returns 200 OK to ensure client cookies are cleared regardless of session status.
 
 responses:
   200:

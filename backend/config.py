@@ -14,8 +14,12 @@ class Config:
     JWT_REFRESH_COOKIE_PATH = "/auth/refresh"  # Limits refresh cookie exposure to refresh route only
     JWT_ACCESS_COOKIE_NAME = "access_token_cookie"
     JWT_REFRESH_COOKIE_NAME = "refresh_token_cookie"
-    JWT_COOKIE_SECURE = False #set to True in production (HTTPS)
-    JWT_COOKIE_CSRF_PROTECT = False #set to True later if you want CSRF protection
+    JWT_COOKIE_SECURE = os.getenv("JWT_COOKIE_SECURE", "false").lower() == "true"
+    JWT_COOKIE_CSRF_PROTECT = True
+    JWT_CSRF_IN_COOKIES = True
+    JWT_COOKIE_SAMESITE = "Lax"
+    JWT_ACCESS_CSRF_HEADER_NAME = "X-CSRF-TOKEN"
+    JWT_REFRESH_CSRF_HEADER_NAME = "X-CSRF-TOKEN"
 
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False

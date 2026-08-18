@@ -1,8 +1,8 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import {createContext, useState, useEffect} from "react";
 import {getProfile} from "../services/userService.js";
 import {logout} from "../services/authService.js";
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -23,14 +23,27 @@ export function AuthProvider({ children }) {
     checkAuthStatus();
   }, []);
 
+  // Handle forced logout from axios
+  useEffect(() => {
+    const handleForcedLogout = () => {
+      setUser(null);
+    };
+
+    window.addEventListener("auth:logout", handleForcedLogout);
+
+    return () => {
+      window.removeEventListener("auth:logout", handleForcedLogout);
+    };
+  }, []);
+
   const loginUser = async () => {
-  try {
-    const res = await getProfile();
-    setUser(res.data.user);
-  } catch (err) {
-    setUser(null);
-  }
-};
+    try {
+      const res = await getProfile();
+      setUser(res.data.user);
+    } catch (err) {
+      setUser(null);
+    }
+  };
 
   const logoutUser = async () => {
     try {
@@ -47,9 +60,4 @@ export function AuthProvider({ children }) {
       {!loading && children}
     </AuthContext.Provider>
   );
-}
-
-// Custom hook for easy access to Auth
-export function useAuth() {
-  return useContext(AuthContext);
 }

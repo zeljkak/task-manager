@@ -1,7 +1,11 @@
 tags:
   - Auth
 
-description: Authenticate user and issue JWT cookies. Email must exist in the system. Password must match the stored password.
+summary: Authenticate user and issue JWT cookies
+
+description: >
+  Authenticates user credentials and issues access, refresh and CSRF JWT cookies upon success.
+  Validates that the user exists, is not soft-deleted and has a verified email address.
 
 parameters:
   - name: body
@@ -27,7 +31,7 @@ responses:
     headers:
       Set-Cookie:
         type: string
-        description: Sets access_token_cookie and refresh_token_cookie.
+        description: Sets access_token_cookie, refresh_token_cookie, csrf_access_token and csrf_refresh_token.
     schema:
       type: object
       properties:
@@ -37,7 +41,7 @@ responses:
   400:
     description: Bad request (missing or invalid fields)
   401:
-    description: Authentication required (email not verified or account deleted)
+    description: Authentication error. Responds with simple string error for credential/account issues, or error + message structure for JWT callbacks.
   422:
     description: Validation error (invalid email format)
   429:

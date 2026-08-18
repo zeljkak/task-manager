@@ -1,7 +1,7 @@
 import {useEffect, useState, useRef} from "react";
 import { createPortal } from "react-dom";
 import {followTask, unfollowTask} from "../services/taskService.js";
-import {useAuth} from "../context/AuthContext.jsx";
+import {useAuth} from "../context/useAuth.js";
 import FollowIcon from "./icons/FollowIcon.jsx";
 import tippy from "tippy.js";
 

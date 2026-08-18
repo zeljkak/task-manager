@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import DatePickerComponent from "./DatePickerComponent.jsx";
 import BackIcon from "./icons/BackIcon.jsx";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/useAuth.js";
 import CreateButtonComponent from "./CreateButtonComponent.jsx";
 
 export default function TaskFilterComponent({ filters, onFilterChange,

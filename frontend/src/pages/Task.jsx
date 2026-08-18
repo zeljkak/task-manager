@@ -1,6 +1,6 @@
 import {useEffect, useState, useRef, useCallback} from "react";
 import {useNavigate, useOutletContext, useParams, Link} from "react-router-dom";
-import {useAuth} from "../context/AuthContext.jsx";
+import {useAuth} from "../context/useAuth.js";
 import {getTask} from "../services/taskService.js";
 import BackIcon from "../components/icons/BackIcon.jsx";
 import TaskEditComponent from "../components/TaskEditComponent.jsx";

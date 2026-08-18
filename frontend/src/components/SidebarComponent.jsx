@@ -9,7 +9,7 @@ import TasksIcon from "./icons/TasksIcon.jsx";
 import ProjectIcon from "./icons/ProjectIcon.jsx";
 import SettingsIcon from "./icons/SettingsIcon.jsx";
 import LogoutIcon from "./icons/LogoutIcon.jsx";
-import {useAuth} from "../context/AuthContext.jsx";
+import {useAuth} from "../context/useAuth.js";
 
 function SidebarComponent({ isVisible, setIsVisible, isMobile, onMyTasksClick }) {
 
