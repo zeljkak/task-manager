@@ -1,0 +1,36 @@
+tags:
+  - File
+
+summary: Retrieve or preview an uploaded file
+
+description: >
+  Serves a file from the uploads directory by filename. 
+  Requires an active session cookie. 
+  Includes X-Content-Type-Options nosniff header.
+
+security:
+  - cookieAuth: []
+
+parameters:
+  - name: filename
+    in: path
+    required: true
+    type: string
+    example: "abc123_design.pdf"
+    description: The stored filename of the upload to retrieve.
+
+responses:
+  200:
+    description: File retrieved successfully. Returns binary file contents.
+    schema:
+      type: file
+    headers:
+      X-Content-Type-Options:
+        type: string
+        example: nosniff
+  401:
+    description: Unauthorized (missing or invalid session cookie)
+  404:
+    description: Related resource not found
+  500:
+    description: Internal server error

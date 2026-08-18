@@ -1,14 +1,8 @@
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import (
-    get_jwt,
-    set_access_cookies,
-    jwt_required,
-    get_jwt_identity,
-    unset_jwt_cookies,
-    set_refresh_cookies,
-    create_access_token,
-    create_refresh_token,
-    decode_token, verify_jwt_in_request
+    get_jwt, set_access_cookies, jwt_required, get_jwt_identity,
+    unset_jwt_cookies, set_refresh_cookies, create_access_token,
+    create_refresh_token, decode_token, verify_jwt_in_request
 )
 from flasgger import swag_from
 from datetime import timedelta
@@ -19,7 +13,9 @@ from backend.app.extensions.token_blocklist import add_jti_to_blocklist
 from backend.app.repositories.user_repository import UserRepository
 from backend.app.services.auth_service import AuthService
 from backend.app.services.user_service import UserService
-from backend.app.schemas.auth_schema import RegisterSchema, LoginSchema, EnterEmailSchema, PasswordResetSchema
+from backend.app.schemas.auth_schema import (
+    RegisterSchema, LoginSchema, EnterEmailSchema, PasswordResetSchema
+)
 from backend.app.schemas.user_schema import UserSchema
 
 from backend.app.extensions.limiter import limiter

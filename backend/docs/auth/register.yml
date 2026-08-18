@@ -1,7 +1,11 @@
 tags:
   - Auth
 
-description: Register a new user. Email must be unique. Password must be at least 8 characters long. Password must contain at least one uppercase letter, one lowercase letter, one number and one special character (!@#$%^&*()_-+={[}]|\:;"'<,>.?/)
+description: > 
+  Register a new user. 
+  Email must be unique. Password must be at least 8 characters long. 
+  Password must contain at least one uppercase letter, one lowercase letter, 
+  one number and one special character (!@#$%^&*()_-+={[}]|\:;"'<,>.?/)
 
 parameters:
   - name: body

@@ -1,13 +1,19 @@
 tags:
   - Task
 
-description:
-  Create a new comment on a task. Requires an active session cookie
+description: >
+  Create a new comment on a task.
+  Requires an active session cookie and a valid X-CSRF-TOKEN header.
 
 security:
   - cookieAuth: []
 
 parameters:
+  - name: X-CSRF-TOKEN
+    in: header
+    required: true
+    type: string
+    description: CSRF token read from the csrf_access_token cookie.
   - name: taskId
     in: path
     required: true
@@ -102,7 +108,7 @@ responses:
   400:
     description: Bad request (missing or invalid fields)
   401:
-    description: Unauthorized (missing or invalid session cookie)
+    description: Unauthorized (missing or invalid session cookie or CSRF token)
   404:
     description: Related resource not found
   422:

@@ -1,8 +1,9 @@
 tags:
   - Role
 
-description:
-  Get a specific role that matches the id. Requires an active session cookie
+description: >
+  Get a specific role that matches the ID. 
+  Requires an active session cookie and an account with the admin role.
 
 security:
   - cookieAuth: []

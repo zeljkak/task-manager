@@ -2,6 +2,7 @@ tags:
   - Auth
 
 summary: Log out user and clear session
+
 description: >
   Logs out the current user by revoking active JWT tokens and clearing HTTP-only session cookies.
   

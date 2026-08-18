@@ -272,6 +272,6 @@ def add_relation(taskId):
 
 def remove_relation(taskId):
     data = TaskRelationSchema().load(request.get_json())
-    tasks = TaskService.delete_relation(taskId, data["related_task_id"])
+    TaskService.delete_relation(taskId, data["related_task_id"])
 
     return "", 204

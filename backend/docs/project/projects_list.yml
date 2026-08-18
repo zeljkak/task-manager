@@ -1,8 +1,9 @@
 tags:
   - Project
 
-description:
-  Retrieve basic projects list. Requires an active session cookie
+description: >
+  Retrieve basic projects list. 
+  Requires an active session cookie
 
 security:
   - cookieAuth: []

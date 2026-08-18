@@ -1,13 +1,19 @@
 tags:
   - Task
 
-description:
-  Update a specific task that matches the id. Requires an active session cookie
+description: >
+  Update a specific task that matches the id. 
+  Requires an active session cookie and a valid X-CSRF-TOKEN header.
 
 security:
   - cookieAuth: []
 
 parameters:
+  - name: X-CSRF-TOKEN
+    in: header
+    required: true
+    type: string
+    description: CSRF token read from the csrf_access_token cookie.
   - name: taskId
     in: path
     required: true
@@ -200,7 +206,7 @@ responses:
                         type: string
                         example: Smith
   401:
-    description: Unauthorized (missing or invalid session cookie)
+    description: Unauthorized (missing or invalid session cookie or CSRF token)
   403:
     description: Forbidden (unallowed action)
   404:

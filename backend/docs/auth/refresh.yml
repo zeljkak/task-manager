@@ -5,7 +5,7 @@ summary: Issue new access and refresh tokens using a valid refresh token.
 
 description: >
   Validates the incoming refresh token, verifies the user exists and is active,
-  checks the token JTI against the blocklist to prevent replay attacks, 
+  checks the token JTI against the blocklist to prevent replay attacks 
   and issues a fresh 15-minute access token alongside a new 30-day refresh token.
   The old refresh token JTI is added to the blocklist.
 

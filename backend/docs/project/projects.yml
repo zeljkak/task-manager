@@ -1,8 +1,10 @@
 tags:
   - Project
 
-description:
-  Retrieve projects. Results can be filtered by name, description, creator and date of creation. Requires an active session cookie
+description: >
+  Retrieve projects. 
+  Results can be filtered by name, description, creator and date of creation. 
+  Requires an active session cookie
 
 security:
   - cookieAuth: []

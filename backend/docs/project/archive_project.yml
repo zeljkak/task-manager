@@ -1,13 +1,19 @@
 tags:
   - Project
 
-description:
-  Archive a specific project that matches the id. Requires an active session cookie
+description: >
+  Archive a specific project that matches the ID. 
+  Requires an active session cookie, a valid X-CSRF-TOKEN header and an account with the admin role.
 
 security:
   - cookieAuth: []
 
 parameters:
+  - name: X-CSRF-TOKEN
+    in: header
+    required: true
+    type: string
+    description: CSRF token read from the csrf_access_token cookie.
   - name: projectId
     in: path
     required: true
@@ -104,7 +110,7 @@ responses:
   400:
     description: Bad request (state unchanged)
   401:
-    description: Unauthorized (missing or invalid session cookie)
+    description: Unauthorized (missing or invalid session cookie or CSRF token)
   403:
     description: Forbidden (unallowed action)
   404:

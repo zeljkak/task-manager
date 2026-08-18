@@ -1,8 +1,9 @@
 tags:
   - User
 
-description:
-  Get current user's profile. Requires an active session cookie
+description: >
+  Get current user's profile. 
+  Requires an active session cookie
 
 security:
   - cookieAuth: []

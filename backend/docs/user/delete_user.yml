@@ -1,17 +1,25 @@
 tags:
   - User
 
-description:
-  Delete the users profile. Requires an active session cookie
+description: >
+  Delete the users profile. 
+  Requires an active session cookie and a valid X-CSRF-TOKEN header.
 
 security:
   - cookieAuth: []
+
+parameters:
+  - name: X-CSRF-TOKEN
+    in: header
+    required: true
+    type: string
+    description: CSRF token read from the csrf_access_token cookie.
 
 responses:
   204:
     description: User deleted successfully
   401:
-    description: Unauthorized (missing or invalid session cookie)
+    description: Unauthorized (missing or invalid session cookie or CSRF token)
   404:
     description: Related resource not found
   422:

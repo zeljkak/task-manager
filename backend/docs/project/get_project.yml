@@ -1,8 +1,9 @@
 tags:
   - Project
 
-description:
-  Get a specific project that matches the id. Requires an active session cookie
+description: >
+  Get a specific project that matches the ID. 
+  Requires an active session cookie
 
 security:
   - cookieAuth: []

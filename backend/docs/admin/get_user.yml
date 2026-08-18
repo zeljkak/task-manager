@@ -1,8 +1,9 @@
 tags:
   - Admin
 
-description:
-  Get a specific user that matches the ID. Requires an active session cookie
+description: >
+  Get a specific user that matches the ID. 
+  Requires an active session cookie and an account with the admin role.
 
 security:
   - cookieAuth: []

@@ -1,8 +1,9 @@
 tags:
   - Task Status
 
-description:
-  Get a specific task status that matches the id. Requires an active session cookie
+description: >
+  Get a specific task status that matches the id. 
+  Requires an active session cookie
 
 security:
   - cookieAuth: []

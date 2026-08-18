@@ -1,8 +1,10 @@
 tags:
   - Task
 
-description:
-  Retrieve deleted tasks. Results can be filtered by title, description, assigned user, status, priority, project, date of creation and due date. Requires an active session cookie
+description: >
+  Retrieve deleted tasks. 
+  Results can be filtered by title, description, assigned user, status, priority, project, date of creation and due date. 
+  Requires an active session cookie and an account with the admin role.
 
 security:
   - cookieAuth: []

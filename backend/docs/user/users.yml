@@ -1,8 +1,9 @@
 tags:
   - User
 
-description:
-  Get all users. Requires an active session cookie
+description: >
+  Get all users. 
+  Requires an active session cookie
 
 security:
   - cookieAuth: []

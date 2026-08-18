@@ -1,13 +1,19 @@
 tags:
   - User
 
-description:
-  Update a current user's profile. Requires an active session cookie
+description: >
+  Update a current user's profile. 
+  Requires an active session cookie and a valid X-CSRF-TOKEN header.
 
 security:
   - cookieAuth: []
 
 parameters:
+  - name: X-CSRF-TOKEN
+    in: header
+    required: true
+    type: string
+    description: CSRF token read from the csrf_access_token cookie.
   - name: body
     in: body
     required: true
@@ -83,7 +89,7 @@ responses:
                         type: string
                         example: Smith
   401:
-    description: Unauthorized (missing or invalid session cookie)
+    description: Unauthorized (missing or invalid session cookie or CSRF token)
   422:
     description: Validation error
   429:

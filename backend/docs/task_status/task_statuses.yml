@@ -1,8 +1,9 @@
 tags:
   - Task Status
 
-description:
-  Get all task statuses. Requires an active session cookie
+description: >
+  Get all task statuses. 
+  Requires an active session cookie
 
 security:
   - cookieAuth: []

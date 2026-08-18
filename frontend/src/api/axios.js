@@ -36,7 +36,12 @@ const isAuthRoute = (url) => {
         url.includes("/auth/login") ||
         url.includes("/auth/register") ||
         url.includes("/auth/logout") ||
-        url.includes("/auth/refresh")
+        url.includes("/auth/refresh") ||
+        url.includes("/auth/verify-email/") ||
+        url.includes("/auth/forgot-password") ||
+        url.includes("/auth/reset-password/") ||
+        url.includes("/user/restore-request") ||
+        url.includes("/user/restore/")
     );
 };
 

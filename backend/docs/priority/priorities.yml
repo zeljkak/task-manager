@@ -1,8 +1,9 @@
 tags:
   - Priority
 
-description:
-  Get all priorities. Requires an active session cookie
+description: >
+  Get all priorities. 
+  Requires an active session cookie
 
 security:
   - cookieAuth: []

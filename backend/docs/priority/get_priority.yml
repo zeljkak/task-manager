@@ -1,8 +1,9 @@
 tags:
   - Priority
 
-description:
-  Get a specific priority that matches the id. Requires an active session cookie
+description: >
+  Get a specific priority that matches the id. 
+  Requires an active session cookie
 
 security:
   - cookieAuth: []

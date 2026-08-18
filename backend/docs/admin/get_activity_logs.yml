@@ -1,8 +1,10 @@
 tags:
   - Admin
 
-description:
-  Retrieve activity logs. Results can be filtered by task ID and/or user ID. Requires an active session cookie
+description: >
+  Retrieve activity logs. 
+  Results can be filtered by task ID and/or user ID. 
+  Requires an active session cookie and an account with the admin role.
 
 security:
   - cookieAuth: []

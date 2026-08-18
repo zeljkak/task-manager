@@ -1,8 +1,10 @@
 tags:
   - Role
 
-description:
-  Get all roles. Requires an active session cookie
+description: >
+  Get all roles.
+  Requires an active session cookie and an account with the admin role.
+
 
 security:
   - cookieAuth: []

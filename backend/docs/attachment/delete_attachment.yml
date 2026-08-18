@@ -1,13 +1,19 @@
 tags:
   - Attachment
 
-description:
-  Delete a specific attachment that matches the id. Requires an active session cookie
+description: >
+  Delete a specific attachment that matches the ID. 
+  Requires an active session cookie and a valid X-CSRF-TOKEN header.
 
 security:
   - cookieAuth: []
 
 parameters:
+  - name: X-CSRF-TOKEN
+    in: header
+    required: true
+    type: string
+    description: CSRF token read from the csrf_access_token cookie.
   - name: attachmentId
     in: path
     required: true
@@ -19,7 +25,7 @@ responses:
   204:
     description: Attachment deleted successfully
   401:
-    description: Unauthorized (missing or invalid session cookie)
+    description: Unauthorized (missing or invalid session cookie or CSRF token)
   403:
     description: Forbidden (unallowed action)
   404:
