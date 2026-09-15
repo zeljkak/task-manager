@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {Navigate, useNavigate} from "react-router-dom";
+import {Link, Navigate, useNavigate} from "react-router-dom";
 import {login} from "../services/authService.js";
 import {useAuth} from "../context/useAuth.js";
 
@@ -41,7 +41,7 @@ export default function Login() {
       } catch (err) {
           setError(
           err.response?.data?.error ||
-              "Invalid email or password"
+              "Something went wrong"
           );
       } finally {
           setLoading(false);
@@ -54,15 +54,17 @@ export default function Login() {
 
       <form onSubmit={handleSubmit}>
         <div className={"form-div"}>
-          <label htmlFor={"login-email"}>Email</label>
+          <label htmlFor={"login-email"} className={"hidden"}>Email</label>
           <input type="email" value={email} id={"login-email"} required className={"form-input"}
+            placeholder={"Enter your email"}
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
 
         <div className={"form-div"}>
-          <label htmlFor={"login-password"}>Password</label>
+          <label htmlFor={"login-password"} className={"hidden"}>Password</label>
           <input type="password" value={password} id={"login-password"} required className={"form-input"}
+            placeholder={"Enter your password"}
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
@@ -79,10 +81,33 @@ export default function Login() {
       )}
 
       {error && (
-        <p className={"error"}>
-          {error}
-        </p>
+        <>
+          <p className={"error"}>
+            {error}
+          </p>
+
+          {error === "Please verify your email first" && (
+            <div className={"redirect-link-div"}>
+              <p>Your account is not verified. <Link to="/verification">Request verification link here</Link></p>
+            </div>
+          )}
+
+          {error === "Account deleted, restore available" && (
+            <div className={"redirect-link-div"}>
+                <p>Your account was deactivated. <Link to="/restore-request">Restore account here</Link></p>
+            </div>
+          )}
+        </>
       )}
+
+      <div className={"redirect-link-div"}>
+          <p>Forgot your password? <Link to="/forgot-password">Reset password here</Link></p>
+      </div>
+
+      <div className={"redirect-link-div"}>
+          <p>Don't have an account? <Link to="/register">Register here</Link></p>
+      </div>
+
     </div>
   );
 }

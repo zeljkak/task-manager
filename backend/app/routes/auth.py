@@ -6,13 +6,14 @@ from flask_jwt_extended import (
 )
 from flasgger import swag_from
 from datetime import timedelta
-import os
-import logging
+import os, logging
 
 from backend.app.extensions.token_blocklist import add_jti_to_blocklist
 from backend.app.repositories.user_repository import UserRepository
-from backend.app.services.auth_service import AuthService
 from backend.app.services.user_service import UserService
+from backend.app.services.auth_service import AuthService
+from backend.app.services.token_service import TokenService
+
 from backend.app.schemas.auth_schema import (
     RegisterSchema, LoginSchema, EnterEmailSchema, PasswordResetSchema
 )
@@ -42,37 +43,66 @@ def register():
         "user": user_schema.dump(user)
     }), 201
 
+@auth_bp.route('/request-email-verification', methods=['POST'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/auth/email_verification_request.yml"))
+@limiter.limit("10 per hour")
+
+def send_verification_email():
+    data = EnterEmailSchema().load(request.get_json())
+    AuthService.request_email_verification(data["email"])
+    return jsonify({
+        "message": "If an account with this email exists, verification email was sent"
+    }), 200
+
 @auth_bp.route('/verify-email/<token>', methods=['GET'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/auth/validate_verify_email_token.yml"))
+@limiter.limit("5 per day")
+
+def check_email_token(token):
+    TokenService.check_token(token, expected_type='email_verify')
+    return jsonify({
+        "message": "User token valid"
+    }), 200
+
+@auth_bp.route('/verify-email/<token>', methods=['POST'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/auth/verify_email.yml"))
+@limiter.limit("5 per day")
+
 def verify_email(token):
-    AuthService.verify_email(token)
+    result = AuthService.verify_email(token)
+
+    # if email is already verified
+    if isinstance(result, dict) and "message" in result:
+        return jsonify(result), 200
+
     return jsonify({
         "message": "Email verified successfully"
     }), 200
 
 @auth_bp.route('/forgot-password', methods=['POST'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/auth/forgot_password.yml"))
-@limiter.limit("1 per day")
+@limiter.limit("10 per hour")
 
-def send_email():
+def send_reset_password_email():
     data = EnterEmailSchema().load(request.get_json())
-    user = UserService.get_user_by_email(data["email"])
     AuthService.request_password_reset(data["email"])
     return jsonify({
-        "message": "Reset password email sent"
+        "message": "If an account with this email exists, reset password email was sent"
     }), 200
 
 @auth_bp.route('/reset-password/<token>', methods=['GET'])
-@swag_from(os.path.join(BASE_DIR, "../../docs/auth/validate_token.yml"))
+@swag_from(os.path.join(BASE_DIR, "../../docs/auth/validate_reset_password_token.yml"))
+@limiter.limit("5 per day")
 
-def check_token(token):
-    user = UserService.get_user_by_token(token)
+def check_reset_token(token):
+    TokenService.check_token(token, "password_reset")
     return jsonify({
         "message": "User token valid"
     }), 200
 
 @auth_bp.route('/reset-password/<token>', methods=['POST'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/auth/reset_password.yml"))
-@limiter.limit("3 per day")
+@limiter.limit("5 per day")
 
 def change_password(token):
     data = PasswordResetSchema().load(request.get_json())
@@ -83,7 +113,7 @@ def change_password(token):
 
 @auth_bp.route('/login', methods=['POST'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/auth/login.yml"))
-@limiter.limit("10 per day")
+@limiter.limit("10 per hour")
 
 def login():
     data = login_schema.load(request.get_json())
@@ -101,6 +131,7 @@ def login():
 @auth_bp.route('/refresh', methods=['POST'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/auth/refresh.yml"))
 @jwt_required(refresh=True)
+
 def refresh():
     current_user_id = get_jwt_identity()
     jwt_claims = get_jwt()
@@ -204,7 +235,7 @@ def logout():
             user = UserRepository.get_by_id_including_deleted(user_id)
 
             if user:
-                UserService.invalidate_user_sessions(user)
+                UserService.invalidate_all_user_sessions(user)
                 UserRepository.update(user)
 
         except Exception as e:

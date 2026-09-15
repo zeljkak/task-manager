@@ -1,7 +1,7 @@
 tags:
   - Auth
 
-description: Request a reset password email.
+description: Request an account verification email.
 
 parameters:
   - name: body
@@ -18,13 +18,13 @@ parameters:
           example: test@mail.com
 responses:
   200:
-    description: Reset password email has been sent
+    description: Verification email has been sent
     schema:
       type: object
       properties:
         message:
           type: string
-          example: If an account with this email exists, reset password email was sent
+          example: If an account with this email exists, verification email was sent
   400:
     description: Bad request (missing or invalid fields)
   422:

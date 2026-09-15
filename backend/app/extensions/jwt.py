@@ -11,8 +11,8 @@ def configure_jwt(jwt_manager: JWTManager) -> None:
         # skip relative imports to avoid circular dependency issues
         from backend.app.repositories.user_repository import UserRepository
 
-        token_type = jwt_payload.get("type")
         jti = jwt_payload.get("jti")
+        token_type = jwt_payload.get("type")
 
         # check explicitly revoked JTI (used for single-use refresh token rotation)
         if jti and is_jti_blocklisted(str(jti)):
@@ -34,7 +34,11 @@ def configure_jwt(jwt_manager: JWTManager) -> None:
         if not user_meta or user_meta.is_deleted:
             return True
 
-        return user_meta.token_version != token_version
+        # revoke if token version in JWT does not match DB
+        if user_meta.token_version != token_version:
+            return True
+
+        return False
 
     @jwt_manager.revoked_token_loader
     def revoked_token_callback(jwt_header, jwt_payload):

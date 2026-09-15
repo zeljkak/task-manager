@@ -37,6 +37,7 @@ const isAuthRoute = (url) => {
         url.includes("/auth/register") ||
         url.includes("/auth/logout") ||
         url.includes("/auth/refresh") ||
+        url.includes("/auth/request-email-verification") ||
         url.includes("/auth/verify-email/") ||
         url.includes("/auth/forgot-password") ||
         url.includes("/auth/reset-password/") ||
@@ -64,9 +65,25 @@ const forceLogout = async () => {
         window.dispatchEvent(new Event("auth:logout"));
 
         if (window.location.pathname !== "/login") {
-            window.location.href = "/login";
+            window.location.href = "/login?forcedLogout=true";
         }
     }
+};
+
+// handles the issue of multiple sources calling refresh consecutively
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+    failedQueue.forEach((prom) => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+
+    failedQueue = [];
 };
 
 api.interceptors.request.use(
@@ -74,12 +91,12 @@ api.interceptors.request.use(
         // read token from cookie for state-changing methods
         const method = config.method?.toUpperCase();
         const url = config.url || "";
+        const isRefreshRequest = url.includes("/auth/refresh");
 
-        if (!isStateChangingMethod(method) || isAuthRoute(url)) {
+        // allow CSRF header injection for /auth/refresh while keeping other GET/auth routes excluded
+        if ((!isStateChangingMethod(method) && !isRefreshRequest) || (isAuthRoute(url) && !isRefreshRequest)) {
             return config;
         }
-
-        const isRefreshRequest = url.includes("/auth/refresh");
 
         const csrfCookieName = isRefreshRequest
             ? "csrf_refresh_token"
@@ -106,8 +123,8 @@ api.interceptors.response.use(
             return Promise.reject(error);
         }
 
-        // don't continue with logout is getProfile is unsuccessful
-        if (originalRequest.skipAuthRefresh) {
+        // skip refresh attempt if the failed request WAS the refresh request itself
+        if (originalRequest.url?.includes("/auth/refresh")) {
             return Promise.reject(error);
         }
 
@@ -124,26 +141,44 @@ api.interceptors.response.use(
             return Promise.reject(error);
         }
 
-        // if token was explicitly revoked (e.g. password reset), force login without attempting refresh
+        // if token was explicitly revoked (e.g. password reset), force logout without attempting refresh
         if (errorCode === "token_revoked") {
             await forceLogout();
             return Promise.reject(error);
         }
 
+        // skip refresh if explicitly disabled for this request (in AuthContext.jsx)
+        if (originalRequest.skipRefresh === true) {
+            return Promise.reject(error);
+        }
+
         // if request failed with 401 and hasn't been retried yet
         if (error.response?.status === 401 && !originalRequest._retry) {
+            if (isRefreshing) {
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({ resolve, reject });
+                })
+                    .then(() => api(originalRequest))
+                    .catch((err) => Promise.reject(err));
+            }
+
             originalRequest._retry = true;
+            isRefreshing = true;
 
             try {
                 // the request interceptor reads csrf_refresh_token and sends X-CSRF-TOKEN
                 await api.post("/auth/refresh");
+                processQueue(null);
 
                 // retry the original request (now with the fresh access cookie)
                 return await api(originalRequest);
             } catch (refreshError) {
                 // if refresh cookie expired or is invalid
+                processQueue(refreshError, null);
                 await forceLogout();
                 return Promise.reject(refreshError);
+            } finally {
+                isRefreshing = false;
             }
         }
 

@@ -1,13 +1,16 @@
-from backend.app.models.user_model import User
 from werkzeug.security import generate_password_hash, check_password_hash
-import uuid
 
+from backend.app.models.user_model import User
 from backend.app.repositories.user_repository import UserRepository
 from backend.app.services.activity_log_service import ActivityLogService
 from backend.app.services.email_service import EmailService
-
-from backend.app.exceptions.http_exceptions import DuplicatesError, NotFoundError, AuthenticationError
+from backend.app.services.token_service import TokenService
 from backend.app.services.role_service import RoleService
+
+from backend.app.exceptions.http_exceptions import (
+    DuplicatesError, NotFoundError, AuthenticationError, BadRequestError
+)
+from marshmallow import ValidationError
 
 
 class UserService:
@@ -39,16 +42,6 @@ class UserService:
 
 
     @staticmethod
-    def get_user_by_token(token):
-        user = UserRepository.get_by_token(token)
-
-        if not user:
-            raise NotFoundError("User not found")
-
-        return user
-
-
-    @staticmethod
     def get_all_users():
         return UserRepository.get_all()
 
@@ -56,16 +49,6 @@ class UserService:
     @staticmethod
     def get_deleted_user_by_id(user_id):
         user = UserRepository.get_deleted_by_id(user_id)
-
-        if not user:
-            raise NotFoundError("User not found")
-
-        return user
-
-
-    @staticmethod
-    def get_deleted_user_by_token(token):
-        user = UserRepository.get_deleted_by_token(token)
 
         if not user:
             raise NotFoundError("User not found")
@@ -87,9 +70,10 @@ class UserService:
     def get_deleted_users():
         return UserRepository.get_deleted_all()
 
+
     @staticmethod
-    def get_user_by_id_including_deleted(id):
-        user = UserRepository.get_by_id_including_deleted(id)
+    def get_user_by_id_including_deleted(user_id):
+        user = UserRepository.get_by_id_including_deleted(user_id)
 
         if not user:
             raise NotFoundError('User not found')
@@ -108,24 +92,22 @@ class UserService:
 
 
     @staticmethod
-    def get_user_by_token_including_deleted(token):
-        user = UserRepository.get_by_token_including_deleted(token)
-
-        if not user:
-            raise NotFoundError('User not found')
-
-        return user
-
-
-    @staticmethod
-    def invalidate_user_sessions(user):
+    def invalidate_all_user_sessions(user):
         user.token_version += 1
-        return user
+        return UserRepository.update(user)
 
 
     @staticmethod
-    def generate_verification_token():
-        return str(uuid.uuid4())
+    def save_password(user, new_password):
+        user.password = generate_password_hash(new_password)
+        return UserRepository.update(user)
+
+
+    @staticmethod
+    def verify_password(user, password):
+        if not check_password_hash(user.password, password):
+            raise ValidationError('Incorrect current password')
+        return True
 
 
     @staticmethod
@@ -142,29 +124,13 @@ class UserService:
             email = data["email"],
             password = hashed_password,
             email_verified = False,
-            verification_token = UserService.generate_verification_token(),
             role_id = UserService.DEFAULT_ROLE_ID
         )
 
         UserRepository.create(user)
-        EmailService.send_verification_email(user)
+        token = TokenService.create_token(user.email, "email_verify")
+        EmailService.send_verification_email(user, token.token)
 
-        return user
-
-
-    @staticmethod
-    def set_verification_token(email):
-        user = UserService.get_user_by_email_including_deleted(email)
-        user.verification_token = UserService.generate_verification_token()
-
-        return UserRepository.update(user)
-
-
-    @staticmethod
-    def check_verification_token(token):
-        user = UserRepository.get_by_token_including_deleted(token)
-        if not user:
-            raise AuthenticationError('Invalid verification token')
         return user
 
 
@@ -187,7 +153,7 @@ class UserService:
 
         if user.role_id != role.id:
             user.role_id = role.id
-            UserService.invalidate_user_sessions(user)
+            UserService.invalidate_all_user_sessions(user)
         return UserRepository.update(user)
 
 
@@ -195,7 +161,7 @@ class UserService:
     def delete_user(user_id):
         user = UserService.get_user_by_id(user_id)
         user.is_deleted = True
-        UserService.invalidate_user_sessions(user)
+        UserService.invalidate_all_user_sessions(user)
 
         ActivityLogService.deletion_activity(user_id, "USER_DELETED")
         return UserRepository.update(user)
@@ -203,29 +169,24 @@ class UserService:
 
     @staticmethod
     def restore_request(email):
-        UserService.get_deleted_user_by_email(email)
-        user = UserService.set_verification_token(email)
+        user = UserRepository.get_deleted_by_email(email)
+        if not user:
+            return
 
-        EmailService.send_restore_account_email(user)
+        token = TokenService.create_token(user.email, "account_restore")
+        EmailService.send_restore_account_email(user, token.token)
 
         return user
 
 
     @staticmethod
     def restore_user(token):
-        user = UserService.get_deleted_user_by_token(token)
+        user = TokenService.check_token(token, expected_type="account_restore", consume=True)
         user.is_deleted = False
-        user.verification_token = None
-        UserService.invalidate_user_sessions(user)
+        UserService.invalidate_all_user_sessions(user)
 
         ActivityLogService.deletion_activity(user.id, "USER_RESTORED")
         return UserRepository.update(user)
-
-
-    @staticmethod
-    def verify_password(user, password):
-        return check_password_hash(user.password, password)
-
 
     @staticmethod
     def check_followed_tasks(user_id):

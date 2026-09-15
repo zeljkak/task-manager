@@ -24,7 +24,7 @@ responses:
       properties:
         message:
           type: string
-          example: Restore account email sent
+          example: If an account with this email exists, restore email was sent
   400:
     description: Bad request (missing or invalid fields)
   422:

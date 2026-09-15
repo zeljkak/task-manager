@@ -2,12 +2,14 @@ from flask_jwt_extended import create_access_token, create_refresh_token
 from datetime import timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from backend.app.models.user_model import User
+from backend.app.services.token_service import TokenService
 from backend.app.services.user_service import UserService
 from backend.app.services.email_service import EmailService
 
-from backend.app.exceptions.http_exceptions import BadRequestError, AuthenticationError
-
 from backend.app.repositories.user_repository import UserRepository
+
+from backend.app.exceptions.http_exceptions import BadRequestError, AuthenticationError
 
 
 class AuthService:
@@ -36,40 +38,49 @@ class AuthService:
         return access_token, refresh_token
 
     @staticmethod
-    def verify_email(token):
-        user = UserRepository.get_by_token(token)
-
+    def request_email_verification(email):
+        user = UserRepository.get_by_email(email)
         if not user:
-            raise BadRequestError("Invalid verification token")
+            return
+
+        token = TokenService.create_token(user.email, "email_verify")
+        EmailService.send_verification_email(user, token.token)
+
+        return user
+
+    @staticmethod
+    def verify_email(token):
+        user = TokenService.check_token(token, expected_type="email_verify", consume=True)
 
         if user.email_verified:
             return {"message": "Email address already verified"}
 
         user.email_verified = True
-        user.verification_token = None
 
         return UserRepository.update(user)
 
     @staticmethod
     def request_password_reset(email):
-        UserService.get_user_by_email(email)
-        user = UserService.set_verification_token(email)
+        user = UserRepository.get_by_email(email)
+        if not user:
+            return
 
-        EmailService.send_password_reset_email(user)
+        token = TokenService.create_token(email, "password_reset")
+
+        EmailService.send_password_reset_email(user, token.token)
 
         return user
 
     @staticmethod
     def reset_password(token, data):
-        user = UserRepository.get_by_token(token)
+        user = TokenService.check_token(token, "password_reset", consume=True)
 
-        if not user:
-            raise AuthenticationError("Invalid verification token")
+        if user.is_deleted:
+            raise AuthenticationError("Account deleted, restore available")
 
         data['password'] = generate_password_hash(data['password'])
 
         user.password = data['password']
-        user.verification_token = None
-        UserService.invalidate_user_sessions(user)
+        UserService.invalidate_all_user_sessions(user)
 
         return UserRepository.update(user)

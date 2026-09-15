@@ -1,7 +1,7 @@
 tags:
   - Auth
 
-summary: Issue new access and refresh tokens using a valid refresh token.
+summary: Issue new access and refresh tokens using a valid refresh token
 
 description: >
   Validates the incoming refresh token, verifies the user exists and is active,

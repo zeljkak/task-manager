@@ -122,12 +122,34 @@ svg {
   box-sizing: border-box;
 }
 
-#profile-info {
+#profile-info, #settings-div {
   padding: 15px;
 }
 
 .user-data {
   padding: 0 15px 15px 0;
+}
+
+#settings-div > button {
+  display: block;
+  background-color: inherit;
+  border: none;
+}
+
+#password-change-form {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  padding: 1px 6px;
+}
+
+.password-change-inline-div {
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 5px;
+  width: 60%;
+  max-width: 450px;
+  min-width: 350px;
 }
 
 .tasks-filter, .projects-filter {
@@ -480,6 +502,7 @@ svg {
   padding: 0 5px 10px 5px;
   box-sizing: border-box;
 }
+
 .task-info-header {
   position: sticky;
   top: 0;
@@ -492,6 +515,7 @@ svg {
   padding: 5px 0;
   width: 100%;
 }
+
 .task-info-box > div > a {
   display: block;
 }
@@ -619,6 +643,7 @@ svg {
   justify-self: center;
   padding-bottom: 5px;
 }
+
 #form-message > p {
   margin: 0;
 }
@@ -630,7 +655,7 @@ svg {
 }
 
 .form-input {
-  padding: 8px 0 !important;
+  padding: 8px 5px !important;
 }
 
 .display-task-data {
@@ -723,7 +748,8 @@ label[for="new-task-no-due-date"] {
 .form-element > textarea,
 .add-comment-form > textarea,
 .textarea-wrapper,
-.comment-item > textarea {
+.comment-item > textarea,
+.password-change-inline-div > input {
   background-color: #212529;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 5px !important;
@@ -813,16 +839,26 @@ label[for="new-task-no-due-date"] {
   margin: 0 6px 6px 0 !important;
 }
 
-form > button {
+form > button,
+.password-change-inline-div > button {
   width: 30%;
   border-radius: 20px;
   background-color: #3B3B3BFF;
-  display: block;
   margin: 10px auto;
 }
 
-form > button:hover {
+form > button {
+  display: block;
+}
+
+form > button:hover,
+.password-change-inline-div > button:hover {
   background-color: #7b7b7b;
+}
+
+.password-change-inline-div > button {
+  min-width: max-content;
+  padding: 3px 7px;
 }
 
 .hidden {
@@ -893,10 +929,14 @@ form > button:hover {
 }
 
 .error {
-  color: red;
   margin-top: 10px;
   justify-self: center;
   align-self: center;
+}
+
+.redirect-link-div {
+  text-align: center;
+  margin-top: 15px;
 }
 
 .task-comments > .error-message {
@@ -919,6 +959,10 @@ form > button:hover {
   justify-content: center;
 }
 
+.error-message {
+  color: red;
+}
+
 .error-message > .error {
   margin-top: 0;
 }
@@ -931,10 +975,25 @@ form > button:hover {
   background-color: mediumseagreen !important;
 }
 
+.centered-text {
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.not-centered-text {
+  justify-content: left !important;
+  text-align: left !important;
+  justify-self: left !important;
+}
+
 .centered-page {
   width: 100%;
   min-width: max-content;
   margin: auto;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: auto;
+  max-height: 100vh;
 }
 
 .centered-page > h2 {
@@ -1241,6 +1300,16 @@ hr {
     height: 100% !important;
     max-height: calc(100vh - 60px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  }
+
+  #password-change-form {
+    width: 100%;
+  }
+
+  .password-change-inline-div {
+    width: 100%;
+    min-width: inherit;
+    max-width: inherit;
   }
 
 }

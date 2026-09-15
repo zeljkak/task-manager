@@ -1,14 +1,18 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/useAuth.js";
 
-export function GuestRoute() {
+export default function GuestRoute() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div className="spinner"><p className={"loading"}>Loading task details...</p></div>;
+    return (
+      <div className="loading-spinner-container">
+        <p className={"loading"}>Loading app...</p>
+      </div>
+    );
   }
 
-  // If the user is logged in, redirect them away from /login
+  // If the user is logged in, redirect to home page
   if (user) {
     return <Navigate to="/" replace />;
   }

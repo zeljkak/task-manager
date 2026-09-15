@@ -8,14 +8,16 @@ export default function ProtectedRoute() {
   if (loading) {
     return (
       <div className="loading-spinner-container">
-        <p>Loading app...</p>
+        <p className={"loading"}>Loading app...</p>
       </div>
     );
   }
 
+  // If the user is not logged in, redirect to login
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
+  // If logged in, render content
   return <Outlet />;
 }

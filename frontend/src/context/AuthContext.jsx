@@ -11,8 +11,19 @@ export function AuthProvider({ children }) {
   // Check if user is logged in on app mount/refresh
   useEffect(() => {
     async function checkAuthStatus() {
+      const params = new URLSearchParams(window.location.search);
+      const forcedLogout = params.get("forcedLogout") === "true";
+
+      if (forcedLogout) {
+        window.history.replaceState(
+          {},
+          "",
+          window.location.pathname
+        );
+      }
+
       try {
-        const res = await getProfile();
+        const res = await getProfile(true);
         setUser(res.data.user);
       } catch (err) {
         setUser(null);

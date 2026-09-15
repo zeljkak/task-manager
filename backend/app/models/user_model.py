@@ -12,9 +12,6 @@ class User(db.Model):
     password = db.Column(db.String(255), nullable=False)
     email_verified = db.Column(db.Boolean, default=False, nullable=False)
 
-    # token is used for email verification, password reset and account restore
-    verification_token = db.Column(db.String(255))
-
     # JWT Token version
     token_version = db.Column(db.Integer, nullable=False, default=1, server_default='1')
 

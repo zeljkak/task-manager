@@ -35,16 +35,6 @@ class UserRepository:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
-    def get_by_token(token):
-        try:
-            user = User.query.filter_by(verification_token=token, is_deleted=False).first()
-            if not user:
-                return None
-            return user
-        except Exception as e:
-            raise ServiceUnavailableError("Database unavailable") from e
-
-    @staticmethod
     def get_all():
         try:
             return User.query.filter_by(is_deleted=False).all()
@@ -73,16 +63,6 @@ class UserRepository:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
-    def get_deleted_by_token(token):
-        try:
-            user = User.query.filter_by(verification_token=token, is_deleted=True).first()
-            if not user:
-                return None
-            return user
-        except Exception as e:
-            raise ServiceUnavailableError("Database unavailable") from e
-
-    @staticmethod
     def get_deleted_all():
         try:
             return User.query.filter_by(is_deleted=True).all()
@@ -104,16 +84,6 @@ class UserRepository:
     def get_by_email_including_deleted(email):
         try:
             user = User.query.filter_by(email=email).first()
-            if not user:
-                return None
-            return user
-        except Exception as e:
-            raise ServiceUnavailableError("Database unavailable") from e
-
-    @staticmethod
-    def get_by_token_including_deleted(token):
-        try:
-            user = User.query.filter_by(verification_token=token).first()
             if not user:
                 return None
             return user

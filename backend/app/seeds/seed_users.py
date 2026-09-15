@@ -26,7 +26,6 @@ def seed_admin_user():
         email=email,
         password=generate_password_hash(password),
         email_verified=True,
-        verification_token=None,
         role_id=admin_role.id
     )
 

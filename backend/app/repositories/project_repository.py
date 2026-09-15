@@ -1,7 +1,6 @@
 from backend.app.models.project_model import Project
 from backend.app.extensions.db import db
 from backend.app.exceptions.http_exceptions import ServiceUnavailableError
-from datetime import timedelta
 
 class ProjectRepository:
     @staticmethod
