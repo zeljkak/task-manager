@@ -1,7 +1,11 @@
 from datetime import timedelta
 
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required, get_jwt_identity, set_access_cookies, set_refresh_cookies, create_access_token, create_refresh_token
+from flask_jwt_extended import (
+    jwt_required, get_jwt_identity, set_access_cookies,
+    set_refresh_cookies, create_access_token,
+    create_refresh_token, get_csrf_token
+)
 
 from flasgger import swag_from
 import os
@@ -74,7 +78,9 @@ def change_password():
     user = UserService.invalidate_all_user_sessions(user)
 
     response = jsonify({
-        "message": "Password updated successfully"
+        "message": "Password updated successfully",
+        "csrfAccessToken": get_csrf_token(new_access_token),
+        "csrfRefreshToken": get_csrf_token(new_refresh_token)
     })
 
     set_access_cookies(response, new_access_token)

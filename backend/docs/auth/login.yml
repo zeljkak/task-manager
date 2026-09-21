@@ -38,6 +38,12 @@ responses:
         message:
           type: string
           example: Login successful
+        csrfAccessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        csrfRefreshToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
   400:
     description: Bad request (missing or invalid fields)
   401:

@@ -25,6 +25,12 @@ responses:
         message:
           type: string
           example: Token refreshed successfully
+        csrfAccessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        csrfRefreshToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
   401:
     description: Unauthorized. Occurs if the refresh token is missing/expired, the user is deleted or a replay attack is detected.
     schema:

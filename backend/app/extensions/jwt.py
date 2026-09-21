@@ -51,7 +51,7 @@ def configure_jwt(jwt_manager: JWTManager) -> None:
     def expired_token_callback(jwt_header, jwt_payload):
         return jsonify({
             "error": "expired_token",
-            "message": "Token verification failed."
+            "message": "Access token has expired."
         }), 401
 
     @jwt_manager.invalid_token_loader

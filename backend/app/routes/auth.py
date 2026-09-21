@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import (
     get_jwt, set_access_cookies, jwt_required, get_jwt_identity,
     unset_jwt_cookies, set_refresh_cookies, create_access_token,
-    create_refresh_token, decode_token, verify_jwt_in_request
+    create_refresh_token, decode_token, verify_jwt_in_request, get_csrf_token
 )
 from flasgger import swag_from
 from datetime import timedelta
@@ -120,7 +120,9 @@ def login():
     access_token, refresh_token = AuthService.login_user(data["email"], data["password"])
 
     response = jsonify({
-        "message": "Login successful"
+        "message": "Login successful",
+        "csrfAccessToken": get_csrf_token(access_token),
+        "csrfRefreshToken": get_csrf_token(refresh_token)
     })
 
     set_access_cookies(response, access_token)
@@ -137,13 +139,25 @@ def refresh():
     jwt_claims = get_jwt()
     jti = jwt_claims.get("jti")
     exp = jwt_claims.get("exp")
+    token_version_in_jwt = jwt_claims.get("token_version")
 
     user = UserRepository.get_by_id_including_deleted(current_user_id)
 
+    # check if user exists and is active
     if not user or user.is_deleted:
         response = jsonify({
             "error": "token_revoked",
             "message": "Session expired or revoked. Please log in again."
+        })
+        unset_jwt_cookies(response)
+        return response, 401
+
+    # validate token_version (handles global session invalidation / password resets)
+    if token_version_in_jwt is None or user.token_version != token_version_in_jwt:
+        logger.warning(f"Stale token_version detected for user {current_user_id}")
+        response = jsonify({
+            "error": "token_revoked",
+            "message": "Session has been invalidated. Please log in again."
         })
         unset_jwt_cookies(response)
         return response, 401
@@ -172,7 +186,12 @@ def refresh():
         expires_delta=timedelta(days=30)
     )
 
-    response = jsonify({"message": "Token refreshed successfully"})
+    response = jsonify({
+        "message": "Token refreshed successfully",
+        "csrfAccessToken": get_csrf_token(new_access_token),
+        "csrfRefreshToken": get_csrf_token(new_refresh_token)
+    })
+
     set_access_cookies(response, new_access_token)
     set_refresh_cookies(response, new_refresh_token)
 
@@ -200,7 +219,6 @@ def logout():
     if access_token:
         try:
             decoded_access = decode_token(access_token)
-
             user_id = decoded_access.get("sub")
 
         except Exception as e:
@@ -220,15 +238,11 @@ def logout():
             exp = decoded_refresh.get("exp")
 
             if jti and exp:
-                add_jti_to_blocklist(
-                    str(jti),
-                    float(exp)
-                )
+                add_jti_to_blocklist(str(jti), float(exp))
 
         except Exception as e:
-            logger.debug(
-                f"Failed to decode refresh token on logout: {e}"
-            )
+            logger.debug(f"Failed to decode refresh token on logout: {e}")
+
     # if user is identified, invalidate all sessions
     if user_id:
         try:
@@ -239,9 +253,7 @@ def logout():
                 UserRepository.update(user)
 
         except Exception as e:
-            logger.exception(
-                f"Failed to invalidate user session during logout: {e}"
-            )
+            logger.exception(f"Failed to invalidate user session during logout: {e}")
 
     response = jsonify({
         "message": "Logout successful"
@@ -249,4 +261,12 @@ def logout():
 
     unset_jwt_cookies(response)
 
+    return response, 200
+
+@auth_bp.route('/clear-cookies', methods=['POST'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/auth/clear_cookies.yml"))
+
+def clear_cookies():
+    response = jsonify({"message": "Cookies cleared successfully"})
+    unset_jwt_cookies(response)
     return response, 200

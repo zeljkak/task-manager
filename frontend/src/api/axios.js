@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getCsrfAccess, getCsrfRefresh, setCsrfTokens, clearCsrfTokens} from "./csrfStore.js";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -6,20 +7,6 @@ const api = axios.create({
     baseURL: API_URL,
     withCredentials: true,
 });
-
-const getCookie = (name) => {
-    const cookies = document.cookie.split(";");
-
-    for (const cookie of cookies) {
-        const [key, ...value] = cookie.trim().split("=");
-
-        if (key === name) {
-            return decodeURIComponent(value.join("="));
-        }
-    }
-
-    return null;
-};
 
 const isStateChangingMethod = (method) => {
     return ["POST", "PUT", "PATCH", "DELETE"].includes(
@@ -41,34 +28,36 @@ const isAuthRoute = (url) => {
         url.includes("/auth/verify-email/") ||
         url.includes("/auth/forgot-password") ||
         url.includes("/auth/reset-password/") ||
-        url.includes("/user/restore-request") ||
-        url.includes("/user/restore/")
+        url.includes("/users/restore-request") ||
+        url.includes("/users/restore/")
     );
 };
 
-const forceLogout = async () => {
-    try {
-        // logout is intentionally allowed to work without a CSRF token
-        // this is important when the user manually deleted a CSRF cookie
-        await axios.post(
-            `${API_URL}/auth/logout`,
-            {},
-            {
-                withCredentials: true,
-            }
-        );
-    } catch (error) {
-        // server-side session may already be invalid
-        // still redirecting to login
-        console.debug("Forced logout request failed:", error);
-    } finally {
-        window.dispatchEvent(new Event("auth:logout"));
+// soft logout: clears client state and redirects without hitting /auth/logout (avoids revoking valid refresh sessions)
+const softLogout = async (reason) => {
+    console.warn(`[LOGOUT TRIGGERED] Soft Logout execution. Reason: ${reason}`);
 
-        if (window.location.pathname !== "/login") {
-            window.location.href = "/login?forcedLogout=true";
-        }
+    // clear CSRF storage so invalid tokens don't persist
+    clearCsrfTokens();
+
+    try {
+        await axios.post(`${API_URL}/auth/clear-cookies`, {}, { withCredentials: true });
+    } catch (e) {
+        console.log("Failed to clear cookies during soft logout", e);
+    }
+
+    // notify all other open tabs to log out instantly
+    localStorage.setItem("app_logout_event", Date.now().toString());
+
+    window.dispatchEvent(new Event("auth:logout"));
+
+    if (window.location.pathname !== "/login") {
+        window.location.href = "/login?forcedLogout=true";
     }
 };
+
+// helper function to delay execution (wait)
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // handles the issue of multiple sources calling refresh consecutively
 let isRefreshing = false;
@@ -86,6 +75,30 @@ const processQueue = (error, token = null) => {
     failedQueue = [];
 };
 
+// cross-tab lock helper using localStorage
+export const acquireRefreshLock = async () => {
+    const lockKey = "refresh_lock";
+    const lockTimeout = 5000;
+    const pollInterval = 100;
+    const maxRetries = 50; // aligns 5s polling window with the 5s lock timeout
+
+    for (let i = 0; i < maxRetries; i++) {
+        const currentTime = Date.now();
+        const lock = localStorage.getItem(lockKey);
+
+        if (!lock || currentTime - parseInt(lock, 10) > lockTimeout) {
+            localStorage.setItem(lockKey, currentTime.toString());
+            return true;
+        }
+        await new Promise((resolve) => setTimeout(resolve, pollInterval));
+    }
+    return false;
+};
+
+export const releaseRefreshLock = () => {
+    localStorage.removeItem("refresh_lock");
+};
+
 api.interceptors.request.use(
     async (config) => {
         // read token from cookie for state-changing methods
@@ -98,11 +111,7 @@ api.interceptors.request.use(
             return config;
         }
 
-        const csrfCookieName = isRefreshRequest
-            ? "csrf_refresh_token"
-            : "csrf_access_token";
-
-        const csrfToken = getCookie(csrfCookieName);
+        const csrfToken = isRefreshRequest ? getCsrfRefresh() : getCsrfAccess();
         if (csrfToken) {
             config.headers = config.headers || {};
             config.headers["X-CSRF-TOKEN"] = csrfToken;
@@ -115,11 +124,36 @@ api.interceptors.request.use(
 
 
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        // Automatically save CSRF tokens returned from login or refresh endpoints
+        if (response.data?.csrfAccessToken || response.data?.csrfRefreshToken) {
+            setCsrfTokens({
+                access: response.data.csrfAccessToken,
+                refresh: response.data.csrfRefreshToken,
+            });
+        }
+        return response;
+    },
     async (error) => {
         const originalRequest = error.config;
 
         if (!originalRequest) {
+            return Promise.reject(error);
+        }
+
+        // HANDLE NETWORK LOSS / SERVER UNREACHABLE (NO RESPONSE)
+        if (!error.response) {
+            originalRequest._networkRetryCount = originalRequest._networkRetryCount || 0;
+
+            // retry up to 3 times on lost connection before failing
+            if (originalRequest._networkRetryCount < 3) {
+                originalRequest._networkRetryCount += 1;
+                const waitTime = originalRequest._networkRetryCount * 1500; // wait 1.5s, 3s, 4.5s
+
+                await delay(waitTime);
+                return api(originalRequest);
+            }
+
             return Promise.reject(error);
         }
 
@@ -137,13 +171,13 @@ api.interceptors.response.use(
 
         // if CSRF failed, logout
         if (errorCode === "csrf_missing" || errorCode === "csrf_invalid") {
-            await forceLogout();
+            await softLogout(`CSRF Failure: ${errorCode}`);
             return Promise.reject(error);
         }
 
         // if token was explicitly revoked (e.g. password reset), force logout without attempting refresh
         if (errorCode === "token_revoked") {
-            await forceLogout();
+            await softLogout("Token Revoked");
             return Promise.reject(error);
         }
 
@@ -165,6 +199,14 @@ api.interceptors.response.use(
             originalRequest._retry = true;
             isRefreshing = true;
 
+            const gotLock = await acquireRefreshLock();
+            if (!gotLock) {
+                // another tab refreshed while waiting; retry original request directly
+                isRefreshing = false;
+                await delay(1500);
+                return api(originalRequest);
+            }
+
             try {
                 // the request interceptor reads csrf_refresh_token and sends X-CSRF-TOKEN
                 await api.post("/auth/refresh");
@@ -175,16 +217,17 @@ api.interceptors.response.use(
             } catch (refreshError) {
                 // if refresh cookie expired or is invalid
                 processQueue(refreshError, null);
-                await forceLogout();
+                await softLogout("Refresh request failed");
                 return Promise.reject(refreshError);
             } finally {
+                releaseRefreshLock();
                 isRefreshing = false;
             }
         }
 
         // if the retried request failed again (invalid session, stale claims)
         if (error.response?.status === 401 && originalRequest._retry) {
-            await forceLogout();
+            await softLogout("Retry failed with 401");
             return Promise.reject(error);
         }
 
