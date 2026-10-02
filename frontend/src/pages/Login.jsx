@@ -33,11 +33,9 @@ export default function Login() {
           });
 
           setMessage(res.data?.message || "Login successful");
-          loginUser();
+          await loginUser();
 
-          setTimeout(() => {
-              navigate("/");
-          }, 1000);
+          navigate("/");
       } catch (err) {
           setError(
           err.response?.data?.error ||

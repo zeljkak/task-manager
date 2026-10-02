@@ -90,8 +90,11 @@ class TaskService:
         project = None
         if data.get("project_id"):
             db_project = ProjectRepository.get_by_id(data["project_id"])
-            if db_project and not db_project.archived:
-                project = db_project.id
+            if not db_project:
+                raise NotFoundError("Project not found")
+            if db_project.archived:
+                raise BadRequestError("Cannot link a task to an archived project")
+            project = db_project.id
 
         if data.get("priority_id"):
             if not PriorityRepository.get_by_id(data["priority_id"]):
@@ -149,7 +152,8 @@ class TaskService:
             project = ProjectRepository.get_by_id(data["project_id"])
             if not project:
                 raise NotFoundError("Project not found")
-            if project.archived == True:
+            # only reject archived projects if the task is being moved to a DIFFERENT project
+            if project.archived and task.project_id != data["project_id"]:
                 raise BadRequestError("Cannot link a task to an archived project")
 
         new_assigned_id = data.get("assigned_to_id")

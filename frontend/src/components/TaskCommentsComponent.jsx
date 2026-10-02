@@ -175,6 +175,8 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated }) {
         setIsSubmittingComment(true);
         setCommentError("");
 
+        let createdComment = null;
+
         try {
             const commentResponse = await createTaskComment(taskId, { comment: newCommentText, hasAttachments });
             const createdComment = commentResponse.data?.comment;
@@ -190,6 +192,15 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated }) {
 
             await handleSync();
         } catch (err) {
+            // cleanup empty comment if attachment upload failed and no text was submitted
+            if (!hasText && createdComment?.id) {
+                try {
+                    await deleteComment(createdComment.id);
+                } catch (cleanupErr) {
+                    console.error("Failed to cleanup empty comment after attachment failure:", cleanupErr);
+                }
+            }
+
             const errorMsg = err.response?.data?.error || err.response?.data?.message || "Failed to post comment.";
             setCommentError(errorMsg);
             setTimeout(() => setCommentError(""), 4000);

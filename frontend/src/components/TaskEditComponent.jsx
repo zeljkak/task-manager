@@ -101,13 +101,6 @@ function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
         try {
             const payload = { ...updatedTaskData };
 
-            const isArchivedProjectSelected = payload.projectId && projects.some(
-                project => project.archived && project.id === Number(payload.projectId)
-            );
-            if (isArchivedProjectSelected) {
-                delete payload.projectId;
-            }
-
             await updateTask(task.id, payload);
             await syncUpdates();
         } catch (error) {
@@ -194,14 +187,6 @@ function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
 
             if (!payload.dueDate) {
                 payload.dueDate = null;
-            }
-
-            const isArchivedProjectSelected = payload.projectId && projects.some(
-                project => project.archived && project.id === Number(payload.projectId)
-            );
-
-            if (isArchivedProjectSelected) {
-                delete payload.projectId;
             }
 
             await updateTask(task.id, payload);

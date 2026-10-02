@@ -233,10 +233,12 @@ function CreateTaskComponent({ onClose, onCreated, isMobile }) {
                             }
                         >
                             <option value={""}>Choose project</option>
-                            {projects.map(project => {
-                              return (
-                                  <option value={project.id} key={project.id}>{project.projectName}</option>
-                              );
+                            {projects
+                                .filter(project => !project.archived)
+                                .map(project => {
+                                    return (
+                                        <option value={project.id} key={project.id}>{project.projectName}</option>
+                                    );
                             })}
                         </select>
                     </div>

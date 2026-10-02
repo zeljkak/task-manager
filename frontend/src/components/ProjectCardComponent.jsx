@@ -1,7 +1,4 @@
 function ProjectData({ project }) {
-    {project.attachments.map(attachment => (
-                <p>{project.attachment}</p>
-        ))}
     return (
         <div className={"project-data"}>
             <p className={"project-description"}>Description:</p>

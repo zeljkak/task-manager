@@ -6,13 +6,11 @@ import {getTaskStatuses} from "../services/taskStatusService.js";
 import {getPriorities} from "../services/priorityService.js";
 import {getProjects} from "../services/projectService.js";
 
+const checkIsMobile = () => window.innerWidth <= 500 || window.innerHeight <= 400;
+
 export default function Layout() {
-    const [isVisible, setIsVisible] = useState(
-        () => window.innerWidth > 500 && window.innerHeight > 400
-    );
-    const [isMobile, setIsMobile] = useState(
-        () => window.innerWidth <= 500 && window.innerHeight <= 400
-    );
+    const [isVisible, setIsVisible] = useState(() => !checkIsMobile());
+    const [isMobile, setIsMobile] = useState(() => checkIsMobile());
     const [resetMyTasksKey, setResetMyTasksKey] = useState(0);
 
     const [users, setUsers] = useState([]);
@@ -23,7 +21,7 @@ export default function Layout() {
 
     useEffect(() => {
         const handleResize = () => {
-            const mobile = window.innerWidth <= 500 || window.innerHeight <= 400;
+            const mobile = checkIsMobile();
             setIsMobile(mobile);
 
             if (mobile) {
