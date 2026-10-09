@@ -33,6 +33,7 @@ function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
     });
 
     const dateTimeoutRef = useRef(null);
+    const debounceTimeoutRef = useRef(null);
     const lastValidTitleRef = useRef(task?.title || "");
 
     useEffect(() => {
@@ -54,6 +55,9 @@ function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
         return () => {
             if (dateTimeoutRef.current) {
                 clearTimeout(dateTimeoutRef.current);
+            }
+            if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current);
             }
         };
     }, []);
@@ -105,6 +109,39 @@ function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
             await syncUpdates();
         } catch (error) {
             console.error("Failed to update due date: ", error);
+        }
+    };
+
+    const submitTaskUpdate = async (updatedTaskData) => {
+        try {
+            const payload = { ...updatedTaskData };
+
+            if (!payload.dueDate) {
+                payload.dueDate = null;
+            }
+
+            await updateTask(task.id, payload);
+            await syncUpdates();
+        } catch (error) {
+            console.error("Failed to update task: ", error);
+        }
+    };
+
+    const handleBlur = (e) => {
+        const { name, value } = e.target;
+        if (name === "title" || name === "description") {
+            if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current);
+            }
+
+            const propValue = name === "title" ? task?.title : task?.description;
+            if ((value || "") !== (propValue || "")) {
+                const currentData = {
+                    ...taskData,
+                    [name]: value
+                };
+                submitTaskUpdate(currentData);
+            }
         }
     };
 
@@ -182,18 +219,15 @@ function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
 
         setTaskData(updatedTaskData);
 
-        try {
-            const payload = { ...updatedTaskData };
-
-            if (!payload.dueDate) {
-                payload.dueDate = null;
+        if (name === "title" || name === "description") {
+            if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current);
             }
-
-            await updateTask(task.id, payload);
-            await syncUpdates();
-
-        } catch (error) {
-            console.error("Failed to update task: ", error);
+            debounceTimeoutRef.current = setTimeout(() => {
+                submitTaskUpdate(updatedTaskData);
+            }, 1000);
+        } else {
+            await submitTaskUpdate(updatedTaskData);
         }
     };
 
@@ -212,7 +246,7 @@ function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
                 <div className="form-title">
                     {renderMobileBackButton()}
                     <h4>
-                        <input type="text" name="title"
+                        <input type="text" name="title" onBlur={handleBlur}
                             value={taskData.title} onChange={handleChange}
                         />
                     </h4>
@@ -227,7 +261,7 @@ function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
                     <div className="form-element">
                         <textarea name="description" className="inline-form-element"
                             placeholder="Enter description" value={taskData.description}
-                            onChange={handleChange}
+                            onChange={handleChange} onBlur={handleBlur}
                         />
                     </div>
                     <div className="form-element inline-form-element">
