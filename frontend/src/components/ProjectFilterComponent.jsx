@@ -4,7 +4,7 @@ import BackIcon from "./icons/BackIcon.jsx";
 import CreateButtonComponent from "./CreateButtonComponent.jsx";
 
 function ProjectFilterComponent({ filters = {}, onFilterChange,
-  onClearAll, options = {}, isMobile, buttonOnCreated}) {
+  onClearAll, options = {}, isMobile, buttonOnCreated, isAdmin}) {
 
   const { users = [] } = options;
 
@@ -129,9 +129,11 @@ function ProjectFilterComponent({ filters = {}, onFilterChange,
         </div>
       </div>
 
-      <CreateButtonComponent isMobile={isMobile}
-        type="project" onCreated={buttonOnCreated}
-      />
+      {isAdmin && (
+        <CreateButtonComponent isMobile={isMobile}
+          type="project" onCreated={buttonOnCreated}
+        />
+      )}
     </div>
   );
 }

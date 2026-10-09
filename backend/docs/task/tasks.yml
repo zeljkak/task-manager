@@ -43,7 +43,7 @@ parameters:
     required: false
     type: boolean
     example: false
-    description: If not none, returns tasks that aren't part of any project
+    description: If false, returns tasks that aren't part of any project
   - name: dueBefore
     in: query
     required: false

@@ -38,7 +38,9 @@ class TaskRepository:
 
             if project_id is not None:
                 tasks = tasks.filter(Task.project_id == project_id)
-            elif has_project is not None:
+            elif has_project is True:
+                tasks = tasks.filter(Task.project_id.isnot(None))
+            elif has_project is False:
                 tasks = tasks.filter(Task.project_id.is_(None))
 
             if due_before is not None:
@@ -60,7 +62,10 @@ class TaskRepository:
                     Task.status_id != constants.DONE_STATUS_ID
                 )
             elif due_after is None and due_before is None and has_due_date is not None:
-                tasks = tasks.filter(Task.due_date.is_(None))
+                if has_due_date is True:
+                    tasks = tasks.filter(Task.due_date.isnot(None))
+                elif has_due_date is False:
+                    tasks = tasks.filter(Task.due_date.is_(None))
 
             if followed_by_id is not None:
                 tasks = tasks.join(Task.followers).filter(User.id == followed_by_id)
@@ -102,7 +107,9 @@ class TaskRepository:
 
             if project_id is not None:
                 tasks = tasks.filter(Task.project_id == project_id)
-            elif has_project is not None:
+            elif has_project is True:
+                tasks = tasks.filter(Task.project_id.isnot(None))
+            elif has_project is False:
                 tasks = tasks.filter(Task.project_id.is_(None))
 
             if due_before is not None:
@@ -124,7 +131,10 @@ class TaskRepository:
                     Task.status_id != constants.DONE_STATUS_ID
                 )
             elif due_after is None and due_before is None and has_due_date is not None:
-                tasks = tasks.filter(Task.due_date.is_(None))
+                if has_due_date is True:
+                    tasks = tasks.filter(Task.due_date.isnot(None))
+                elif has_due_date is False:
+                    tasks = tasks.filter(Task.due_date.is_(None))
 
             if followed_by_id is not None:
                 tasks = tasks.join(Task.followers).filter(User.id == followed_by_id)

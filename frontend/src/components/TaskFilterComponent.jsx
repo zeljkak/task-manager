@@ -176,7 +176,7 @@ export default function TaskFilterComponent({ filters, onFilterChange,
                         Clear
                     </button>
                     <button type="button"
-                        className={`project-option ${filters.hasProject === false || filters.hasProject === "false" ? "active" : ""}`}
+                        className={`project-option ${filters.hasProject === false ? "active" : ""}`}
                         onClick={() => onFilterChange({ projectId: "", hasProject: false })}>
                         No project
                     </button>

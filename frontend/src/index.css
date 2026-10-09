@@ -256,6 +256,12 @@ svg {
   pointer-events: none;
 }
 
+.project-options, .assigned-to-options,
+.followed-by-options, .created-by-options {
+  max-height: 200px;
+  overflow-y: scroll;
+}
+
 .filter-options {
   top: 100%;
   left: 0;

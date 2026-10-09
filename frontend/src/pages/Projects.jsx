@@ -4,6 +4,7 @@ import ProjectCardComponent from "../components/ProjectCardComponent.jsx";
 import ProjectStatusComponent from "../components/ProjectStatusComponent.jsx";
 import ProjectFilterComponent from "../components/ProjectFilterComponent.jsx";
 import {getProjects} from "../services/projectService.js";
+import {useAuth} from "../context/useAuth.js";
 
 const DEFAULT_FILTERS = {
   projectText: "",
@@ -24,6 +25,9 @@ export default function Projects() {
 
   const [filteredProjects, setFilteredProjects] = useState(null);
 
+  const { user } = useAuth();
+  const isAdmin = user.roleId === 1;
+  console.log(isAdmin);
   const { isMobile, users = [], projects = [], refreshDropdowns } = useOutletContext();
   const iconSize = isMobile ? 34 : 24;
 
@@ -140,6 +144,7 @@ export default function Projects() {
         isMobile={isMobile}
         options={{ users }}
         buttonOnCreated={handleProjectCreated}
+        isAdmin={isAdmin}
       />
 
       {loading ? (
