@@ -44,7 +44,8 @@ function ProjectCardComponent({ project, index = 0, canEdit, isMobile, iconSize,
             {...provided.draggableProps}
             {...provided.dragHandleProps}
             className={`card ${snapshot.isDragging ? "dragging" : ""}`}
-            onClick={handleClick}
+            id={`project-card-${project.id}`}
+            data-scroll-target={`project-card-${project.id}`} onClick={handleClick}
             style={{ userSelect: "none", marginBottom: "8px",
               ...provided.draggableProps.style }}>
 

@@ -1,5 +1,5 @@
-import {useState, useEffect, useCallback} from "react";
-import {Outlet} from "react-router-dom";
+import {useState, useEffect, useCallback, useLayoutEffect} from "react";
+import {Outlet, useLocation} from "react-router-dom";
 import SidebarComponent from "../components/SidebarComponent.jsx";
 import {getUsers} from "../services/userService.js";
 import {getTaskStatuses} from "../services/taskStatusService.js";
@@ -10,6 +10,8 @@ const checkIsMobile = () => window.innerWidth <= 500 || window.innerHeight <= 40
 const checkIsDraggable = () => window.innerWidth <= 700;
 
 export default function Layout() {
+    const location = useLocation();
+
     const [isVisible, setIsVisible] = useState(() => !checkIsMobile());
     const [isMobile, setIsMobile] = useState(() => checkIsMobile());
     const [isDraggable, setIsDraggable] = useState(() => checkIsDraggable());
@@ -21,6 +23,53 @@ export default function Layout() {
     const [projects, setProjects] = useState([]);
     const [dropdownsLoading, setDropdownsLoading] = useState(true);
 
+    // capture clicks on any element with a `data-scroll-target` attribute
+    useEffect(() => {
+        const handleGlobalClick = (event) => {
+            const targetElement = event.target.closest("[data-scroll-target]");
+            if (targetElement) {
+                const targetId = targetElement.getAttribute("data-scroll-target") || targetElement.id;
+                if (targetId) {
+                    sessionStorage.setItem("global_scroll_target", targetId);
+                }
+            }
+        };
+
+        document.addEventListener("click", handleGlobalClick);
+        return () => document.removeEventListener("click", handleGlobalClick);
+    }, []);
+
+    // restore scroll position when returning or navigating to a route
+    useLayoutEffect(() => {
+        const targetId = sessionStorage.getItem("global_scroll_target");
+        if (!targetId) return;
+
+        let attempts = 0;
+        const maxAttempts = 30;
+
+        const interval = setInterval(() => {
+            const element = document.getElementById(targetId);
+            attempts++;
+
+            if (element) {
+                element.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                    inline: "center"
+                });
+                sessionStorage.removeItem("global_scroll_target");
+                clearInterval(interval);
+            } else if (attempts >= maxAttempts) {
+                // Stop checking if the card was deleted or never loads
+                clearInterval(interval);
+            }
+        }, 100);
+
+
+        return () => clearInterval(interval);
+    }, [location.pathname]);
+
+    // handle window resizing
     useEffect(() => {
         const handleResize = () => {
             const mobile = checkIsMobile();
@@ -58,7 +107,7 @@ export default function Layout() {
         }
     }, []);
 
-    // Initial load on mount
+    // initial load on mount
     useEffect(() => {
         refreshDropdowns();
     }, [refreshDropdowns]);

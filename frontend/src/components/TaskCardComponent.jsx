@@ -47,6 +47,8 @@ function TaskCardComponent({ task, index, canEdit }) {
               {...provided.draggableProps}
               {...provided.dragHandleProps}
               className={`card ${snapshot.isDragging ? "dragging" : ""}`}
+              id={`task-card-${task.id}`}
+              data-scroll-target={`task-card-${task.id}`}
               onClick={handleClick}
               style={{ userSelect: "none", marginBottom: "8px", ...provided.draggableProps.style }}>
 

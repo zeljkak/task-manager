@@ -47,6 +47,11 @@ body {
   overflow: hidden;
 }
 
+/* margin for scroll into view */
+[data-scroll-target] {
+    scroll-margin-top: 100px;
+}
+
 p {
   margin: 0;
 }
