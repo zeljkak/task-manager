@@ -127,7 +127,6 @@ def update_project(projectId):
 
 @project_bp.route('/<int:projectId>/archive', methods=['POST'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/project/archive_project.yml"))
-@limiter.limit("2 per minute")
 @jwt_required()
 @roles_required("admin")
 
@@ -141,7 +140,6 @@ def archive_project(projectId):
 
 @project_bp.route('/<int:projectId>/unarchive', methods=['POST'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/project/unarchive_project.yml"))
-@limiter.limit("2 per minute")
 @jwt_required()
 @roles_required("admin")
 

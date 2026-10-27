@@ -1,9 +1,10 @@
 import {useEffect, useState, useMemo, useCallback} from "react";
 import {useNavigate, useOutletContext, useSearchParams} from "react-router-dom";
+import { DragDropContext } from "@hello-pangea/dnd";
 import ProjectCardComponent from "../components/ProjectCardComponent.jsx";
 import ProjectStatusComponent from "../components/ProjectStatusComponent.jsx";
 import ProjectFilterComponent from "../components/ProjectFilterComponent.jsx";
-import {getProjects} from "../services/projectService.js";
+import {getProjects, archiveProject, unarchiveProject} from "../services/projectService.js";
 import {useAuth} from "../context/useAuth.js";
 
 const DEFAULT_FILTERS = {
@@ -17,6 +18,7 @@ const INT_KEYS = ["createdById"];
 
 export default function Projects() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [loading, setLoading] = useState(false);
@@ -25,10 +27,9 @@ export default function Projects() {
 
   const [filteredProjects, setFilteredProjects] = useState(null);
 
-  const { user } = useAuth();
-  const isAdmin = user.roleId === 1;
-  console.log(isAdmin);
-  const { isMobile, users = [], projects = [], refreshDropdowns } = useOutletContext();
+  const canEdit = Boolean(user && user.roleId === 1);
+
+  const { isMobile, isDraggable, users = [], projects = [], refreshDropdowns } = useOutletContext();
   const iconSize = isMobile ? 34 : 24;
 
   const filters = useMemo(() => {
@@ -111,13 +112,49 @@ export default function Projects() {
 
   const activeProjectsList = hasActiveFilters ? (filteredProjects || []) : projects;
 
-  const handleProjectCreated = async () => {
+  const syncUpdates = async () => {
       if (hasActiveFilters) {
           await loadProjects();
       }
       if (refreshDropdowns) {
+          await refreshDropdowns();
+      }
+  };
+
+  const handleDragEnd = async (result) => {
+    if (isDraggable) return;
+
+    const { destination, source, draggableId } = result;
+
+    if (!destination) return;
+    if (destination.droppableId === source.droppableId) return;
+    if (!canEdit) return;
+
+    const projectId = parseInt(draggableId, 10);
+    const targetProject = activeProjectsList.find((p) => p.id === projectId);
+    if (!targetProject) return;
+
+    const isArchiving = destination.droppableId === "archived";
+
+    try {
+      if (isArchiving) {
+        await archiveProject(projectId);
+      } else {
+        await unarchiveProject(projectId);
+      }
+
+      if (hasActiveFilters) {
+        await loadProjects();
+      }
+      if (refreshDropdowns) {
         await refreshDropdowns();
       }
+    } catch (err) {
+      console.error("Failed to update project archive state on drag drop:", err);
+      if (hasActiveFilters) {
+        loadProjects();
+      }
+    }
   };
 
   const grouped = useMemo(() => {
@@ -143,8 +180,8 @@ export default function Projects() {
         onClearAll={clearAllFilters}
         isMobile={isMobile}
         options={{ users }}
-        buttonOnCreated={handleProjectCreated}
-        isAdmin={isAdmin}
+        buttonOnCreated={syncUpdates}
+        canEdit={canEdit}
       />
 
       {loading ? (
@@ -156,21 +193,23 @@ export default function Projects() {
           <p className="error">{error}</p>
         </div>
       ) : (
-          <div id={"all-projects"}>
-            {sections.map(section => (
-              <ProjectStatusComponent key={section.key}
-                status={section.status} size={iconSize}
-                length={grouped[section.key].length}>
-                  {grouped[section.key].map(project => (
-                    <ProjectCardComponent key={project.id} project={project} />
-                  ))}
-              </ProjectStatusComponent>
-            ))}
-          </div>
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <div id={"all-projects"}>
+              {sections.map(section => (
+                <ProjectStatusComponent key={section.key}
+                  status={section.status} size={iconSize}
+                  length={grouped[section.key].length}>
+                    {grouped[section.key].map((project, index) => (
+                      <ProjectCardComponent key={project.id} project={project} syncUpdates={syncUpdates}
+                        index={index} canEdit={canEdit} iconSize={iconSize} isMobile={isDraggable} user={user} />
+                    ))}
+                </ProjectStatusComponent>
+              ))}
+            </div>
+          </DragDropContext>
       )}
 
       {message && (<p className={"message"}>{message}</p>)}
-      {error && (<p className={"error"}>{error}</p>)}
     </>
   );
 }

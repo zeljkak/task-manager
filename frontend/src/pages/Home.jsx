@@ -5,6 +5,7 @@ import TaskCardComponent from "../components/TaskCardComponent.jsx";
 import TaskStatusComponent from "../components/TaskStatusComponent.jsx";
 import TaskFilterComponent from "../components/TaskFilterComponent.jsx";
 import { getTasks, updateTask } from "../services/taskService.js";
+import { useAuth } from "../context/useAuth.js";
 
 const DEFAULT_FILTERS = {
   text: "",
@@ -26,6 +27,7 @@ const INT_KEYS = ["statusId", "priorityId", "projectId", "followedById"];
 
 export default function Home() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [tasks, setTasks] = useState([]);
@@ -114,6 +116,15 @@ export default function Home() {
     const targetTask = tasks.find((t) => t.id === taskId);
     if (!targetTask) return;
 
+    const canEdit = Boolean(
+      user && (
+        targetTask?.createdBy?.id === user.id ||
+        targetTask?.assignedTo?.id === user.id ||
+        user.roleId === 1
+      )
+    );
+    if (!canEdit) return;
+
     const nowIso = new Date().toISOString();
 
     setTasks((prevTasks) => {
@@ -182,13 +193,24 @@ export default function Home() {
                           length={filteredTasks.length}
                           size={iconSize}
                       >
-                        {filteredTasks.map((task, index) => (
+                        {filteredTasks.map((task, index) => {
+                          const canEdit = Boolean(
+                            user && (
+                              task?.createdBy?.id === user.id ||
+                              task?.assignedTo?.id === user.id ||
+                              user.roleId === 1
+                            )
+                          );
+
+                          return (
                             <TaskCardComponent
                                 key={task.id}
                                 task={task}
                                 index={index}
+                                canEdit={canEdit}
                             />
-                        ))}
+                          );
+                        })}
                       </TaskStatusComponent>
                   );
                 })}

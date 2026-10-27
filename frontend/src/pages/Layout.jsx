@@ -7,10 +7,12 @@ import {getPriorities} from "../services/priorityService.js";
 import {getProjects} from "../services/projectService.js";
 
 const checkIsMobile = () => window.innerWidth <= 500 || window.innerHeight <= 400;
+const checkIsDraggable = () => window.innerWidth <= 700;
 
 export default function Layout() {
     const [isVisible, setIsVisible] = useState(() => !checkIsMobile());
     const [isMobile, setIsMobile] = useState(() => checkIsMobile());
+    const [isDraggable, setIsDraggable] = useState(() => checkIsDraggable());
     const [resetMyTasksKey, setResetMyTasksKey] = useState(0);
 
     const [users, setUsers] = useState([]);
@@ -23,6 +25,9 @@ export default function Layout() {
         const handleResize = () => {
             const mobile = checkIsMobile();
             setIsMobile(mobile);
+
+            const draggable = checkIsDraggable();
+            setIsDraggable(draggable);
 
             if (mobile) {
                 setIsVisible(false);
@@ -72,7 +77,7 @@ export default function Layout() {
             />
 
             <div id="content">
-                <Outlet context={{ resetMyTasksKey, triggerTaskRefresh, isMobile, users, statuses,
+                <Outlet context={{ resetMyTasksKey, triggerTaskRefresh, isMobile, isDraggable, users, statuses,
                     priorities, projects, dropdownsLoading, refreshDropdowns}}/>
             </div>
         </>

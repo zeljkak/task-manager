@@ -13,6 +13,12 @@ export async function getProjects(filters = {}) {
   return response.data;
 };
 
+export const getProject = (projectId) => {
+  return api.get(
+    `/projects/${projectId}`
+  );
+};
+
 export const getProjectsList = () => {
   return api.get(
     `/projects/list`
@@ -30,3 +36,18 @@ export const createProjectAttachment = (projectId, files) => {
     `/projects/${projectId}/attachments`, files
   );
 };
+
+export async function updateProject(projectId, update = {}) {
+  const response = await api.patch(`/projects/${projectId}`, update);
+  return response.data;
+}
+
+export async function archiveProject(projectId) {
+  const response = await api.post(`/projects/${projectId}/archive`);
+  return response.data;
+}
+
+export async function unarchiveProject(projectId) {
+  const response = await api.post(`/projects/${projectId}/unarchive`);
+  return response.data;
+}

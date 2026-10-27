@@ -33,7 +33,7 @@ function TaskData({ task }) {
     );
 }
 
-function TaskCardComponent({ task, index, onChange }) {
+function TaskCardComponent({ task, index, canEdit }) {
     const navigate = useNavigate();
 
     const handleClick = () => {
@@ -41,19 +41,19 @@ function TaskCardComponent({ task, index, onChange }) {
     };
 
     return (
-        <Draggable draggableId={String(task.id)} index={index}>
+        <Draggable draggableId={String(task.id)} index={index} isDragDisabled={!canEdit}>
           {(provided, snapshot) => (
             <div ref={provided.innerRef}
               {...provided.draggableProps}
               {...provided.dragHandleProps}
               className={`card ${snapshot.isDragging ? "dragging" : ""}`}
               onClick={handleClick}
-              style={{ userSelect: "none", marginBottom: "8px",
-                ...provided.draggableProps.style }}>
-              <div className="card-body">
-                <h5 className="task-title">{task.title}</h5>
-                <TaskData task={task} />
-              </div>
+              style={{ userSelect: "none", marginBottom: "8px", ...provided.draggableProps.style }}>
+
+                <div className="card-body">
+                  <h5 className="task-title">{task.title}</h5>
+                  <TaskData task={task} />
+                </div>
             </div>
           )}
         </Draggable>

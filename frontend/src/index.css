@@ -428,14 +428,15 @@ svg {
 }
 
 
-.task-details {
+.task-details, .project-details {
   display: flex;
   flex-direction: row;
   /*max-height: calc(100vh - 110px);*/
   width: 100%;
 }
 
-.task-edit, .task-display {
+.task-edit, .task-display,
+.project-edit {
   flex: 1 0 auto;
   height: 100%;
   width: 70%;
@@ -461,7 +462,8 @@ svg {
   opacity: 0.4;
 }
 
-.task-info-header > h4, .task-comments > h4, .comment-header, .comment-text {
+.task-info-header > h4, .task-comments > h4, .comment-header, .comment-text,
+.project-info-header {
   padding: 5px 0;
 }
 
@@ -499,7 +501,11 @@ svg {
   opacity: 0.9;
 }
 
-.task-info {
+.project-attachment {
+  width: fit-content;
+}
+
+.task-info, .project-info {
   opacity: 0.4;
   flex: 1 0 30%;
   min-width: 0;
@@ -509,7 +515,7 @@ svg {
   box-sizing: border-box;
 }
 
-.task-info-header {
+.task-info-header, .project-info-header {
   position: sticky;
   top: 0;
   background-color: #121212;
@@ -517,19 +523,24 @@ svg {
   padding-bottom: 2px;
 }
 
-.task-info-box {
+.task-info-box, .project-info-box {
   padding: 5px 0;
   width: 100%;
 }
 
-.task-info-box > div > a {
+.task-info-box > div > a,
+.project-info-box > div > a {
   display: block;
 }
 
 .task-info-box > p,
 .task-info-box > a,
 .task-info-box > div,
-.task-info-header > h4 {
+.task-info-header > h4,
+.project-info-box > p,
+.project-info-box > a,
+.project-info-box > div,
+.project-info-header > h4 {
   width: 100%;
   max-width: 100%;
   word-wrap: break-word;
@@ -1300,7 +1311,7 @@ hr {
     width: 80%;
   }
 
-  .create-form, .task-details, .confirmation-div {
+  .create-form, .task-details, .project-details, .confirmation-div {
     width: 100% !important;
     top: 0 !important;
     height: 100% !important;
@@ -1329,23 +1340,24 @@ hr {
   }
 }
 @media (max-width: 630px) {
-  .task-details {
+  .task-details, .project-details {
     flex-direction: column;
   }
 
-  .task-edit, .task-display {
+  .task-edit, .task-display,
+  .project-edit {
     width: 95%;
     height: max-content;
   }
 
-  .task-info {
+  .task-info, .project-info {
     align-self: center;
     width: 95%;
     max-width: 100%;
     padding: 10px;
   }
 
-  .task-info-box {
+  .task-info-box, .project-info-box {
     display: grid;
     width: 100%;
     grid-template-columns: repeat(2, 1fr);
