@@ -55,3 +55,9 @@ class TaskFollowersResponseSchema(Schema):
 class TaskRelationResponseSchema(Schema):
     id = fields.Int()
     related = fields.Nested(TaskSummarySchema, many=True, attribute="all_related")
+
+class TaskResponseSchemaForAdmin(Schema):
+    id = fields.Int()
+    title = fields.Str()
+    assigned_to = fields.Nested(UserSummarySchema, data_key="assignedTo")
+    is_deleted = fields.Bool(data_key="isDeleted")

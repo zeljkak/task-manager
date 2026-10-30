@@ -39,7 +39,7 @@ Full-stack task and project management application with role-based access, email
 - **Authentication & accounts** — register, login/logout, email verification, forgot/reset password, soft-delete account and restore via emailed token
 - **JWT in cookies** — short-lived access token (15 min) and long-lived refresh token (30 days) with refresh-token rotation and JTI blocklist
 - **CSRF protection** — double-submit CSRF tokens for state-changing requests and refresh
-- **Role-based access** — `admin` and `user` roles; admin-only project CRUD, archive, deleted-task restore, user role updates, activity logs
+- **Role-based access** — `admin` and `user` roles; admin-only project CRUD, archive, deleted-task restore, user role updates, activity logs with filtering (`taskId`, `userId`) and paginated infinite scroll (50 items per page)
 - **Tasks** — create/update/soft-delete, assign, priorities, statuses (backlog → cancelled), due dates, estimated hours, filters, follow/unfollow, related-task links
 - **Kanban board** — drag-and-drop status columns on the home page
 - **Projects** — list/filter, admin create/edit/archive/unarchive, project detail view
@@ -253,21 +253,22 @@ Authenticated routes expect JWT cookies. State-changing methods also require the
 
 ### Tasks — `/tasks`
 
-| Method | Path | Auth | Description |
-| --- | --- | --- | --- |
-| GET | `/tasks` | JWT | List/filter tasks |
-| GET | `/tasks/<taskId>` | JWT | Get task |
-| POST | `/tasks/create_task` | JWT + CSRF | Create task |
-| PATCH | `/tasks/<taskId>` | JWT + CSRF | Update task |
-| DELETE | `/tasks/<taskId>` | JWT + CSRF | Soft-delete task |
-| POST | `/tasks/<taskId>/attachments` | JWT + CSRF | Upload task files |
-| GET | `/tasks/<taskId>/comments` | JWT | List comments |
-| POST | `/tasks/<taskId>/comments` | JWT + CSRF | Create comment |
-| POST / DELETE | `/tasks/<taskId>/follow` | JWT + CSRF | Follow / unfollow |
-| GET / POST / DELETE | `/tasks/<taskId>/related` | JWT (+ CSRF for mutations) | Related tasks |
-| GET | `/tasks/deleted` | JWT + **admin** | List soft-deleted tasks |
-| GET | `/tasks/deleted/<taskId>` | JWT + **admin** | Get deleted task |
-| PATCH | `/tasks/restore/<taskId>` | JWT + **admin** | Restore deleted task |
+| Method | Path                               | Auth | Description                |
+| --- |------------------------------------| --- |----------------------------|
+| GET | `/tasks`                           | JWT | List/filter tasks          |
+| GET | `/tasks/<taskId>`                  | JWT | Get task                   |
+| POST | `/tasks/create_task`               | JWT + CSRF | Create task                |
+| PATCH | `/tasks/<taskId>`                  | JWT + CSRF | Update task                |
+| DELETE | `/tasks/<taskId>`                  | JWT + CSRF | Soft-delete task           |
+| POST | `/tasks/<taskId>/attachments`      | JWT + CSRF | Upload task files          |
+| GET | `/tasks/<taskId>/comments`         | JWT | List comments              |
+| POST | `/tasks/<taskId>/comments`         | JWT + CSRF | Create comment             |
+| POST / DELETE | `/tasks/<taskId>/follow`           | JWT + CSRF | Follow / unfollow          |
+| GET / POST / DELETE | `/tasks/<taskId>/related`          | JWT (+ CSRF for mutations) | Related tasks              |
+| GET | `/tasks/deleted`                   | JWT + **admin** | List soft-deleted tasks    |
+| GET | `/tasks/deleted/<taskId>`          | JWT + **admin** | Get deleted task           |
+| GET | `/tasks/deleted/<taskId>/comments` | JWT + **admin** | Get deleted tasks comments |
+| PATCH | `/tasks/restore/<taskId>`          | JWT + **admin** | Restore deleted task       |
 
 Query filters for task lists include: `text`, `assignedToId`, `statusId`, `priorityId`, `projectId`, `hasProject`, `dueBefore`, `dueAfter`, `createdBefore`, `createdAfter`, `overdue`, `hasDueDate`, `followedById`.
 
@@ -307,12 +308,12 @@ Query filters for task lists include: `text`, `assignedToId`, `statusId`, `prior
 
 ### Admin — `/admin`
 
-| Method | Path | Auth | Description |
-| --- | --- | --- | --- |
-| GET | `/admin/users` | JWT + **admin** | Full user list |
-| GET | `/admin/users/<userId>` | JWT + **admin** | Get user |
-| PATCH | `/admin/users/<userId>` | JWT + **admin** | Update user role |
-| GET | `/admin/activity-logs` | JWT + **admin** | Activity logs (`taskId`, `userId` filters) |
+| Method | Path | Auth | Description                                                             |
+| --- | --- | --- |-------------------------------------------------------------------------|
+| GET | `/admin/users` | JWT + **admin** | Full user list                                                          |
+| GET | `/admin/users/<userId>` | JWT + **admin** | Get user                                                                |
+| PATCH | `/admin/users/<userId>` | JWT + **admin** | Update user role                                                        |
+| GET | `/admin/activity-logs` | JWT + **admin** | Activity logs (`taskId`, `userId`, `page`, `perPage` filters; returns `activities` and `hasMore`) |
 
 Selected routes are rate-limited (e.g. login, register, password reset, profile update).
 

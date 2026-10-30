@@ -148,7 +148,70 @@ svg {
   padding: 1px 6px;
 }
 
-.password-change-inline-div {
+#user-management-div,
+#activity-logs-div {
+  display: flex;
+  flex-direction: column;
+  padding: 5px 6px 1px 6px;
+}
+
+.col-row       { width: 60px; }
+.col-task      { width: 60px; }
+.col-user      { width: 140px; }
+.col-action    { width: 140px; }
+.col-field     { width: 130px; }
+.col-old-value { width: 230px; }
+.col-new-value { width: 230px; }
+.col-time      { width: 110px; }
+
+.table-header-div {
+  position: sticky;
+  top: 50px;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.table-header-div table,
+.table-body-div table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  min-width: 1100px;
+}
+
+/* Only the body wrapper scrolls horizontally. */
+.table-body-div {
+  overflow-x: auto;
+}
+
+.shrink {
+  max-width: 200px;
+  min-width: 195px;
+}
+
+table {
+  width: 100%;
+  overflow: hidden;
+  border-collapse: collapse;
+  box-sizing: border-box;
+
+  border: 1px solid var(--bs-secondary-bg);
+}
+
+th, td, colgroup, col {
+  padding: 7px;
+}
+
+tr:nth-child(even) {
+  background-color: #1e1f1e;
+}
+
+thead {
+  background-color: var(--bs-secondary-bg);
+}
+
+.password-change-inline-div,
+.user-management-inline-div {
   display: flex;
   flex-direction: row;
   padding-bottom: 5px;
@@ -191,7 +254,8 @@ svg {
 .priority-container,
 .project-container,
 .created-date-container,
-.due-date-container {
+.due-date-container,
+.deleted-container {
   position: relative;
 }
 
@@ -204,7 +268,7 @@ svg {
 .project-filter, .project-option,
 .created-date-filter, .created-date-option,
 .due-date-filter, .due-date-option,
-.overdue-option {
+.overdue-option, .deleted-container > button {
   font-style: normal;
   font-weight: normal;
   color: #dee2e6;
@@ -221,7 +285,8 @@ svg {
 .priority-filter,
 .project-filter,
 .created-date-filter,
-.due-date-filter {
+.due-date-filter,
+.deleted-container > button {
   padding: 2px 3px 0 3px;
 }
 
@@ -357,8 +422,13 @@ svg {
 .project-option,
 .created-date-option,
 .due-date-option,
-.overdue-option {
+.overdue-option,
+.deleted-filter {
   text-align: left;
+}
+
+.deleted-filter {
+  width: 100%;
 }
 
 .created-by-option.active,
@@ -367,7 +437,8 @@ svg {
 .status-option.active,
 .priority-option.active,
 .project-option.active,
-.overdue-option.active {
+.overdue-option.active,
+.deleted-filter.active {
   background-color: #868791;
   border-radius: 5px;
 }
@@ -697,13 +768,20 @@ svg {
   padding-bottom: 3px;
 }
 
-.form-element > select {
+.form-element > select,
+.table-select {
   background-color: #212529;
   min-width: 0;
-  width: 100%;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+}
+
+.form-element > select {
+  width: 100%;
+}
+.table-select {
+  width: 90%;
 }
 
 .inline-form-element,
@@ -771,7 +849,9 @@ label[for="new-task-no-due-date"] {
 .add-comment-form > textarea,
 .textarea-wrapper,
 .comment-item > textarea,
-.password-change-inline-div > input {
+.password-change-inline-div > input,
+.table-select,
+.activity-logs-inline-div > select {
   background-color: #212529;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 5px !important;
@@ -862,11 +942,50 @@ label[for="new-task-no-due-date"] {
 }
 
 form > button,
-.password-change-inline-div > button {
+.password-change-inline-div > button,
+.user-management-inline-div > button {
   width: 30%;
   border-radius: 20px;
   background-color: #3B3B3BFF;
   margin: 10px auto;
+}
+
+.activity-logs-inline-div {
+  background-color: #121212;
+  width: 100%;
+  gap: 5px;
+  padding-top: 5px;
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 5px;
+  z-index: 1;
+}
+
+.activity-logs-inline-div > button {
+  width: 15%;
+  border-radius: 20px;
+  background-color: #3B3B3BFF;
+  margin: 4px auto;
+  box-sizing: border-box;
+}
+
+.activity-logs-inline-div > input {
+  width: 28%;
+  margin: 4px auto;
+  box-sizing: border-box;
+  background-color: #212529;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+  padding: 2px 5px;
+
+}
+
+.activity-logs-inline-div > select {
+  width: 28%;
+  margin: 4px auto;
+  box-sizing: border-box;
 }
 
 form > button {
@@ -874,11 +993,15 @@ form > button {
 }
 
 form > button:hover,
-.password-change-inline-div > button:hover {
+.password-change-inline-div > button:hover,
+.user-management-inline-div > button:hover,
+.activity-logs-inline-div > button:hover {
   background-color: #7b7b7b;
 }
 
-.password-change-inline-div > button {
+.password-change-inline-div > button,
+.user-management-inline-div > button,
+.activity-logs-inline-div > button {
   min-width: max-content;
   padding: 3px 7px;
 }
@@ -956,6 +1079,11 @@ form > button:hover,
   align-self: center;
 }
 
+.deleted {
+  position: sticky;
+  top: 0;
+}
+
 .redirect-link-div {
   text-align: center;
   margin-top: 15px;
@@ -979,6 +1107,12 @@ form > button:hover,
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.deleted-message {
+  color: red;
+  font-weight: bold;
+  font-size: 20px;
 }
 
 .error-message {
@@ -1328,7 +1462,8 @@ hr {
     width: 100%;
   }
 
-  .password-change-inline-div {
+  .password-change-inline-div,
+  .user-management-inline-div {
     width: 100%;
     min-width: inherit;
     max-width: inherit;
@@ -1379,5 +1514,43 @@ hr {
   .project-status {
     padding-bottom: 10px;
     max-height: max-content;
+  }
+}
+
+@media (max-width: 750px) {
+  .table-div {
+    overflow-x: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 10px;
+  }
+
+  .table-div > table,
+  .table-header-div > table,
+  .table-body-div > table{
+    width: 100%;
+    min-width: 680px;
+  }
+
+  .activity-logs-inline-div {
+    gap: 10px !important;
+  }
+}
+
+@media (max-width: 850px) {
+  #activity-logs-div > .table-header-div,
+  #activity-logs-div > .table-body-div {
+    max-width: 100%;
+  }
+
+  #activity-logs-div > .table-body-div {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 10px;
+  }
+
+  #activity-logs-div > .table-div > table {
+    width: 100%;
+    min-width: 800px;
   }
 }

@@ -37,5 +37,5 @@ class ActivityLogService:
         return ActivityLogRepository.create(log)
 
     @staticmethod
-    def get_logs(task_id=None, user_id=None):
-        return ActivityLogRepository.get_logs(task_id, user_id)
+    def get_logs(task_id=None, user_id=None, page=1, per_page=50):
+        return ActivityLogRepository.get_logs(task_id, user_id, page, per_page)

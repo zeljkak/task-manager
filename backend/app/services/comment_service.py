@@ -22,6 +22,11 @@ class CommentService:
         return CommentRepository.get_by_task_id(task_id)
 
     @staticmethod
+    def get_all_comments_for_deleted_task(task_id):
+        TaskService.get_deleted_task_by_id(task_id)
+        return CommentRepository.get_by_deleted_task_id(task_id)
+
+    @staticmethod
     def get_all_comments():
         return CommentRepository.get_all()
 

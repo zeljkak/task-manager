@@ -3,7 +3,7 @@ import AttachmentIcon from "../components/icons/AttachmentIcon.jsx";
 import TaskCommentsComponent from "./TaskCommentsComponent.jsx";
 
 function TaskViewComponent({ task, renderMobileBackButton, iconSize, user,
-    syncUpdates, selectedStatus, selectedPriority, selectedProject }) {
+    syncUpdates, selectedStatus, selectedPriority, selectedProject, deletedTask }) {
     return (
         <div className={"task-display"}>
             <div className={"display-title"}>
@@ -55,7 +55,7 @@ function TaskViewComponent({ task, renderMobileBackButton, iconSize, user,
                     </div>
                 )}
             </div>
-            <TaskCommentsComponent taskId={task.id} user={user} iconSize={iconSize} onCommentUpdated={syncUpdates} />
+            <TaskCommentsComponent taskId={task.id} user={user} iconSize={iconSize} onCommentUpdated={syncUpdates} deletedTask={deletedTask} />
         </div>
     );
 }

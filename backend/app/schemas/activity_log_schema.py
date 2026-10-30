@@ -1,5 +1,8 @@
 from marshmallow import Schema, fields
-from backend.app.schemas.summary_schema import UserSummarySchema, TaskSummarySchema
+
+from backend.app.schemas.task_schema import TaskResponseSchemaForAdmin
+from backend.app.schemas.summary_schema import UserSummarySchema
+
 
 
 class ActivityLogResponseSchema(Schema):
@@ -9,5 +12,5 @@ class ActivityLogResponseSchema(Schema):
     old_value = fields.Raw(data_key="oldValue")
     new_value = fields.Raw(data_key="newValue")
     user = fields.Nested(UserSummarySchema)
-    task = fields.Nested(TaskSummarySchema)
+    task = fields.Nested(TaskResponseSchemaForAdmin)
     created_at = fields.DateTime(data_key="createdAt")

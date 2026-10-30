@@ -202,6 +202,18 @@ def get_deleted_task(taskId):
         "task": TaskResponseSchema().dump(task)
     }), 200
 
+@task_bp.route('/deleted/<int:taskId>/comments', methods=['GET'])
+@swag_from(os.path.join(BASE_DIR, "../../docs/task/get_deleted_task_comments.yml"))
+@jwt_required()
+@roles_required("admin")
+
+def get_deleted_task_comments(taskId):
+    comments = CommentService.get_all_comments_for_deleted_task(taskId)
+
+    return jsonify({
+        "comments": CommentResponseSchema(many=True).dump(comments)
+    }), 200
+
 @task_bp.route('/restore/<int:taskId>', methods=['PATCH'])
 @swag_from(os.path.join(BASE_DIR, "../../docs/task/restore_task.yml"))
 @jwt_required()

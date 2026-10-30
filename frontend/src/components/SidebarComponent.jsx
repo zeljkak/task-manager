@@ -57,6 +57,7 @@ function SidebarComponent({ isVisible, setIsVisible, isMobile, onMyTasksClick })
                 {!isMobile && isVisible && "Inbox"}
             </NavLink>
             <NavLink to={"/"} onClick={onMyTasksClick}
+                className={ ({ isActive}) => isActive || location.pathname.startsWith('/tasks') ? 'active' : '' }
                 data-tippy-content={tooltipText("My Tasks")}>
                 <TasksIcon size={iconSize}/>
                 {!isMobile && isVisible && "My Tasks"}

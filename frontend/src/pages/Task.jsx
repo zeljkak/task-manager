@@ -1,7 +1,7 @@
 import {useEffect, useState, useRef, useCallback} from "react";
 import {useNavigate, useOutletContext, useParams, Link} from "react-router-dom";
 import {useAuth} from "../context/useAuth.js";
-import {getTask} from "../services/taskService.js";
+import {getTask, getDeletedTask} from "../services/taskService.js";
 import BackIcon from "../components/icons/BackIcon.jsx";
 import TaskEditComponent from "../components/TaskEditComponent.jsx";
 import TaskViewComponent from "../components/TaskViewComponent.jsx";
@@ -17,6 +17,7 @@ function Task ({}) {
     const [errorMessage, setErrorMessage] = useState("");
 
     const [task, setTask] = useState(null);
+    const [deletedTask, setDeletedTask] = useState(false);
     const iconSize = isMobile ? 30 : 24;
 
     const fetchTask = useCallback(async () => {
@@ -25,14 +26,28 @@ function Task ({}) {
             const fetchedTask = response.data?.task || response.task;
 
             setTask(fetchedTask);
+            setDeletedTask(false);
             setError(null);
         } catch (err) {
-            console.error("Failed to fetch task details:", err);
-            setError(err.response?.data?.error || "Failed to load task");
+            if (user?.roleId === 1) {
+                try {
+                    const resp = await getDeletedTask(taskId);
+                    const deletedTask = resp.data?.task || resp.task;
+                    setTask(deletedTask);
+                    setDeletedTask(true);
+                    setError(null);
+                } catch (err1) {
+                    console.error("Failed to fetch deleted task details:", err1);
+                    setError(err1.response?.data?.error || "Failed to load deleted task");
+                }
+            } else {
+                console.error("Failed to fetch task details:", err);
+                setError(err.response?.data?.error || "Failed to load task");
+            }
         } finally {
             setLoading(false);
         }
-    }, [taskId]);
+    }, [taskId, user]);
 
     useEffect(() => {
         setLoading(true);
@@ -51,7 +66,7 @@ function Task ({}) {
     if (!task) return <div>Task not found.</div>;
 
     const canEdit = Boolean(
-        user &&
+        user && !deletedTask &&
         (
             task?.createdBy?.id === user.id ||
             task?.assignedTo?.id === user.id ||
@@ -104,7 +119,7 @@ function Task ({}) {
         if (!isMobile) return null;
         return (
             <button type="button" className="submenu-back-button"
-                onClick={() => navigate(-1)}>
+                onClick={() => navigate(-1) || navigate("/")}>
                 <BackIcon size={iconSize} />
             </button>
         );
@@ -115,6 +130,10 @@ function Task ({}) {
     const selectedProject = projects.find(p => p.id === task.project?.id);
 
     return (
+        <>
+        {deletedTask && (
+            <div className="error deleted"><p className="deleted-message">This task was DELETED.</p></div>
+        )}
         <div className={"task-details"}>
             {canEdit ? (
                 <TaskEditComponent task={task} renderMobileBackButton={renderMobileBackButton}
@@ -124,13 +143,14 @@ function Task ({}) {
             ) : (
                 <TaskViewComponent task={task} renderMobileBackButton={renderMobileBackButton} user={user}
                                    iconSize={iconSize} syncUpdates={syncUpdates} selectedStatus={selectedStatus}
-                                   selectedPriority={selectedPriority} selectedProject={selectedProject}
+                                   selectedPriority={selectedPriority} selectedProject={selectedProject} deletedTask={deletedTask}
                 />
             )}
             <div className={"task-info"}>
                 <div className={"task-info-header"}>
                     <h4>Info</h4>
                 </div>
+                {user.roleId === 1 ? <p>Task ID: {task.id}</p> : ""}
                 {task?.assignedTo?.id !== task?.createdBy?.id ? createdByDiv : ""}
                 <div className={"task-info-box"}>
                     <p>Created date:</p>
@@ -140,6 +160,7 @@ function Task ({}) {
                 {task?.followers?.length > 0 ? followersDiv : ""}
             </div>
         </div>
+        </>
     );
 }
 

@@ -7,6 +7,7 @@ import CreateButtonComponent from "./CreateButtonComponent.jsx";
 export default function TaskFilterComponent({ filters, onFilterChange,
     onClearAll, options = {}, isMobile, buttonOnCreated }) {
 
+    const { user } = useAuth();
     const { users = [], statuses = [], priorities = [], projects = [] } = options;
 
     const [isMainOpen, setIsMainOpen] = useState(false);
@@ -241,6 +242,16 @@ export default function TaskFilterComponent({ filters, onFilterChange,
                     />
                 </div>
             </div>
+
+            {/* Deleted */}
+            {user.roleId === 1 && (
+                <div className={`deleted-container`}>
+                    <button type="button" className={`deleted-filter ${filters.isDeleted ? "active" : ""}`}
+                        onClick={() => onFilterChange({ isDeleted: filters.isDeleted ? "" : true })}>
+                        Deleted
+                    </button>
+                </div>
+            )}
         </div>
     );
 

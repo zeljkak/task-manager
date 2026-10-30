@@ -13,6 +13,19 @@ export async function getTasks(filters = {}) {
   return response.data;
 };
 
+export async function getDeletedTasks(filters = {}) {
+  const params = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+      if (value !== "" && value !== null && value !== undefined) {
+          params.append(key,value);
+      }
+  });
+
+  const response = await api.get(`/tasks/deleted?${params.toString()}`);
+  return response.data;
+};
+
 export const createTask = (taskData) => {
   return api.post(
     `/tasks/create_task`, taskData
@@ -57,5 +70,17 @@ export const followTask = (taskId) => {
 export const unfollowTask = (taskId) => {
   return api.delete(
     `/tasks/${taskId}/follow`
+  );
+};
+
+export const getDeletedTask = (taskId) => {
+  return api.get(
+    `/tasks/deleted/${taskId}`
+  );
+};
+
+export const getDeletedTaskComments = (taskId) => {
+  return api.get(
+    `/tasks/deleted/${taskId}/comments`
   );
 };

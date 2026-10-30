@@ -70,6 +70,9 @@ responses:
                   title:
                     type: string
                     example: Finish adding routes
+                  isDeleted:
+                    type: boolean
+                    example: false
                   assignedTo:
                     type: object
                     properties:
@@ -85,6 +88,9 @@ responses:
               createdAt:
                 type: datetime
                 example: "2026-05-28T13:54:55.729333+02:00"
+        hasMore:
+          type: boolean
+          example: true
   401:
     description: Unauthorized (missing or invalid session cookie)
   403:

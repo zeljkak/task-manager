@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
 import {createPortal} from "react-dom";
-import {Link, useNavigate} from "react-router-dom";
+import {useNavigate, useOutletContext} from "react-router-dom";
 import {deleteAccount} from "../services/userService.js";
-import ChangePasswordComponent from "../components/ChangePasswordComponent.jsx";
+import {getAllUsers} from "../services/adminService.js";
 import {useAuth} from "../context/useAuth.js";
+import ChangePasswordComponent from "../components/ChangePasswordComponent.jsx";
+import ManageUsersComponent from "../components/ManageUsersComponent.jsx";
+import ActivityLogsComponent from "../components/ActivityLogsComponent.jsx"
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { logoutUser } = useAuth();
+  const { user, logoutUser } = useAuth();
+  const isAdmin = user.roleId === 1;
+  const {isMobile} = useOutletContext();
+
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -15,6 +21,11 @@ export default function Settings() {
 
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+  const [showUsers, setShowUsers] = useState(false);
+  const [showLogs, setShowLogs] = useState(false);
+  const [usersList, setUsersList] = useState([]);
+  const [logsList, setLogsList] = useState([]);
+
 
   useEffect(() => {
     if (!error) return;
@@ -34,7 +45,26 @@ export default function Settings() {
       setError(err.response?.data?.error || "Failed to deactivate account.");
       setLoading(false);
       setShowDeactivateModal(false);
+      setShowUsers(false);
+      setShowLogs(false);
     }
+  };
+
+  const handleManageUsersClick = async () => {
+    try {
+      setLoading(true);
+      const response = await getAllUsers();
+      setUsersList(response.data.users || []);
+      setShowUsers(true);
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to fetch users.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleActivityLogsClick = () => {
+      setShowLogs(true);
   };
 
   return (
@@ -42,32 +72,53 @@ export default function Settings() {
       <h2>Settings</h2>
       <hr />
 
-      {loading ? (
-        <div className="spinner">
-          <p className="loading">Loading settings...</p>
-        </div>
-      ) : (
-        <>
-          {!showChangePassword ? (
-            <button onClick={() => setShowChangePassword(true)}>
-              Change Password
-            </button>
-          ) : (
-            <ChangePasswordComponent onCancel={() => setShowChangePassword(false)} />
-          )}
-
-          <button onClick={() => setShowDeactivateModal(true)}>
-            Deactivate Account
+      <>
+        {!showChangePassword ? (
+          <button onClick={() => setShowChangePassword(true)}>
+            Change Password
           </button>
+        ) : (
+          <ChangePasswordComponent onCancel={() => setShowChangePassword(false)} />
+        )}
 
-          {message && <p className="message">{message}</p>}
-          {error && (
-            <div className="error-message not-centered-text" style={{height: "initial", padding: "6px"}}>
-              <p className="error">{error}</p>
-            </div>
-          )}
-        </>
-      )}
+        <button onClick={() => setShowDeactivateModal(true)}>
+          Deactivate Account
+        </button>
+
+        {isAdmin && (
+            !showUsers ? (
+              <button onClick={handleManageUsersClick}>
+                Manage Users
+              </button>
+            ) : (
+              <ManageUsersComponent users={usersList} onCancel={() => setShowUsers(false)}/>
+            )
+        )}
+
+        {isAdmin && (
+            !showLogs ? (
+              <button onClick={handleActivityLogsClick}>
+                Activity Logs
+              </button>
+            ) : (
+              <ActivityLogsComponent isMobile={isMobile}
+                   onCancel={() => setShowLogs(false)}/>
+            )
+        )}
+
+        {loading && (
+          <div className="spinner">
+            <p className="loading">Loading settings...</p>
+          </div>
+        )}
+
+        {message && <p className="message">{message}</p>}
+        {error && (
+          <div className="error-message not-centered-text" style={{height: "initial", padding: "6px"}}>
+            <p className="error">{error}</p>
+          </div>
+        )}
+      </>
 
       {showDeactivateModal &&
         createPortal(

@@ -4,7 +4,7 @@ import { DragDropContext } from "@hello-pangea/dnd";
 import TaskCardComponent from "../components/TaskCardComponent.jsx";
 import TaskStatusComponent from "../components/TaskStatusComponent.jsx";
 import TaskFilterComponent from "../components/TaskFilterComponent.jsx";
-import { getTasks, updateTask } from "../services/taskService.js";
+import {getDeletedTasks, getTasks, updateTask} from "../services/taskService.js";
 import { useAuth } from "../context/useAuth.js";
 
 const DEFAULT_FILTERS = {
@@ -20,7 +20,8 @@ const DEFAULT_FILTERS = {
   createdAfter: "",
   overdue: "",
   hasDueDate: "",
-  followedById: ""
+  followedById: "",
+  isDeleted: ""
 };
 
 const INT_KEYS = ["statusId", "priorityId", "projectId", "followedById"];
@@ -91,7 +92,10 @@ export default function Home() {
         assignedToId: filters.assignedToId === "all" ? "" : filters.assignedToId
       };
 
-      const data = await getTasks(apiFilters);
+      // call getDeletedTasks when isDeleted is active/true
+      const data = filters.isDeleted
+      ? await getDeletedTasks(apiFilters)
+      : await getTasks(apiFilters);
       setTasks(data.tasks || []);
     } catch (err) {
       console.error("Failed to load tasks:", err);

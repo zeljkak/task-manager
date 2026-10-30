@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { isFileAllowed } from "../utils/fileValidation.js";
-import { getTaskComments, createTaskComment } from "../services/taskService.js";
+import { getTaskComments, getDeletedTaskComments, createTaskComment } from "../services/taskService.js";
 import { createCommentAttachment, updateComment, deleteComment } from "../services/commentService.js";
 import { deleteAttachment } from "../services/attachmentService.js";
 import AttachmentIcon from "../components/icons/AttachmentIcon.jsx";
 import DeleteIcon from "../components/icons/DeleteIcon.jsx";
 
-function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated }) {
+function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, deletedTask }) {
 
     const [comments, setComments] = useState([]);
     const [commentsLoading, setCommentsLoading] = useState(true);
@@ -26,8 +26,13 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated }) {
     const fetchComments = useCallback(async () => {
         setCommentsLoading(true);
         try {
-            const response = await getTaskComments(taskId);
-            setComments(response.data?.comments || []);
+            if (!deletedTask) {
+                const response = await getTaskComments(taskId);
+                setComments(response.data?.comments || []);
+            } else {
+                const response = await getDeletedTaskComments(taskId);
+                setComments(response.data?.comments || []);
+            }
         } catch (err) {
             console.error("Failed to fetch comments:", err);
         } finally {
@@ -237,7 +242,7 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated }) {
             {commentsLoading ? (
                 <p>Loading comments...</p>
             ) : comments.length === 0 ? (
-                <p className="no-comments">No comments yet.</p>
+                <p className="no-comments">{deletedTask ? "No comments." : "No comments yet."}</p>
             ) : (
                 <div className="comments-list">
                     {comments.map((c) => {
@@ -256,7 +261,7 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated }) {
                                                 .slice(0, -1)}
                                         </span>
                                     )}
-                                    {isAuthor && (
+                                    {isAuthor && !deletedTask && (
                                         <button type="button" className="delete-comment-btn" onClick={() => setDeletingCommentId(c.id)}>
                                             <DeleteIcon size={iconSize} />
                                         </button>
@@ -281,7 +286,7 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated }) {
                                         document.getElementById("content") || document.body
                                     )}
 
-                                {isAuthor ? (
+                                {isAuthor && !deletedTask ? (
                                     <>
                                         <div className="textarea-wrapper">
                                             <textarea className="comment-text-input" value={c.comment || ""}
@@ -373,41 +378,43 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated }) {
                     <p className="error">{commentError}</p>
                 </div>
             )}
-            <form onSubmit={handleCommentSubmit} className="add-comment-form">
-                <div className="textarea-wrapper">
-                    <textarea placeholder="Write a comment..." rows={3}
-                        name="new-comment-text" value={newCommentText}
-                        onChange={(e) => setNewCommentText(e.target.value)}
+            {!deletedTask && (
+                <form onSubmit={handleCommentSubmit} className="add-comment-form">
+                    <div className="textarea-wrapper">
+                        <textarea placeholder="Write a comment..." rows={3}
+                            name="new-comment-text" value={newCommentText}
+                            onChange={(e) => setNewCommentText(e.target.value)}
+                        />
+                        {commentAttachments.length > 0 && (
+                            <div className="selected-comment-attachments">
+                                {commentAttachments.map((file, idx) => (
+                                    <div key={idx} className="attachment-chip">
+                                        <button type="button" onClick={() => removeNewCommentAttachment(idx)}>
+                                            <DeleteIcon size={iconSize} />
+                                        </button>
+                                        <a href="#" target="_blank" rel="noopener noreferrer" className="file-name">
+                                            {file.name}
+                                        </a>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        <label htmlFor="new-comment-attachment" className="attachment-label">
+                            <AttachmentIcon size={iconSize} />
+                        </label>
+                    </div>
+                    <input type="file" name="comment-attachments" multiple
+                        accept=".png,.jpg,.jpeg,.gif,.svg,.webp,.pdf,.docx,.txt,.csv,.xlsx,.xls,.pptx"
+                        className="attachment-input" id="new-comment-attachment"
+                        ref={fileInputRef} onChange={handleNewCommentFileChange}
                     />
-                    {commentAttachments.length > 0 && (
-                        <div className="selected-comment-attachments">
-                            {commentAttachments.map((file, idx) => (
-                                <div key={idx} className="attachment-chip">
-                                    <button type="button" onClick={() => removeNewCommentAttachment(idx)}>
-                                        <DeleteIcon size={iconSize} />
-                                    </button>
-                                    <a href="#" target="_blank" rel="noopener noreferrer" className="file-name">
-                                        {file.name}
-                                    </a>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    <label htmlFor="new-comment-attachment" className="attachment-label">
-                        <AttachmentIcon size={iconSize} />
-                    </label>
-                </div>
-                <input type="file" name="comment-attachments" multiple
-                    accept=".png,.jpg,.jpeg,.gif,.svg,.webp,.pdf,.docx,.txt,.csv,.xlsx,.xls,.pptx"
-                    className="attachment-input" id="new-comment-attachment"
-                    ref={fileInputRef} onChange={handleNewCommentFileChange}
-                />
-                <button type="submit" id="submit-new-comment-button"
-                    disabled={isSubmittingComment || (!newCommentText.trim() && commentAttachments.length === 0)}
-                >
-                    {isSubmittingComment ? "Commenting..." : "Comment"}
-                </button>
-            </form>
+                    <button type="submit" id="submit-new-comment-button"
+                        disabled={isSubmittingComment || (!newCommentText.trim() && commentAttachments.length === 0)}
+                    >
+                        {isSubmittingComment ? "Commenting..." : "Comment"}
+                    </button>
+                </form>
+            )}
         </div>
     );
 }

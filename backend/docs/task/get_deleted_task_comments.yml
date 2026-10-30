@@ -1,0 +1,99 @@
+tags:
+  - Task
+
+description:
+  Get comments for a specific deleted task that matches the id. Requires an active session cookie and an account with the admin role.
+
+security:
+  - cookieAuth: []
+
+parameters:
+  - name: taskId
+    in: path
+    required: true
+    type: integer
+    example: 1
+    description: ID of the deleted task to retrieve the comments for
+
+responses:
+  200:
+    description: Comments retrieved successfully
+    schema:
+      type: object
+      properties:
+        comments:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              comment:
+                type: string
+                example: Finished creating task routes
+              taskId:
+                type: integer
+                example: 3
+              user:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  firstName:
+                    type: string
+                    example: Anna
+                  lastName:
+                    type: string
+                    example: Smith
+              createdAt:
+                type: datetime
+                example: "2026-05-28T13:54:55.729333+02:00"
+              updatedAt:
+                type: datetime
+                example: "2026-05-28T13:54:55.729333+02:00"
+              attachments:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    fileUrl:
+                      type: string
+                      example: "http://localhost:5000/uploads/abc123_design.pdf"
+                    fileName:
+                      type: string
+                      example: "design.pdf"
+                    fileType:
+                      type: string
+                      example: "application/pdf"
+                    createdAt:
+                      type: datetime
+                      example: "2026-08-28T13:54:55.729333+02:00"
+                    createdBy:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        firstName:
+                          type: string
+                          example: Anna
+                        lastName:
+                          type: string
+                          example: Smith
+  401:
+    description: Unauthorized (missing or invalid session cookie)
+  403:
+    description: Forbidden (unallowed action)
+  404:
+    description: Related resource not found
+  422:
+    description: Validation error
+  500:
+    description: Internal server error
+  503:
+    description: Service unavailable (database or email service down)

@@ -45,6 +45,10 @@ class UserService:
     def get_all_users():
         return UserRepository.get_all()
 
+    @staticmethod
+    def get_all_including_deleted_users():
+        return UserRepository.get_all_including_deleted()
+
 
     @staticmethod
     def get_deleted_user_by_id(user_id):

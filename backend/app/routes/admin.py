@@ -5,7 +5,6 @@ import os
 
 from backend.app.decorators.roles_required import roles_required
 
-from backend.app.extensions.limiter import limiter
 from backend.app.schemas.activity_log_schema import ActivityLogResponseSchema
 from backend.app.schemas.role_schema import RoleSchema
 from backend.app.schemas.user_schema import UserSchema
@@ -22,7 +21,7 @@ admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 @roles_required("admin")
 
 def get_users():
-    users = UserService.get_all_users()
+    users = UserService.get_all_including_deleted_users()
 
     return jsonify({
         "users": UserSchema(many=True).dump(users)
@@ -45,7 +44,6 @@ def get_user(userId):
 @swag_from(os.path.join(BASE_DIR, "../../docs/admin/update_user.yml"))
 @jwt_required()
 @roles_required("admin")
-@limiter.limit("3 per minute")
 
 def update_user(userId):
     data = RoleSchema().load(request.json)
@@ -64,9 +62,12 @@ def update_user(userId):
 def get_activity_logs():
     task_id = request.args.get("taskId", type=int)
     user_id = request.args.get("userId", type=int)
+    page = request.args.get("page", default=1, type=int)
+    per_page = request.args.get("perPage", default=50, type=int)
 
-    logs = ActivityLogService.get_logs(task_id, user_id)
+    logs, has_more = ActivityLogService.get_logs(task_id, user_id, page, per_page)
 
     return jsonify({
-        "activities": ActivityLogResponseSchema(many=True).dump(logs)
+        "activities": ActivityLogResponseSchema(many=True).dump(logs),
+        "hasMore": has_more
     }), 200

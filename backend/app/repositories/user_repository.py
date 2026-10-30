@@ -43,6 +43,14 @@ class UserRepository:
             raise ServiceUnavailableError("Database unavailable") from e
 
     @staticmethod
+    def get_all_including_deleted():
+        try:
+            return User.query.all()
+
+        except Exception as e:
+            raise ServiceUnavailableError("Database unavailable") from e
+
+    @staticmethod
     def get_deleted_by_id(user_id):
         try:
             user = User.query.filter_by(id=user_id, is_deleted=True).first()
