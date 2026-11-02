@@ -582,7 +582,6 @@ thead {
 }
 
 .task-info, .project-info {
-  opacity: 0.4;
   flex: 1 0 30%;
   min-width: 0;
   max-width: 30%;
@@ -591,12 +590,20 @@ thead {
   box-sizing: border-box;
 }
 
+.project-info {
+  opacity: 0.4;
+}
+
 .task-info-header, .project-info-header {
   position: sticky;
   top: 0;
   background-color: #121212;
   padding-top: 10px;
   padding-bottom: 2px;
+}
+
+.task-info-header {
+  z-index: 2;
 }
 
 .task-info-box, .project-info-box {
@@ -612,6 +619,7 @@ thead {
 .task-info-box > p,
 .task-info-box > a,
 .task-info-box > div,
+.task-info-box > button,
 .task-info-header > h4,
 .project-info-box > p,
 .project-info-box > a,
@@ -622,6 +630,29 @@ thead {
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: normal;
+}
+
+.task-info-box > p,
+.task-info-box > a,
+.task-info-box > div > a,
+.task-info-header > h4 {
+  opacity: 0.4;
+}
+
+.task-info-box > button {
+  text-align: left;
+  border: 0;
+  padding: 0;
+  background-color: inherit;
+  opacity: 1;
+}
+
+.delete-task-button {
+    color: #ff0000;
+}
+
+.restore-task-button {
+  color: limegreen;
 }
 
 .modal-overlay, .confirmation-overlay {

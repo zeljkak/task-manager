@@ -44,6 +44,18 @@ export const getTask = (taskId) => {
   );
 };
 
+export const deleteTask = (taskId) => {
+  return api.delete(
+    `/tasks/${taskId}`
+  );
+};
+
+export const restoreTask = (taskId) => {
+  return api.patch(
+    `/tasks/restore/${taskId}`
+  );
+};
+
 export async function updateTask(taskId, update = {}) {
   const response = await api.patch(`/tasks/${taskId}`, update);
   return response.data;

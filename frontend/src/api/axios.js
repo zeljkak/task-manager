@@ -33,8 +33,14 @@ const isAuthRoute = (url) => {
     );
 };
 
+// guard flag to prevent multiple concurrent softLogout calls
+let isLoggingOut = false;
+
 // soft logout: clears client state and redirects without hitting /auth/logout (avoids revoking valid refresh sessions)
 const softLogout = async (reason) => {
+    if (isLoggingOut) return;
+    isLoggingOut = true;
+
     console.warn(`[LOGOUT TRIGGERED] Soft Logout execution. Reason: ${reason}`);
 
     // clear CSRF storage so invalid tokens don't persist
