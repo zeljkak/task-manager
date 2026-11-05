@@ -1,9 +1,21 @@
+import { useEffect, useRef } from "react";
 import FollowTaskComponent from "../components/FollowTaskComponent.jsx";
 import AttachmentIcon from "../components/icons/AttachmentIcon.jsx";
 import TaskCommentsComponent from "./TaskCommentsComponent.jsx";
 
 function TaskViewComponent({ task, renderMobileBackButton, iconSize, user,
-    syncUpdates, selectedStatus, selectedPriority, selectedProject, deletedTask }) {
+    syncUpdates, selectedStatus, selectedPriority, selectedProject, deletedTask, relationError }) {
+
+    const relationErrorRef = useRef(null);
+
+    useEffect(() => {
+        if (relationError && relationErrorRef.current) {
+            requestAnimationFrame(() => {
+                relationErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            });
+        }
+    }, [relationError]);
+
     return (
         <div className={"task-display"}>
             <div className={"display-title"}>
@@ -11,6 +23,13 @@ function TaskViewComponent({ task, renderMobileBackButton, iconSize, user,
                 <h4>{task.title}</h4>
                 <FollowTaskComponent task={task} size={iconSize} onFollowChange={syncUpdates} />
             </div>
+            {relationError && (
+                <div className={"error-message"} ref={relationErrorRef}>
+                    <p className="error">
+                        {relationError}
+                    </p>
+                </div>
+            )}
             <div className={"display-task-data"}>
                 <div className={"display-element"}>
                     <p className={"description-text"}>{task.description || "No description provided."}</p>

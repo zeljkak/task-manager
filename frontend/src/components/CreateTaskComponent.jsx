@@ -117,7 +117,7 @@ function CreateTaskComponent({ onClose, onCreated, isMobile }) {
                 );
             }
 
-            onCreated();
+            onCreated(createdTask);
             onClose();
         } catch (error) {
             console.error(error);

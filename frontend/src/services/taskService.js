@@ -85,6 +85,18 @@ export const unfollowTask = (taskId) => {
   );
 };
 
+export const createRelation = (taskId, relatedTaskId) => {
+  return api.post(`/tasks/${taskId}/related`, {
+        relatedTaskId: Number(relatedTaskId)
+    });
+};
+
+export const deleteRelation = (taskId, relatedTaskId) => {
+  return api.delete(
+    `/tasks/${taskId}/related`, relatedTaskId
+  );
+};
+
 export const getDeletedTask = (taskId) => {
   return api.get(
     `/tasks/deleted/${taskId}`

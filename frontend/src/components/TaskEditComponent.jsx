@@ -11,7 +11,7 @@ import DeleteIcon from "../components/icons/DeleteIcon.jsx";
 
 function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
     syncUpdates, users = [], statuses = [],
-    priorities = [], projects = [] }) {
+    priorities = [], projects = [], relationError }) {
 
     const [titleError, setTitleError] = useState("");
     const [attachmentError, setAttachmentError] = useState("");
@@ -19,6 +19,7 @@ function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
     const [deletingAttachmentId, setDeletingAttachmentId] = useState(null);
 
     const titleErrorRef = useRef(null);
+    const relationErrorRef = useRef(null);
     const attachmentErrorRef = useRef(null);
 
     const [taskData, setTaskData] = useState({
@@ -69,6 +70,14 @@ function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
             });
         }
     }, [titleError]);
+
+    useEffect(() => {
+        if (relationError && relationErrorRef.current) {
+            requestAnimationFrame(() => {
+                relationErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            });
+        }
+    }, [relationError]);
 
     useEffect(() => {
         if (attachmentError && attachmentErrorRef.current) {
@@ -255,6 +264,13 @@ function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
                 {titleError && (
                     <div className="error-message" ref={titleErrorRef}>
                         <p className="error">{titleError}</p>
+                    </div>
+                )}
+                {relationError && (
+                    <div className={"error-message"} ref={relationErrorRef}>
+                        <p className="error">
+                            {relationError}
+                        </p>
                     </div>
                 )}
                 <div className="form-input">

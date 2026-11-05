@@ -255,7 +255,8 @@ thead {
 .project-container,
 .created-date-container,
 .due-date-container,
-.deleted-container {
+.deleted-container,
+.relation-container {
   position: relative;
 }
 
@@ -268,7 +269,8 @@ thead {
 .project-filter, .project-option,
 .created-date-filter, .created-date-option,
 .due-date-filter, .due-date-option,
-.overdue-option, .deleted-container > button {
+.overdue-option, .deleted-container > button,
+.relation-option {
   font-style: normal;
   font-weight: normal;
   color: #dee2e6;
@@ -307,7 +309,8 @@ thead {
 .priority-options,
 .project-options,
 .created-date-options,
-.due-date-options {
+.due-date-options,
+.relation-options {
   position: absolute;
   width: min-content;
   white-space: nowrap;
@@ -332,7 +335,8 @@ thead {
   overflow-y: scroll;
 }
 
-.filter-options {
+.filter-options,
+.relation-options {
   top: 100%;
   left: 0;
 }
@@ -409,7 +413,8 @@ thead {
 .priority-container.open > .priority-options,
 .project-container.open > .project-options,
 .created-date-container.open > .created-date-options,
-.due-date-container.open > .due-date-options {
+.due-date-container.open > .due-date-options,
+.relation-container.open > .relation-options {
   opacity: 1;
   pointer-events: auto;
 }
@@ -423,7 +428,8 @@ thead {
 .created-date-option,
 .due-date-option,
 .overdue-option,
-.deleted-filter {
+.deleted-filter,
+.relation-option {
   text-align: left;
 }
 
@@ -684,6 +690,7 @@ thead {
   pointer-events: auto;
   align-items: center;
   align-content: center;
+  text-align: center;
 }
 
 .confirmation-div > p {
@@ -882,11 +889,16 @@ label[for="new-task-no-due-date"] {
 .comment-item > textarea,
 .password-change-inline-div > input,
 .table-select,
-.activity-logs-inline-div > select {
+.activity-logs-inline-div > select,
+#relation-input {
   background-color: #212529;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 5px !important;
   padding: 2px 5px;
+}
+
+#relation-input {
+  width: 90%;
 }
 
 #submit-new-comment-button {
@@ -1314,7 +1326,8 @@ hr {
   .priority-options,
   .project-options,
   .created-date-options,
-  .due-date-options {
+  .due-date-options,
+  .relation-options {
     position: fixed;
     top: 45px !important;
     left: 0 !important;
@@ -1333,13 +1346,13 @@ hr {
     border-color: #555;
   }
 
-  .filter-options {
+  .filter-options, .relation-options {
     box-shadow:
             0 10px 25px rgba(0, 0, 0, 0.5),
             0 0 0 100vmax rgba(0, 0, 0, 0.6);
   }
 
-  .filter-options > div {
+  .filter-options > div, .relation-options {
     align-self: center;
   }
 
@@ -1347,7 +1360,8 @@ hr {
     padding: 6px;
   }
 
-  .modal-overlay > .filter-options {
+  .modal-overlay > .filter-options,
+  .modal-overlay > .relation-options {
     position: relative;
     top: auto !important;
     bottom: auto !important;
@@ -1373,8 +1387,36 @@ hr {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   }
 
-  .modal-overlay > .filter-options > div {
+  .modal-overlay > .filter-options > div,
+  .modal-overlay > .relation-options {
     justify-self: center;
+  }
+
+  /* 1. Ensure modal version is visible and clickable regardless of container class */
+  .modal-overlay > .relation-options {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    display: grid !important;
+    grid-template-columns: auto 1fr !important;
+    align-items: start !important;
+    align-content: start !important;
+    padding: 12px !important;
+    gap: 2px 10px !important;
+  }
+
+  /* 2. Place the options group inside column 2 */
+  .relation-options-group {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .relation-options-group > .relation-option {
+    font-size: 16px;
+    width: 100% !important;
+    text-align: left;
+    padding: 6px;
   }
 
   .created-by-option,
@@ -1384,7 +1426,8 @@ hr {
   .priority-option,
   .project-option,
   .overdue-option,
-  .date-grouped {
+  .date-grouped,
+  .relation-option {
     grid-column: 2;
     font-size: 16px;
     width: 100% !important;
@@ -1399,7 +1442,8 @@ hr {
   .priority-options,
   .project-options,
   .created-date-options,
-  .due-date-options {
+  .due-date-options,
+  .relation-options {
     display: grid !important;
     grid-template-columns: auto 1fr;
     align-items: start;
