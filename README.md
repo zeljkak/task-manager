@@ -54,6 +54,9 @@ Full-stack task and project management application with role-based access, email
 ```
 task-manager/
 ├── README.md
+├── docker-compose.yml
+├── .env.example                # Docker Compose environment template
+├── .dockerignore
 ├── backend/
 │   ├── app/
 │   │   ├── constants/          # Role, priority, and task-status IDs
@@ -72,6 +75,8 @@ task-manager/
 │   ├── docs/                   # Flasgger YAML specs per endpoint
 │   ├── templates/              # Email HTML templates
 │   ├── uploads/                # Uploaded files (gitignored)
+│   ├── Dockerfile
+│   ├── docker-entrypoint.sh    # Wait for DB → migrate → seed → gunicorn
 │   ├── .env.example
 │   ├── .flaskenv
 │   ├── config.py
@@ -92,20 +97,75 @@ task-manager/
 │   │   ├── utils/
 │   │   ├── App.jsx
 │   │   └── main.jsx
+│   ├── Dockerfile              # Multi-stage Vite build + nginx
+│   ├── nginx.conf
 │   ├── .env.example
 │   ├── package.json
 │   └── vite.config.js
-└── migrations/                 # Alembic migration versions
+└── migrations/                 # Alembic migration versions (required for Docker)
 ```
 
 ---
 
 ## Prerequisites
 
-- **Python** 3.11+ (recommended)
-- **Node.js** 18+ and npm
-- **PostgreSQL** 14+ with a database created (e.g. `task_manager`)
+- **Python** 3.11+ (recommended) — only for non-Docker local runs
+- **Node.js** 18+ and npm — only for non-Docker local runs
+- **PostgreSQL** 14+ — only for non-Docker local runs (Compose provides Postgres)
+- **Docker** and **Docker Compose** — for containerized runs
 - A Gmail (or other SMTP) account if you want email verification / password reset / account restore to send real mail
+
+---
+
+## Running with Docker Compose
+
+The Compose stack starts three services:
+
+| Service | Image / build | Host port | Role |
+| --- | --- | --- | --- |
+| `db` | `postgres:16-alpine` | (internal only) | PostgreSQL |
+| `backend` | `backend/Dockerfile` | `5000` | Flask API via Gunicorn |
+| `frontend` | `frontend/Dockerfile` | `8080` | React SPA via nginx |
+
+### 1. Configure environment
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` as needed (especially `JWT_SECRET_KEY`, mail credentials, and the seeded admin password).
+
+### 2. Build and start
+
+```bash
+docker compose up --build
+```
+
+On first start the backend entrypoint:
+
+1. Waits for PostgreSQL to become healthy  
+2. Runs `flask db upgrade`  
+3. Seeds roles, statuses, priorities, and the admin user (`SEED_ON_START=true` by default)  
+4. Starts Gunicorn on port 5000  
+
+### 3. Open the app
+
+- **Frontend:** http://localhost:8080  
+- **API / Swagger:** http://localhost:5000/apidocs  
+- **Default admin:** values of `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` in `.env`
+
+### Useful Compose commands
+
+```bash
+docker compose up --build -d      # detached
+docker compose logs -f backend    # follow API logs
+docker compose down               # stop containers
+docker compose down -v            # stop and remove DB/upload volumes
+```
+
+Set `SEED_ON_START=false` in `.env` after the first successful start if you do not want seeding on every backend restart (seeding is idempotent, so leaving it `true` is usually fine).
+
+> **Note:** `VITE_API_URL` and `VITE_APP_URL` are baked into the frontend image at **build** time. Change them in `.env`, then rebuild the frontend (`docker compose up --build`) for the new values to take effect.
 
 ---
 
@@ -151,7 +211,7 @@ Edit `backend/.env`. Required / important variables:
 | `DATABASE_URL` | PostgreSQL URI, e.g. `postgresql://postgres:PASSWORD@localhost:5432/task_manager` |
 | `JWT_COOKIE_SECURE` | `false` for local HTTP; `true` in production (HTTPS) |
 | `BASE_URL` | Backend origin, e.g. `http://localhost:5000` |
-| `FRONTEND_URL` | Frontend origin for CORS, e.g. `http://localhost:5173` *(required by the app; add if missing from `.env.example`)* |
+| `FRONTEND_URL` | Frontend origin for CORS, e.g. `http://localhost:5173` |
 | `MAIL_USERNAME` / `MAIL_PASSWORD` / `MAIL_DEFAULT_SENDER` | SMTP credentials (Gmail app password recommended) |
 | `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` | Credentials for the seeded admin user |
 
@@ -378,6 +438,7 @@ Configured in `backend/config.py` via Flask-JWT-Extended:
 
 | Command | Where | Purpose |
 | --- | --- | --- |
+| `docker compose up --build` | repo root | Run full stack in Docker |
 | `python -m backend.run` | repo root | Start Flask debug server |
 | `python -m backend.seed` | repo root | Seed reference data + admin |
 | `flask db upgrade` | repo root (`FLASK_APP=backend.app:create_app`) | Apply migrations |

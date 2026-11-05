@@ -1,8 +1,8 @@
 backend/.env
 backend/uploads/
 frontend/.env
+.env
 venv/
 .idea/
 __pycache__/
-migrations/
 .cursorignore

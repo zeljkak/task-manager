@@ -9,9 +9,9 @@ app = create_app()
 
 with app.app_context():
     seed_roles()
-    seed_projects()
     seed_priorities()
     seed_task_status()
     seed_admin_user()
+    seed_projects()
 
     print("Database seeded successfully!")

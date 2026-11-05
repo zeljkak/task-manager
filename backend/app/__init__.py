@@ -55,7 +55,9 @@ def create_app():
     db.init_app(app)
     ma.init_app(app)
     limiter.init_app(app)
-    migrate.init_app(app, db)
+    # migrations/ lives at the repository root (sibling of backend/)
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    migrate.init_app(app, db, directory=os.path.join(project_root, "migrations"))
     mail.init_app(app)
 
     #Register blueprint
