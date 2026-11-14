@@ -10,3 +10,4 @@ from backend.app.models.attachment_model import Attachment
 from backend.app.models.association_tables import task_followers, task_relations
 from backend.app.models.revoked_token_model import RevokedToken
 from backend.app.models.token_model import Token
+from backend.app.models.notification_model import Notification

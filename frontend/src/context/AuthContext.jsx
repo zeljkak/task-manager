@@ -1,17 +1,20 @@
 import {createContext, useState, useEffect} from "react";
 import {getProfile} from "../services/userService.js";
 import {logout} from "../services/authService.js";
-import {acquireRefreshLock, releaseRefreshLock} from "../api/axios.js"
+import {refreshSession} from "../api/axios.js";
 import {clearCsrfTokens} from "../api/csrfStore.js";
-import api from "../api/axios.js";
 
 export const AuthContext = createContext(null);
+
+// proactive refresh under the 15-minute access-token expiration time
+const REFRESH_INTERVAL_MS = 7 * 60 * 1000;
+const VISIBILITY_REFRESH_AFTER_MS = 5 * 60 * 1000;
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is logged in on app mount/refresh
+  // check if user is logged in on app mount/refresh
   useEffect(() => {
     async function checkAuthStatus() {
       const params = new URLSearchParams(window.location.search);
@@ -55,7 +58,7 @@ export function AuthProvider({ children }) {
         localStorage.removeItem("app_logout_event");
 
         setUser(null);
-        clearCsrfTokens(false); // prevents duplicate storage event dispatch
+        clearCsrfTokens(false);
         if (window.location.pathname !== "/login") {
           window.location.href = "/login?forcedLogout=true";
         }
@@ -66,41 +69,63 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  // proactive UX refresh
+  // refresh via shared helper (never soft-logouts by itself)
   useEffect(() => {
     // only set up background refresh if a user is logged in
     if (!user) return;
 
-    // refresh every 10 minutes
-    const TEN_MINUTES = 10 * 60 * 1000;
     let lastRefreshTime = Date.now();
+    let cancelled = false;
 
-    const triggerRefresh = async () => {
-      const gotLock = await acquireRefreshLock();
-      if (!gotLock) return; // another tab is actively refreshing
+    let isRefreshing = false;
+
+    const triggerRefresh = async (reason) => {
+      if (isRefreshing) return;
+      isRefreshing = true;
+
       try {
-        await api.post("/auth/refresh");
-        lastRefreshTime = Date.now();
+        await refreshSession({ reason });
+        if (!cancelled) {
+          lastRefreshTime = Date.now();
+        }
       } catch (err) {
+        // don't force logout from proactive refresh — user may still have a valid session
+        // after a peer tab rotated tokens or the next API call will refresh properly
         console.warn("Proactive refresh skipped or failed:", err);
       } finally {
-        releaseRefreshLock();
+        isRefreshing = false;
       }
     };
 
-    const interval = setInterval(triggerRefresh, TEN_MINUTES);
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        triggerRefresh("interval");
+      }
+    }, REFRESH_INTERVAL_MS);
+
+    const refreshIfStale = (reason) => {
+      if (document.visibilityState !== "visible") return;
+      if (Date.now() - lastRefreshTime >= VISIBILITY_REFRESH_AFTER_MS) {
+        triggerRefresh(reason);
+      }
+    };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible" && Date.now() - lastRefreshTime > TEN_MINUTES) {
-        triggerRefresh();
-      }
+      refreshIfStale("visibility");
+    };
+
+    const handleWindowFocus = () => {
+      refreshIfStale("focus");
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleWindowFocus);
 
     return () => {
+      cancelled = true;
       clearInterval(interval);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleWindowFocus);
     };
   }, [user]);
 
@@ -127,7 +152,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{ user, loading, loginUser, logoutUser }}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 }

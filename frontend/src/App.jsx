@@ -18,6 +18,7 @@ import VerifyEmail from "./pages/VerifyEmail.jsx";
 import Register from "./pages/Register.jsx";
 import Settings from "./pages/Settings.jsx";
 import Project from "./pages/Project.jsx";
+import Inbox from "./pages/Inbox.jsx";
 
 function App() {
 
@@ -31,6 +32,7 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/inbox" element={<Inbox />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/tasks/:taskId" element={<Task />} />
           <Route path="/settings" element={<Settings />} />

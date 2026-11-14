@@ -23,4 +23,4 @@ RUN mkdir -p /app/backend/uploads \
 EXPOSE 5000
 
 ENTRYPOINT ["/app/backend/docker-entrypoint.sh"]
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "--timeout", "120", "backend.wsgi:app"]
+CMD ["gunicorn", "--worker-class", "eventlet", "-w", "1", "--bind", "0.0.0.0:5000", "--timeout", "120", "backend.wsgi:app"]

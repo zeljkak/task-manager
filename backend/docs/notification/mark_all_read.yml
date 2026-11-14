@@ -1,0 +1,29 @@
+tags:
+  - Notifications
+
+description: Mark all of the current user's notifications as read.
+
+security:
+  - cookieAuth: []
+
+parameters:
+  - name: X-CSRF-TOKEN
+    in: header
+    required: true
+    type: string
+    description: CSRF token read from the csrf_access_token cookie.
+
+responses:
+  200:
+    description: All notifications marked as read
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: All notifications marked as read
+        unreadCount:
+          type: integer
+          example: 0
+  401:
+    description: Unauthorized (missing or invalid session cookie)

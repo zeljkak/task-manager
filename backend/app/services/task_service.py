@@ -1,6 +1,7 @@
 from backend.app.services.activity_log_service import ActivityLogService
 from backend.app.services.role_service import RoleService
 from backend.app.services.user_service import UserService
+from backend.app.services.notification_service import NotificationService
 
 from backend.app.utils.diff import get_changed_fields
 
@@ -112,6 +113,13 @@ class TaskService:
         created_task = TaskRepository.create(task)
         if created_task.assigned_to_id != current_user_id:
             TaskService.follow_task(created_task.id, current_user_id)
+            NotificationService.notify_users(
+                recipient_ids=[created_task.assigned_to_id],
+                actor_id=current_user_id,
+                title="Task assigned to you",
+                message=f'You were assigned to "{created_task.title}".',
+                task_id=created_task.id,
+            )
         return TaskRepository.get_by_id(created_task.id)
 
 
@@ -175,11 +183,40 @@ class TaskService:
         # detect changes
         changes = get_changed_fields(old_task, task, TaskService.TRACKED_FIELDS)
 
-        #log changes
+        # log changes
         for change in changes:
             ActivityLogService.create_activity(change, task.id, current_user_id)
 
-        return TaskRepository.update(task)
+        updated_task = TaskRepository.update(task)
+
+        if changes:
+            assignment_changed = any(
+                change.get("field") == "assigned_to_id" for change in changes
+            )
+            skip_for_generic = {current_user_id}
+
+            if assignment_changed and updated_task.assigned_to_id != current_user_id:
+                NotificationService.notify_users(
+                    recipient_ids=[updated_task.assigned_to_id],
+                    actor_id=current_user_id,
+                    title="Task assigned to you",
+                    message=f'You were assigned to "{updated_task.title}".',
+                    task_id=updated_task.id,
+                )
+                skip_for_generic.add(updated_task.assigned_to_id)
+
+            recipient_ids = NotificationService._task_stakeholder_ids(updated_task)
+            recipient_ids -= skip_for_generic
+            if recipient_ids:
+                NotificationService.notify_users(
+                    recipient_ids=recipient_ids,
+                    actor_id=current_user_id,
+                    title="Task updated",
+                    message=f'Task "{updated_task.title}" was updated.',
+                    task_id=updated_task.id,
+                )
+
+        return updated_task
 
 
     @staticmethod

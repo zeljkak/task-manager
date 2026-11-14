@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getCsrfAccess, getCsrfRefresh, setCsrfTokens, clearCsrfTokens} from "./csrfStore.js";
+import { getCsrfAccess, getCsrfRefresh, setCsrfTokens, clearCsrfTokens, rehydrateCsrfFromStorage} from "./csrfStore.js";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -81,28 +81,76 @@ const processQueue = (error, token = null) => {
     failedQueue = [];
 };
 
+const REFRESH_LOCK_KEY = "refresh_lock";
+const LOCK_TIMEOUT_MS = 5000;
+
 // cross-tab lock helper using localStorage
 export const acquireRefreshLock = async () => {
-    const lockKey = "refresh_lock";
-    const lockTimeout = 5000;
     const pollInterval = 100;
     const maxRetries = 50; // aligns 5s polling window with the 5s lock timeout
 
     for (let i = 0; i < maxRetries; i++) {
         const currentTime = Date.now();
-        const lock = localStorage.getItem(lockKey);
+        const lock = localStorage.getItem(REFRESH_LOCK_KEY);
 
-        if (!lock || currentTime - parseInt(lock, 10) > lockTimeout) {
-            localStorage.setItem(lockKey, currentTime.toString());
+        if (!lock || currentTime - parseInt(lock, 10) > LOCK_TIMEOUT_MS) {
+            localStorage.setItem(REFRESH_LOCK_KEY, currentTime.toString());
             return true;
         }
-        await new Promise((resolve) => setTimeout(resolve, pollInterval));
+        await delay(pollInterval);
     }
     return false;
 };
 
 export const releaseRefreshLock = () => {
-    localStorage.removeItem("refresh_lock");
+    localStorage.removeItem(REFRESH_LOCK_KEY);
+};
+
+// shared refresh session helper for AuthContext and WebSocket hook
+let refreshPromise = null;
+
+// refresh access and refresh cookies exactly once across concurrent callers
+// doesn't soft-logout on failure — callers decide
+export const refreshSession = () => {
+    rehydrateCsrfFromStorage();
+    if (refreshPromise) {
+        return refreshPromise;
+    }
+
+    refreshPromise = (async () => {
+        if (isRefreshing) {
+            return new Promise((resolve, reject) => {
+                failedQueue.push({ resolve, reject });
+            });
+        }
+
+        isRefreshing = true;
+        const gotLock = await acquireRefreshLock();
+        // if another tab is refreshing
+        // wait for cookies + CSRF sync, do not rotate again
+        if (!gotLock) {
+            isRefreshing = false;
+            await delay(1500);
+            rehydrateCsrfFromStorage();
+            return { ok: true, shared: true };
+        }
+
+        try {
+            await api.post("/auth/refresh");
+            processQueue(null);
+            rehydrateCsrfFromStorage();
+            return { ok: true };
+        } catch (err) {
+            processQueue(err, null);
+            throw err;
+        } finally {
+            releaseRefreshLock();
+            isRefreshing = false;
+            refreshPromise = null;
+        }
+    })();
+
+    return refreshPromise;
 };
 
 api.interceptors.request.use(

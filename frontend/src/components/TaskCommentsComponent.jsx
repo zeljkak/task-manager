@@ -258,7 +258,7 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, delet
                                                 .replaceAll("/", ".")
                                                 .replaceAll(",", ".")
                                                 .concat(".")
-                                                .slice(0, -1)}
+                                                .slice(0, -4)}
                                         </span>
                                     )}
                                     {isAuthor && !deletedTask && (

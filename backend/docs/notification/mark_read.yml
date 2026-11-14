@@ -1,0 +1,91 @@
+tags:
+  - Notifications
+
+description: Mark a single notification as read.
+
+security:
+  - cookieAuth: []
+
+parameters:
+  - name: X-CSRF-TOKEN
+    in: header
+    required: true
+    type: string
+    description: CSRF token read from the csrf_access_token cookie.
+  - name: notificationId
+    in: path
+    type: integer
+    required: true
+
+responses:
+  200:
+    description: Notification marked as read
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Notification marked as read"
+        notification:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            message:
+              type: string
+              example: "New comment on \"Frontend refresh task\": this is a comment"
+            actor:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                firstName:
+                  type: string
+                  example: Anna
+                lastName:
+                  type: string
+                  example: Smith
+            task:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 3
+                title:
+                  type: string
+                  example: Frontend refresh task
+                assignedTo:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 2
+                    firstName:
+                      type: string
+                      example: Elsa
+                    lastName:
+                      type: string
+                      example: Smith
+            title:
+              type: string
+              example: "New comment"
+            isRead:
+              type: boolean
+              example: true
+            createdAt:
+              type: string
+              format: date-time
+              example: "2026-11-10T16:09:51.112728+01:00"
+        unreadCount:
+          type: integer
+          example: 2
+  401:
+    description: Unauthorized (missing or invalid session cookie)
+  403:
+    description: Forbidden (unallowed action)
+  404:
+    description: Related resource not found
+  503:
+    description: Service unavailable (database service down)

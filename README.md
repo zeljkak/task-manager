@@ -7,30 +7,32 @@ Full-stack task and project management application with role-based access, email
 ## Tech Stack
 
 ### Backend
-| Layer | Technology |
-| --- | --- |
-| Framework | Flask 3 |
-| ORM / DB | Flask-SQLAlchemy, PostgreSQL (`psycopg2`) |
-| Migrations | Flask-Migrate / Alembic |
-| Auth | Flask-JWT-Extended (HTTP-only cookies + CSRF) |
-| Validation | Marshmallow / flask-marshmallow |
-| API docs | Flasgger (Swagger UI) |
-| Email | Flask-Mail (SMTP / Gmail) |
+| Layer         | Technology |
+|---------------| --- |
+| Framework     | Flask 3 |
+| ORM / DB      | Flask-SQLAlchemy, PostgreSQL (`psycopg2`) |
+| Migrations    | Flask-Migrate / Alembic |
+| Auth          | Flask-JWT-Extended (HTTP-only cookies + CSRF) |
+| Validation    | Marshmallow / flask-marshmallow |
+| API docs      | Flasgger (Swagger UI) |
+| Email         | Flask-Mail (SMTP / Gmail) |
 | Rate limiting | Flask-Limiter |
-| CORS | flask-cors (`supports_credentials=True`) |
-| Uploads | Local `uploads/` with Bleach SVG sanitization |
+| CORS          | flask-cors (`supports_credentials=True`) |
+| Uploads       | Local `uploads/` with Bleach SVG sanitization |
+| WebSockets    | Flask-SocketIO (eventlet) |
 
 ### Frontend
-| Layer | Technology |
-| --- | --- |
-| UI | React 19 |
-| Build | Vite 8 |
-| Routing | React Router DOM 7 |
-| HTTP | Axios (`withCredentials`) |
-| Styling | Bootstrap 5 |
-| DnD board | `@hello-pangea/dnd` |
-| Tooltips | tippy.js |
-| Icons | SVGR (`vite-plugin-svgr`) |
+| Layer      | Technology |
+|------------| --- |
+| UI         | React 19 |
+| Build      | Vite 8 |
+| Routing    | React Router DOM 7 |
+| HTTP       | Axios (`withCredentials`) |
+| Styling    | Bootstrap 5 |
+| DnD board  | `@hello-pangea/dnd` |
+| Tooltips   | tippy.js |
+| Icons      | SVGR (`vite-plugin-svgr`) |
+| WebSockets | Socket.IO Client (socket.io-client) |
 
 ---
 
@@ -44,6 +46,7 @@ Full-stack task and project management application with role-based access, email
 - **Kanban board** — drag-and-drop status columns on the home page
 - **Projects** — list/filter, admin create/edit/archive/unarchive, project detail view
 - **Comments & attachments** — task comments; file attachments on tasks, projects, and comments (images & common documents, max 10 MB)
+- **Notifications** — real-time notifications via WebSockets for task comments and updates, unread count tracking, and options to mark notifications as read individually or in bulk
 - **Profile & settings** — view/update profile, change password (invalidates other sessions), theme-aware Bootstrap UI
 - **API documentation** — Swagger UI via Flasgger
 
@@ -63,7 +66,7 @@ task-manager/
 │   │   ├── decorators/         # roles_required
 │   │   ├── errors/             # Global error handlers
 │   │   ├── exceptions/         # HTTP exception types
-│   │   ├── extensions/         # db, jwt, mail, migrate, limiter, ma, blocklist
+│   │   ├── extensions/         # db, jwt, mail, migrate, limiter, ma, blocklist, connection, socketio
 │   │   ├── models/             # SQLAlchemy models
 │   │   ├── repositories/       # Data access layer
 │   │   ├── routes/             # Flask blueprints (API endpoints)
@@ -90,7 +93,8 @@ task-manager/
 │   │   ├── api/                # Axios client + CSRF store
 │   │   ├── assets/             # Icons and static images
 │   │   ├── components/         # UI components
-│   │   ├── context/            # AuthContext / useAuth
+│   │   ├── context/            # AuthContext / useAuth, NotificationContext
+│   │   ├── hooks/              # useNotificationsWebSocket
 │   │   ├── pages/              # Route pages
 │   │   ├── routes/             # ProtectedRoute, GuestRoute, AdminRoute
 │   │   ├── services/           # API service modules
@@ -344,6 +348,15 @@ Query filters for task lists include: `text`, `assignedToId`, `statusId`, `prior
 | POST | `/projects/<projectId>/archive` | JWT + **admin** | Archive |
 | POST | `/projects/<projectId>/unarchive` | JWT + **admin** | Unarchive |
 | POST | `/projects/<projectId>/attachments` | JWT + CSRF | Upload project files |
+
+### Notifications — `/notifications`
+
+| Method | Path                                   | Auth            | Description                        |
+| --- |----------------------------------------|-----------------|------------------------------------|
+| GET | `/notifications`                       | JWT             | List user notifications            |
+| GET | `/notifications/unread-count`          | JWT             | Get unread notification count      |
+| PATCH | `/notifications/<notificationId>/read` | JWT + CSRF      | Mark a single notification as read |
+| PATCH | `/notifications/read-all`              | JWT + CSRF      | Mark all notification as read      |
 
 ### Comments / Attachments / Files
 

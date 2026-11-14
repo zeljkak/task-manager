@@ -10,14 +10,22 @@ import ProjectIcon from "./icons/ProjectIcon.jsx";
 import SettingsIcon from "./icons/SettingsIcon.jsx";
 import LogoutIcon from "./icons/LogoutIcon.jsx";
 import {useAuth} from "../context/useAuth.js";
+import {useNotifications} from "../context/NotificationContext.jsx";
 
 function SidebarComponent({ isVisible, setIsVisible, isMobile, onMyTasksClick }) {
 
     const {logoutUser} = useAuth();
+    const { unreadCount } = useNotifications();
     const navigate = useNavigate();
+
+    const clearScrollSession = () => {
+        sessionStorage.removeItem("notification-scroll-target");
+        sessionStorage.removeItem("global_scroll_target");
+    };
 
     const handleLogout = async (e) => {
         e.preventDefault();
+        clearScrollSession();
         await logoutUser();
         navigate("/login");
     }
@@ -48,25 +56,36 @@ function SidebarComponent({ isVisible, setIsVisible, isMobile, onMyTasksClick })
                     <ThemeIcon state={isVisible} size={iconSize} />
                 </button>
             )}
-            <NavLink to={"/profile"} data-tippy-content={tooltipText("Profile")}>
+            <NavLink to={"/profile"} onClick={clearScrollSession}
+                 data-tippy-content={tooltipText("Profile")}>
                 <UserIcon size={iconSize}/>
                 {!isMobile && isVisible && "Profile"}
             </NavLink>
-            <NavLink to={"/inbox"} data-tippy-content={tooltipText("Inbox")}>
-                <InboxIcon size={iconSize}/>
+            <NavLink to={"/inbox"} onClick={clearScrollSession}
+                 data-tippy-content={tooltipText("Inbox")} className="sidebar-inbox-link">
+                <span className="sidebar-inbox-icon-wrap">
+                    <InboxIcon size={iconSize}/>
+                    {unreadCount > 0 && (
+                        <span className="sidebar-inbox-badge" aria-label={`${unreadCount} unread`}>
+                            {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                    )}
+                </span>
                 {!isMobile && isVisible && "Inbox"}
             </NavLink>
-            <NavLink to={"/"} onClick={onMyTasksClick}
+            <NavLink to={"/"}  onClick={(e) => {clearScrollSession(); if (onMyTasksClick) onMyTasksClick(e); }}
                 className={ ({ isActive}) => isActive || location.pathname.startsWith('/tasks') ? 'active' : '' }
                 data-tippy-content={tooltipText("My Tasks")}>
                 <TasksIcon size={iconSize}/>
                 {!isMobile && isVisible && "My Tasks"}
             </NavLink>
-            <NavLink to={"/projects"} data-tippy-content={tooltipText("Projects")}>
+            <NavLink to={"/projects"} onClick={clearScrollSession}
+                 data-tippy-content={tooltipText("Projects")}>
                 <ProjectIcon size={iconSize}/>
                 {!isMobile && isVisible && "Projects"}
             </NavLink>
-            <NavLink to={"/settings"} data-tippy-content={tooltipText("Settings")}>
+            <NavLink to={"/settings"} onClick={clearScrollSession}
+                 data-tippy-content={tooltipText("Settings")}>
                 <SettingsIcon size={iconSize}/>
                 {!isMobile && isVisible && "Settings"}
             </NavLink>

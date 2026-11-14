@@ -2,6 +2,7 @@ from backend.app.exceptions.http_exceptions import NotFoundError, ForbiddenError
 from backend.app.models.comment_model import Comment
 from backend.app.repositories.comment_repository import CommentRepository
 from backend.app.services.task_service import TaskService
+from backend.app.services.notification_service import NotificationService
 from backend.app.utils.file_storage import delete_file
 
 
@@ -32,14 +33,30 @@ class CommentService:
 
     @staticmethod
     def create_comment(data, current_user_id, task_id):
-        TaskService.get_task_by_id(task_id)
+        task = TaskService.get_task_by_id(task_id)
         comment = Comment(
             comment=data["comment"],
             user_id=current_user_id,
             task_id=task_id
         )
 
-        return CommentRepository.create(comment)
+        created = CommentRepository.create(comment)
+
+        preview = (data.get("comment") or "").strip()
+        if len(preview) > 120:
+            preview = preview[:117] + "..."
+        message = f'New comment on "{task.title}"'
+        if preview:
+            message = f'{message}: {preview}'
+
+        NotificationService.notify_task_stakeholders(
+            task=task,
+            actor_id=current_user_id,
+            title="New comment",
+            message=message,
+        )
+
+        return created
 
     @staticmethod
     def update_comment(data, comment_id, current_user_id):

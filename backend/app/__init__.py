@@ -8,6 +8,7 @@ from backend.app.extensions.ma import ma
 from backend.app.extensions.limiter import limiter
 from backend.app.extensions.migrate import migrate
 from backend.app.extensions.mail import mail
+from backend.app.extensions.socketio import socketio
 
 from backend.app.routes.auth import auth_bp
 from backend.app.routes.user import user_bp
@@ -20,6 +21,7 @@ from backend.app.routes.task_status import task_status_bp
 from backend.app.routes.admin import admin_bp
 from backend.app.routes.attachment import attachment_bp
 from backend.app.routes.file import file_bp
+from backend.app.routes.notification import notification_bp
 
 from backend.app import models
 from backend.config import Config
@@ -42,13 +44,13 @@ def create_app():
     from flask import send_from_directory, current_app
     import os
 
-    #enable React and Flask communication
+    # enable React and Flask communication
     CORS(app, supports_credentials=True, origins=Config.FRONTEND_URL)
 
-    #Load everything from config.py
+    # load everything from config.py
     app.config.from_object(Config)
 
-    # Initialize Swagger
+    # initialize Swagger
     swagger.init_app(app)
     jwt.init_app(app)
     configure_jwt(jwt)
@@ -60,7 +62,17 @@ def create_app():
     migrate.init_app(app, db, directory=os.path.join(project_root, "migrations"))
     mail.init_app(app)
 
-    #Register blueprint
+    cors_origin = Config.FRONTEND_URL or "*"
+    socketio.init_app(
+        app,
+        cors_allowed_origins=cors_origin,
+        supports_credentials=True,
+        async_mode="eventlet",
+    )
+    # register Socket.IO connect/disconnect handlers (mapped by user ID)
+    from backend.app.routes import websocket
+
+    # register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(task_bp)
@@ -72,6 +84,7 @@ def create_app():
     app.register_blueprint(admin_bp)
     app.register_blueprint(attachment_bp)
     app.register_blueprint(file_bp)
+    app.register_blueprint(notification_bp)
     #print(app.url_map)
 
     register_error_handlers(app)

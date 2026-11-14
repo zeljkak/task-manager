@@ -29,6 +29,40 @@ if (!csrfAccess || !csrfRefresh) {
 export const getCsrfAccess = () => csrfAccess;
 export const getCsrfRefresh = () => csrfRefresh;
 
+// pull latest CSRF tokens written by another tab (or this tab) into memory
+export const rehydrateCsrfFromStorage = () => {
+    try {
+        const accessFromSession = sessionStorage.getItem(CSRF_ACCESS_KEY);
+        const refreshFromSession = sessionStorage.getItem(CSRF_REFRESH_KEY);
+
+        if (accessFromSession) {
+            csrfAccess = accessFromSession;
+        }
+        if (refreshFromSession) {
+            csrfRefresh = refreshFromSession;
+        }
+
+        const rawSync = localStorage.getItem(CSRF_SYNC_EVENT_KEY);
+        if (!rawSync) {
+            return { access: csrfAccess, refresh: csrfRefresh };
+        }
+
+        const parsed = JSON.parse(rawSync);
+        if (parsed.access) {
+            csrfAccess = parsed.access;
+            sessionStorage.setItem(CSRF_ACCESS_KEY, parsed.access);
+        }
+        if (parsed.refresh) {
+            csrfRefresh = parsed.refresh;
+            sessionStorage.setItem(CSRF_REFRESH_KEY, parsed.refresh);
+        }
+    } catch (e) {
+        console.log("Failed to rehydrate CSRF tokens:", e);
+    }
+
+    return { access: csrfAccess, refresh: csrfRefresh };
+};
+
 export const setCsrfTokens = ({ access, refresh }, syncToOtherTabs = true) => {
     if (access) {
         csrfAccess = access;

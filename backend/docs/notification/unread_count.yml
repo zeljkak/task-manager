@@ -1,0 +1,21 @@
+tags:
+  - Notifications
+
+description: Get unread notification count for the current user.
+
+security:
+  - cookieAuth: []
+
+responses:
+  200:
+    description: Unread count retrieved successfully
+    schema:
+      type: object
+      properties:
+        unreadCount:
+          type: integer
+          example: 2
+  401:
+    description: Unauthorized (missing or invalid session cookie)
+  503:
+    description: Service unavailable (database service down)
