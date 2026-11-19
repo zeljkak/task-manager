@@ -52,6 +52,33 @@ Full-stack task and project management application with role-based access, email
 
 ---
 
+## Screenshots
+
+### Kanban Board & Task Management
+![Kanban board view](screenshots/board-view.png)
+*Task board with status columns (`Backlog`, `To Do`, `In Progress`), task cards showing priority, assignee, due date, project, and estimated hours.*
+
+![Dragging a task card](screenshots/drag-and-drop.png)
+*Drag-and-drop interaction moving a task card across status columns.*
+
+![Task filtering by priority](screenshots/task-filtering.png)
+*Filtering tasks by criteria such as priority (`Low`, `Medium`, `High`) alongside search.*
+
+![Task editing and attachments](screenshots/task-edit.png)
+*Task detail and edit view with description, assignee, status, priority, project, due date, related tasks, and file attachments.*
+
+### Projects, Notifications & Admin Activity Logs
+![Active and archived projects](screenshots/projects.png)
+*Projects view separating active and archived projects with descriptions, creation dates, creators, and attachments.*
+
+![Real-time inbox notifications](screenshots/live-notifications.png)
+*Inbox view showing live notifications (`New comment`), unread badge counter, and mark-as-read actions.*
+
+![Admin activity logs](screenshots/activity-logs.png)
+*Activity logs table tracking task changes (`TASK_UPDATED`, field, old/new values) with task and user filters.*
+
+---
+
 ## Directory Structure
 
 ```
