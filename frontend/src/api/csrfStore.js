@@ -3,59 +3,84 @@ const CSRF_ACCESS_KEY = "csrf_access";
 const CSRF_REFRESH_KEY = "csrf_refresh";
 const CSRF_SYNC_EVENT_KEY = "csrf_sync_event";
 
-// initial hydration attempt: prefer sessionStorage, fallback to localStorage
-let csrfAccess = sessionStorage.getItem(CSRF_ACCESS_KEY) || null;
-let csrfRefresh = sessionStorage.getItem(CSRF_REFRESH_KEY) || null;
+const CSRF_ACCESS_COOKIE = "csrf_access_token";
+const CSRF_REFRESH_COOKIE = "csrf_refresh_token";
 
-if (!csrfAccess || !csrfRefresh) {
+const getCookieValue = (name) => {
+    if (typeof document === "undefined" || !document.cookie) {
+        return null;
+    }
+
+    const parts = document.cookie.split("; ");
+    for (const part of parts) {
+        const eqIndex = part.indexOf("=");
+        if (eqIndex === -1) continue;
+        const key = part.slice(0, eqIndex);
+        if (key === name) {
+            return decodeURIComponent(part.slice(eqIndex + 1));
+        }
+    }
+    return null;
+};
+
+const readTokensFromStorageAndCookies = () => {
+    let storageAccess = sessionStorage.getItem(CSRF_ACCESS_KEY) || null;
+    let storageRefresh = sessionStorage.getItem(CSRF_REFRESH_KEY) || null;
+
     try {
         const rawSync = localStorage.getItem(CSRF_SYNC_EVENT_KEY);
         if (rawSync) {
             const parsed = JSON.parse(rawSync);
             if (parsed.access) {
-                csrfAccess = parsed.access;
-                sessionStorage.setItem(CSRF_ACCESS_KEY, parsed.access);
+                storageAccess = parsed.access;
             }
             if (parsed.refresh) {
-                csrfRefresh = parsed.refresh;
-                sessionStorage.setItem(CSRF_REFRESH_KEY, parsed.refresh);
+                storageRefresh = parsed.refresh;
             }
         }
     } catch (e) {
-        console.log("Failed to hydrate CSRF tokens from localStorage:", e);
+        console.log("Failed to read CSRF sync payload from localStorage:", e);
     }
-}
+
+    // prefer active cookies when accessible, otherwise fall back to storage
+    const cookieAccess = getCookieValue(CSRF_ACCESS_COOKIE);
+    const cookieRefresh = getCookieValue(CSRF_REFRESH_COOKIE);
+
+    return {
+        access: cookieAccess || storageAccess || null,
+        refresh: cookieRefresh || storageRefresh || null,
+    };
+};
+
+const syncStorageWithTokens = (access, refresh) => {
+    if (access) {
+        sessionStorage.setItem(CSRF_ACCESS_KEY, access);
+    } else {
+        sessionStorage.removeItem(CSRF_ACCESS_KEY);
+    }
+
+    if (refresh) {
+        sessionStorage.setItem(CSRF_REFRESH_KEY, refresh);
+    } else {
+        sessionStorage.removeItem(CSRF_REFRESH_KEY);
+    }
+};
+
+const initialTokens = readTokensFromStorageAndCookies();
+let csrfAccess = initialTokens.access;
+let csrfRefresh = initialTokens.refresh;
+syncStorageWithTokens(csrfAccess, csrfRefresh);
 
 export const getCsrfAccess = () => csrfAccess;
 export const getCsrfRefresh = () => csrfRefresh;
 
-// pull latest CSRF tokens written by another tab (or this tab) into memory
 export const rehydrateCsrfFromStorage = () => {
     try {
-        const accessFromSession = sessionStorage.getItem(CSRF_ACCESS_KEY);
-        const refreshFromSession = sessionStorage.getItem(CSRF_REFRESH_KEY);
+        const { access, refresh } = readTokensFromStorageAndCookies();
 
-        if (accessFromSession) {
-            csrfAccess = accessFromSession;
-        }
-        if (refreshFromSession) {
-            csrfRefresh = refreshFromSession;
-        }
-
-        const rawSync = localStorage.getItem(CSRF_SYNC_EVENT_KEY);
-        if (!rawSync) {
-            return { access: csrfAccess, refresh: csrfRefresh };
-        }
-
-        const parsed = JSON.parse(rawSync);
-        if (parsed.access) {
-            csrfAccess = parsed.access;
-            sessionStorage.setItem(CSRF_ACCESS_KEY, parsed.access);
-        }
-        if (parsed.refresh) {
-            csrfRefresh = parsed.refresh;
-            sessionStorage.setItem(CSRF_REFRESH_KEY, parsed.refresh);
-        }
+        csrfAccess = access;
+        csrfRefresh = refresh;
+        syncStorageWithTokens(csrfAccess, csrfRefresh);
     } catch (e) {
         console.log("Failed to rehydrate CSRF tokens:", e);
     }
@@ -66,12 +91,12 @@ export const rehydrateCsrfFromStorage = () => {
 export const setCsrfTokens = ({ access, refresh }, syncToOtherTabs = true) => {
     if (access) {
         csrfAccess = access;
-        sessionStorage.setItem(CSRF_ACCESS_KEY, access);
     }
     if (refresh) {
         csrfRefresh = refresh;
-        sessionStorage.setItem(CSRF_REFRESH_KEY, refresh);
     }
+
+    syncStorageWithTokens(csrfAccess, csrfRefresh);
 
     if (syncToOtherTabs) {
         const payload = {

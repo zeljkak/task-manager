@@ -22,10 +22,6 @@ import Inbox from "./pages/Inbox.jsx";
 
 function App() {
 
-  useEffect(() => {
-      document.documentElement.setAttribute("data-bs-theme", "dark");
-  }, []);
-
   return (
     <Routes>
       <Route element={<ProtectedRoute />}>

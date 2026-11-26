@@ -136,6 +136,13 @@ export const refreshSession = () => {
         }
 
         try {
+            const { refresh } = rehydrateCsrfFromStorage();
+            if (!refresh) {
+                const err = new Error("Missing refresh CSRF token");
+                err.code = "MISSING_REFRESH_CSRF";
+                throw err;
+            }
+
             await api.post("/auth/refresh");
             processQueue(null);
             rehydrateCsrfFromStorage();
@@ -151,6 +158,46 @@ export const refreshSession = () => {
     })();
 
     return refreshPromise;
+};
+
+const runTokenRefresh = async (originalRequest) => {
+    rehydrateCsrfFromStorage();
+
+    if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+        }).then(() => api(originalRequest));
+    }
+
+    originalRequest._retry = true;
+    isRefreshing = true;
+
+    const gotLock = await acquireRefreshLock();
+    if (!gotLock) {
+        isRefreshing = false;
+        await delay(1500);
+        rehydrateCsrfFromStorage();
+        return api(originalRequest);
+    }
+
+    try {
+        const { refresh } = rehydrateCsrfFromStorage();
+        if (!refresh) {
+            throw new Error("Missing refresh CSRF token");
+        }
+
+        await api.post("/auth/refresh");
+        processQueue(null);
+        rehydrateCsrfFromStorage();
+        return await api(originalRequest);
+    } catch (refreshError) {
+        processQueue(refreshError, null);
+        await softLogout("Refresh request failed");
+        return Promise.reject(refreshError);
+    } finally {
+        releaseRefreshLock();
+        isRefreshing = false;
+    }
 };
 
 api.interceptors.request.use(
@@ -169,6 +216,10 @@ api.interceptors.request.use(
         if (csrfToken) {
             config.headers = config.headers || {};
             config.headers["X-CSRF-TOKEN"] = csrfToken;
+            config._sentCsrfToken = csrfToken;
+        } else if (config.headers) {
+            delete config.headers["X-CSRF-TOKEN"];
+            config._sentCsrfToken = null;
         }
 
         return config;
@@ -179,7 +230,7 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
     (response) => {
-        // Automatically save CSRF tokens returned from login or refresh endpoints
+        // automatically save CSRF tokens returned from login or refresh endpoints
         if (response.data?.csrfAccessToken || response.data?.csrfRefreshToken) {
             setCsrfTokens({
                 access: response.data.csrfAccessToken,
@@ -211,6 +262,14 @@ api.interceptors.response.use(
             return Promise.reject(error);
         }
 
+        const errorCode = error.response?.data?.error;
+
+        // if token was explicitly revoked (e.g. password reset), force logout without attempting refresh
+        if (errorCode === "token_revoked") {
+            await softLogout("Token Revoked");
+            return Promise.reject(error);
+        }
+
         // skip refresh attempt if the failed request WAS the refresh request itself
         if (originalRequest.url?.includes("/auth/refresh")) {
             return Promise.reject(error);
@@ -221,67 +280,32 @@ api.interceptors.response.use(
             return Promise.reject(error);
         }
 
-        const errorCode = error.response?.data?.error;
-
-        // if CSRF failed, logout
-        if (errorCode === "csrf_missing" || errorCode === "csrf_invalid") {
-            await softLogout(`CSRF Failure: ${errorCode}`);
-            return Promise.reject(error);
-        }
-
-        // if token was explicitly revoked (e.g. password reset), force logout without attempting refresh
-        if (errorCode === "token_revoked") {
-            await softLogout("Token Revoked");
-            return Promise.reject(error);
-        }
-
         // skip refresh if explicitly disabled for this request (in AuthContext.jsx)
         if (originalRequest.skipRefresh === true) {
             return Promise.reject(error);
         }
 
-        // if request failed with 401 and hasn't been retried yet
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            if (isRefreshing) {
-                return new Promise((resolve, reject) => {
-                    failedQueue.push({ resolve, reject });
-                })
-                    .then(() => api(originalRequest))
-                    .catch((err) => Promise.reject(err));
-            }
+        const isCsrfError = errorCode === "csrf_missing" || errorCode === "csrf_invalid";
 
-            originalRequest._retry = true;
-            isRefreshing = true;
+        // CSRF failure
+        // first rehydrate CSRF tokens from storage and retry once if a fresh token exists
+        if (isCsrfError && !originalRequest._csrfRehydrated) {
+            originalRequest._csrfRehydrated = true;
+            const { access } = rehydrateCsrfFromStorage();
 
-            const gotLock = await acquireRefreshLock();
-            if (!gotLock) {
-                // another tab refreshed while waiting; retry original request directly
-                isRefreshing = false;
-                await delay(1500);
+            if (access && access !== originalRequest._sentCsrfToken) {
                 return api(originalRequest);
-            }
-
-            try {
-                // the request interceptor reads csrf_refresh_token and sends X-CSRF-TOKEN
-                await api.post("/auth/refresh");
-                processQueue(null);
-
-                // retry the original request (now with the fresh access cookie)
-                return await api(originalRequest);
-            } catch (refreshError) {
-                // if refresh cookie expired or is invalid
-                processQueue(refreshError, null);
-                await softLogout("Refresh request failed");
-                return Promise.reject(refreshError);
-            } finally {
-                releaseRefreshLock();
-                isRefreshing = false;
             }
         }
 
-        // if the retried request failed again (invalid session, stale claims)
-        if (error.response?.status === 401 && originalRequest._retry) {
-            await softLogout("Retry failed with 401");
+        // if request failed with 401 (including unresolved CSRF error after rehydration) and hasn't refreshed yet
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            return runTokenRefresh(originalRequest);
+        }
+
+        // last if retry after refresh/rehydration still failed with 401 or CSRF error, log out
+        if (error.response?.status === 401 && (originalRequest._retry || isCsrfError)) {
+            await softLogout(isCsrfError ? `CSRF Failure after retry: ${errorCode}` : "Retry failed with 401");
             return Promise.reject(error);
         }
 

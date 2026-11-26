@@ -41,8 +41,8 @@ class TaskService:
 
 
     @staticmethod
-    def get_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, has_project=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, has_due_date=None, followed_by_id=None):
-        return TaskRepository.get_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before, due_after, created_before, created_after, overdue, has_due_date, followed_by_id)
+    def get_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, has_project=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, has_due_date=None, followed_by_id=None, page=1, per_page=75):
+        return TaskRepository.get_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before, due_after, created_before, created_after, overdue, has_due_date, followed_by_id, page, per_page)
 
 
     @staticmethod
@@ -56,8 +56,8 @@ class TaskService:
 
 
     @staticmethod
-    def get_deleted_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, has_project=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, has_due_date=None, followed_by_id=None):
-        return TaskRepository.get_deleted_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before, due_after, created_before, created_after, overdue, has_due_date, followed_by_id)
+    def get_deleted_tasks(text=None, assigned_to_id=None, status_id=None, priority_id=None, project_id=None, has_project=None, due_before=None, due_after=None, created_before=None, created_after=None, overdue=None, has_due_date=None, followed_by_id=None, page=1, per_page=75):
+        return TaskRepository.get_deleted_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before, due_after, created_before, created_after, overdue, has_due_date, followed_by_id, page, per_page)
 
 
     @staticmethod

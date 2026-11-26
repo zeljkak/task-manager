@@ -4,10 +4,11 @@ import { isFileAllowed } from "../utils/fileValidation.js";
 import { createTaskAttachment, updateTask } from "../services/taskService.js";
 import { deleteAttachment } from "../services/attachmentService.js";
 import TaskCommentsComponent from "./TaskCommentsComponent.jsx";
-import FollowTaskComponent from "../components/FollowTaskComponent.jsx";
-import DatePickerComponent from "../components/DatePickerComponent.jsx";
-import AttachmentIcon from "../components/icons/AttachmentIcon.jsx";
-import DeleteIcon from "../components/icons/DeleteIcon.jsx";
+import FollowTaskComponent from "./FollowTaskComponent.jsx";
+import DatePickerComponent from "./DatePickerComponent.jsx";
+import URLComponent, { formatLinksWithNewLines } from "./URLComponent.jsx";
+import AttachmentIcon from "./icons/AttachmentIcon.jsx";
+import DeleteIcon from "./icons/DeleteIcon.jsx";
 
 function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
     syncUpdates, users = [], statuses = [],
@@ -36,6 +37,15 @@ function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
     const dateTimeoutRef = useRef(null);
     const debounceTimeoutRef = useRef(null);
     const lastValidTitleRef = useRef(task?.title || "");
+
+    const [isEditingDescription, setIsEditingDescription] = useState(false);
+    const descriptionTextareaRef = useRef(null);
+
+    useEffect(() => {
+        if (isEditingDescription && descriptionTextareaRef.current) {
+            descriptionTextareaRef.current.focus();
+        }
+    }, [isEditingDescription]);
 
     useEffect(() => {
         setTaskData({
@@ -138,18 +148,28 @@ function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
 
     const handleBlur = (e) => {
         const { name, value } = e.target;
+        if (name === "description") {
+            setIsEditingDescription(false);
+        }
         if (name === "title" || name === "description") {
             if (debounceTimeoutRef.current) {
                 clearTimeout(debounceTimeoutRef.current);
             }
 
+            const nextValue = name === "description" ? formatLinksWithNewLines(value) : value;
             const propValue = name === "title" ? task?.title : task?.description;
-            if ((value || "") !== (propValue || "")) {
+            if ((nextValue || "") !== (propValue || "")) {
                 const currentData = {
                     ...taskData,
-                    [name]: value
+                    [name]: nextValue
                 };
+                setTaskData(currentData);
                 submitTaskUpdate(currentData);
+            } else if (name === "description" && nextValue !== value) {
+                setTaskData(prev => ({
+                    ...prev,
+                    description: nextValue
+                }));
             }
         }
     };
@@ -220,6 +240,9 @@ function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
         }
 
         const value = (name.endsWith("Id") || name === "estimatedHours" || name === "dueDate") && rawValue === "" ? null : rawValue;
+        const formattedValue = name === "description" && typeof value === "string"
+            ? formatLinksWithNewLines(value)
+            : value;
 
         const updatedTaskData = {
             ...taskData,
@@ -233,7 +256,10 @@ function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
                 clearTimeout(debounceTimeoutRef.current);
             }
             debounceTimeoutRef.current = setTimeout(() => {
-                submitTaskUpdate(updatedTaskData);
+                submitTaskUpdate({
+                    ...updatedTaskData,
+                    [name]: formattedValue
+                });
             }, 1000);
         } else {
             await submitTaskUpdate(updatedTaskData);
@@ -275,10 +301,18 @@ function TaskEditComponent({ task, renderMobileBackButton, iconSize, user,
                 )}
                 <div className="form-input">
                     <div className="form-element">
-                        <textarea name="description" className="inline-form-element"
-                            placeholder="Enter description" value={taskData.description}
-                            onChange={handleChange} onBlur={handleBlur}
-                        />
+                        {isEditingDescription ? (
+                            <textarea ref={descriptionTextareaRef} name="description"
+                                 placeholder="Enter description"
+                                value={taskData.description} onChange={handleChange} onBlur={handleBlur}
+                            />
+                        ) : (
+                            <div className=" description-preview"
+                                onClick={() => setIsEditingDescription(true)}
+                            >
+                                <URLComponent text={taskData.description} placeholder={"Enter description"} />
+                            </div>
+                        )}
                     </div>
                     <div className="form-element inline-form-element">
                         <label htmlFor={`assignee-task-${task.id}`}>Assignee:</label>

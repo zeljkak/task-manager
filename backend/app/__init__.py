@@ -9,6 +9,7 @@ from backend.app.extensions.limiter import limiter
 from backend.app.extensions.migrate import migrate
 from backend.app.extensions.mail import mail
 from backend.app.extensions.socketio import socketio
+from backend.app.extensions.logging_config import configure_logging
 
 from backend.app.routes.auth import auth_bp
 from backend.app.routes.user import user_bp
@@ -40,6 +41,7 @@ swagger = Swagger(template=swagger_template)
 
 def create_app():
     app = Flask(__name__)
+    configure_logging(app)
 
     from flask import send_from_directory, current_app
     import os

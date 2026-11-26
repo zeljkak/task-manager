@@ -10,7 +10,7 @@ function ProjectStatusComponent({ status, length, children, size }) {
                     {status.charAt(0).toUpperCase() + status.slice(1)}
                 </h4>
                 <p>{length}</p>
-            </div><br />
+            </div>
             <Droppable droppableId={status}>
                 {(provided, snapshot) => (
                     <div

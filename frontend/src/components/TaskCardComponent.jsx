@@ -7,11 +7,13 @@ import DueDateIcon from "./icons/DueDateIcon.jsx";
 import UserIcon from "./icons/UserIcon.jsx";
 
 function TaskData({ task }) {
+    let capitalize = task.priority?.level.charAt(0).toUpperCase() + task.priority?.level.slice(1).toLowerCase();
+
     return (
         <div className={"task-data"}>
             <p className={"task-priority"}>
                 <PriorityIcon level={task.priority?.level} size={18} />
-                {task.priority?.level ?? "No priority"}
+                {task.priority?.level ? capitalize : "No priority"}
             </p>
             <p className={"task-assignee"}>
                 <UserIcon size={18} />

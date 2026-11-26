@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import FollowTaskComponent from "../components/FollowTaskComponent.jsx";
 import AttachmentIcon from "../components/icons/AttachmentIcon.jsx";
 import TaskCommentsComponent from "./TaskCommentsComponent.jsx";
+import URLComponent, { formatLinksWithNewLines } from "./URLComponent.jsx";
 
 function TaskViewComponent({ task, renderMobileBackButton, iconSize, user,
     syncUpdates, selectedStatus, selectedPriority, selectedProject, deletedTask, relationError }) {
@@ -32,7 +33,12 @@ function TaskViewComponent({ task, renderMobileBackButton, iconSize, user,
             )}
             <div className={"display-task-data"}>
                 <div className={"display-element"}>
-                    <p className={"description-text"}>{task.description || "No description provided."}</p>
+                    <div className={"description-text"}>
+                        <URLComponent
+                            text={formatLinksWithNewLines(task.description)}
+                            placeholder="No description provided."
+                        />
+                    </div>
                 </div>
                 <div className={"display-element inline-display-element"}>
                     <p>Assignee:</p>

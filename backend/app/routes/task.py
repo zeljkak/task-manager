@@ -42,10 +42,18 @@ def get_tasks():
     has_due_date = parse_bool(request.args.get("hasDueDate"))
     followed_by_id = parse_user_id(request.args.get("followedById", type=str), current_user_id)
 
-    tasks = TaskService.get_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before, due_after, created_before, created_after, overdue, has_due_date, followed_by_id)
+    page = request.args.get("page", default=1, type=int)
+    page = max(1, page) if page is not None else 1
+
+    per_page = request.args.get("perPage", default=75, type=int)
+    per_page = min(max(1, per_page), 150) if per_page is not None else 75
+
+    result = TaskService.get_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before, due_after, created_before, created_after, overdue, has_due_date, followed_by_id, page=page, per_page=per_page)
 
     return jsonify({
-        "tasks": TaskResponseSchema(many=True).dump(tasks)
+        "tasks": TaskResponseSchema(many=True).dump(result["tasks"]),
+        "has_more": result["has_more"],
+        "has_more_by_status": result["has_more_by_status"]
     }), 200
 
 @task_bp.route('/<int:taskId>', methods=['GET'])
@@ -183,11 +191,18 @@ def get_deleted_tasks():
     has_due_date = parse_bool(request.args.get("hasDueDate"))
     followed_by_id = parse_user_id(request.args.get("followedById", type=str), current_user_id)
 
-    tasks = TaskService.get_deleted_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before,
-                                  due_after, created_before, created_after, overdue, has_due_date, followed_by_id)
+    page = request.args.get("page", default=1, type=int)
+    page = max(1, page) if page is not None else 1
+
+    per_page = request.args.get("perPage", default=75, type=int)
+    per_page = min(max(1, per_page), 150) if per_page is not None else 75
+
+    result = TaskService.get_deleted_tasks(text, assigned_to_id, status_id, priority_id, project_id, has_project, due_before, due_after, created_before, created_after, overdue, has_due_date, followed_by_id, page=page, per_page=per_page)
 
     return jsonify({
-        "tasks": TaskResponseSchema(many=True).dump(tasks)
+        "tasks": TaskResponseSchema(many=True).dump(result["tasks"]),
+        "has_more": result["has_more"],
+        "has_more_by_status": result["has_more_by_status"]
     }), 200
 
 @task_bp.route('/deleted/<int:taskId>', methods=['GET'])

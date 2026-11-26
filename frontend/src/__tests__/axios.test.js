@@ -43,6 +43,11 @@ describe("axios client and interceptors", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
+    mockRehydrateCsrfFromStorage.mockReturnValue({
+      access: "access-csrf-123",
+      refresh: "refresh-csrf-456",
+    });
+
     storageStore = {};
     vi.spyOn(localStorage, "getItem").mockImplementation(
       (key) => (key in storageStore ? storageStore[key] : null)
@@ -554,6 +559,33 @@ describe("axios client and interceptors", () => {
 
       expect(axiosPostSpy).toHaveBeenCalledTimes(1);
       expect(mockClearCsrfTokens).toHaveBeenCalledTimes(1);
+    });
+
+    it("soft logs out when /auth/refresh fails with token_revoked", async () => {
+      const dispatchSpy = vi.spyOn(window, "dispatchEvent");
+
+      mockAdapter.mockImplementationOnce(async (config) => {
+        throw createHttpError(
+          "Session invalidated",
+          401,
+          { error: "token_revoked" },
+          config
+        );
+      });
+
+      const { default: api } = await loadApiModule();
+      await expect(api.post("/auth/refresh")).rejects.toThrow("Session invalidated");
+
+      expect(mockAdapter).toHaveBeenCalledTimes(1);
+      expect(mockClearCsrfTokens).toHaveBeenCalledTimes(1);
+      expect(axiosPostSpy).toHaveBeenCalledWith(
+        expect.stringContaining("/auth/clear-cookies"),
+        {},
+        { withCredentials: true }
+      );
+      expect(localStorage.getItem("app_logout_event")).toBeTruthy();
+      expect(window.location.href).toBe("/login?forcedLogout=true");
+      expect(dispatchSpy).toHaveBeenCalledWith(expect.any(Event));
     });
   });
 

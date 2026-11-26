@@ -7,14 +7,16 @@ import {useAuth} from "../context/useAuth.js";
 import ChangePasswordComponent from "../components/ChangePasswordComponent.jsx";
 import ManageUsersComponent from "../components/ManageUsersComponent.jsx";
 import ActivityLogsComponent from "../components/ActivityLogsComponent.jsx"
+import {useTheme} from "../context/ThemeContext.jsx";
+import ThemeIcon from "../components/icons/ThemeIcon.jsx";
 
 export default function Settings() {
   const navigate = useNavigate();
   const { user, logoutUser } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const isAdmin = user.roleId === 1;
   const {isMobile} = useOutletContext();
-
-
+  
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -73,6 +75,10 @@ export default function Settings() {
       <hr />
 
       <>
+        <button type="button" id={"theme-button"} onClick={toggleTheme}>
+          Theme: <ThemeIcon currentTheme={theme} />
+        </button>
+
         {!showChangePassword ? (
           <button onClick={() => setShowChangePassword(true)}>
             Change Password

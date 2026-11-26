@@ -2,7 +2,7 @@ import {NavLink, useNavigate} from "react-router-dom";
 import {useEffect} from "react";
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
-import ThemeIcon from "./icons/ThemeIcon.jsx";
+import SidebarIcon from "./icons/SidebarIcon.jsx";
 import UserIcon from "./icons/UserIcon.jsx";
 import InboxIcon from "./icons/InboxIcon.jsx";
 import TasksIcon from "./icons/TasksIcon.jsx";
@@ -53,7 +53,7 @@ function SidebarComponent({ isVisible, setIsVisible, isMobile, onMyTasksClick })
             {!isMobile && (
                 <button onClick={toggleSidebar}
                     data-tippy-content={!isVisible ? "Toggle" : undefined}>
-                    <ThemeIcon state={isVisible} size={iconSize} />
+                    <SidebarIcon state={isVisible} size={iconSize} />
                 </button>
             )}
             <NavLink to={"/profile"} onClick={clearScrollSession}

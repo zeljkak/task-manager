@@ -18,6 +18,23 @@ export default function TaskFilterComponent({ filters, onFilterChange,
 
     const iconSize = isMobile ? 34 : 24;
 
+    const hasActiveFilters = Boolean(
+    filters.text ||
+    (filters.assignedToId && filters.assignedToId !== "all") ||
+    filters.statusId ||
+    filters.priorityId ||
+    filters.projectId ||
+    filters.hasProject !== "" ||
+    filters.dueBefore ||
+    filters.dueAfter ||
+    filters.createdBefore ||
+    filters.createdAfter ||
+    filters.overdue !== "" ||
+    filters.hasDueDate !== "" ||
+    filters.followedById ||
+    filters.isDeleted
+);
+
     const formatDate = (dateStr) => {
         return dateStr && !isNaN(new Date(dateStr)) ? new Date(dateStr).toISOString() : dateStr;
     };
@@ -81,7 +98,7 @@ export default function TaskFilterComponent({ filters, onFilterChange,
                     onClick={() => toggleSubMenu('assignee')}>
                     Assignees
                 </button>
-                <div className="assigned-to-options">
+                <div className="assigned-to-options ">
                     {renderMobileBackButton()}
                     <button type="button"
                         className={`assigned-to-option no-option ${filters.assignedToId === "" ? "active" : ""}`}
@@ -104,7 +121,7 @@ export default function TaskFilterComponent({ filters, onFilterChange,
                     onClick={() => toggleSubMenu('follower')}>
                     Followers
                 </button>
-                <div className="followed-by-options">
+                <div className="followed-by-options card">
                     {renderMobileBackButton()}
                     <button type="button" className="followed-by-option no-option"
                         onClick={() => onFilterChange({ followedById: "" })}>
@@ -126,7 +143,7 @@ export default function TaskFilterComponent({ filters, onFilterChange,
                     onClick={() => toggleSubMenu('status')}>
                     Status
                 </button>
-                <div className="status-options">
+                <div className="status-options card">
                     {renderMobileBackButton()}
                     <button type="button" className="status-option no-option"
                         onClick={() => onFilterChange({ statusId: "" })}>
@@ -148,7 +165,7 @@ export default function TaskFilterComponent({ filters, onFilterChange,
                     onClick={() => toggleSubMenu('priority')}>
                     Priority
                 </button>
-                <div className="priority-options">
+                <div className="priority-options card">
                     {renderMobileBackButton()}
                     <button type="button" className="priority-option no-option"
                         onClick={() => onFilterChange({ priorityId: "" })}>
@@ -170,7 +187,7 @@ export default function TaskFilterComponent({ filters, onFilterChange,
                     onClick={() => toggleSubMenu('project')}>
                     Project
                 </button>
-                <div className="project-options">
+                <div className="project-options card">
                     {renderMobileBackButton()}
                     <button type="button" className="project-option no-option"
                         onClick={() => onFilterChange({ projectId: "", hasProject: "" })}>
@@ -197,7 +214,7 @@ export default function TaskFilterComponent({ filters, onFilterChange,
                     onClick={() => toggleSubMenu('createdDate')}>
                     Created
                 </button>
-                <div className="created-date-options">
+                <div className="created-date-options card">
                     {renderMobileBackButton()}
                     <button type="button" className="created-date-option no-option"
                         onClick={() => onFilterChange({ createdBefore: "", createdAfter: "" })}>
@@ -218,7 +235,7 @@ export default function TaskFilterComponent({ filters, onFilterChange,
                     onClick={() => toggleSubMenu('dueDate')}>
                     Due
                 </button>
-                <div className="due-date-options">
+                <div className="due-date-options card">
                     {renderMobileBackButton()}
                     <button type="button" className="due-date-option no-option"
                         onClick={() => onFilterChange({ dueBefore: "", dueAfter: "", overdue: "", hasDueDate: "" })}>
@@ -279,7 +296,8 @@ export default function TaskFilterComponent({ filters, onFilterChange,
                 />
 
                 <div className="clear-all-container">
-                    <button type="button" className="clear-filter" onClick={onClearAll}>
+                    <button type="button" onClick={onClearAll}
+                        className={`clear-filter ${!hasActiveFilters ? "no-filters" : ""}`}>
                         Clear All
                     </button>
                 </div>

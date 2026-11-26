@@ -4,16 +4,18 @@ import { isFileAllowed } from "../utils/fileValidation.js";
 import { getTaskComments, getDeletedTaskComments, createTaskComment } from "../services/taskService.js";
 import { createCommentAttachment, updateComment, deleteComment } from "../services/commentService.js";
 import { deleteAttachment } from "../services/attachmentService.js";
+import URLComponent, { formatLinksWithNewLines } from "./URLComponent.jsx";
 import AttachmentIcon from "../components/icons/AttachmentIcon.jsx";
 import DeleteIcon from "../components/icons/DeleteIcon.jsx";
 
-function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, deletedTask }) {
+function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, deletedTask, isMobile = false }) {
 
     const [comments, setComments] = useState([]);
     const [commentsLoading, setCommentsLoading] = useState(true);
     const [newCommentText, setNewCommentText] = useState("");
     const [commentAttachments, setCommentAttachments] = useState([]);
     const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+    const [editingCommentId, setEditingCommentId] = useState(null);
     const [deletingCommentId, setDeletingCommentId] = useState(null);
     const [deletingAttachmentId, setDeletingAttachmentId] = useState(null);
     const [commentError, setCommentError] = useState("");
@@ -22,6 +24,7 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, delet
     const fileInputRef = useRef(null);
     const editFileInputRef = useRef(null);
     const newCommentErrorRef = useRef(null);
+    const commentTextareaRefs = useRef({});
 
     const fetchComments = useCallback(async () => {
         setCommentsLoading(true);
@@ -38,7 +41,26 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, delet
         } finally {
             setCommentsLoading(false);
         }
-    }, [taskId]);
+    }, [taskId, deletedTask]);
+
+    const resizeCommentTextarea = useCallback((commentId) => {
+        const el = commentTextareaRefs.current[commentId];
+        if (!el) return;
+        el.style.height = "auto";
+        el.style.height = `${el.scrollHeight}px`;
+    }, []);
+
+    useEffect(() => {
+        comments.forEach((c) => {
+            resizeCommentTextarea(c.id);
+        });
+    }, [comments, resizeCommentTextarea]);
+
+    useEffect(() => {
+        if (editingCommentId !== null) {
+            requestAnimationFrame(() => resizeCommentTextarea(editingCommentId));
+        }
+    }, [editingCommentId, resizeCommentTextarea]);
 
     useEffect(() => {
         fetchComments();
@@ -82,7 +104,7 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, delet
             setTimeout(() => setCommentError(""), 4000);
             if (fileInputRef.current) fileInputRef.current.value = "";
             return;
-          }
+        }
 
         if (oversizedFile) {
             setCommentError(`"${oversizedFile.name}" exceeds the 10 MB limit.`);
@@ -91,7 +113,7 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, delet
             return;
         }
 
-        setCommentError(""); // Clear error on valid selection
+        setCommentError("");
         setCommentAttachments(prev => [...prev, ...files]);
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
@@ -110,13 +132,13 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, delet
 
         if (invalidFile) {
             setCommentItemErrors(prev => ({
-              ...prev,
-              [commentId]: `"${invalidFile.name}" has an invalid file type.`
+                ...prev,
+                [commentId]: `"${invalidFile.name}" has an invalid file type.`
             }));
             setTimeout(() => setCommentItemErrors(prev => ({ ...prev, [commentId]: "" })), 4000);
             if (e.target) e.target.value = "";
             return;
-          }
+        }
 
         if (oversizedFile) {
             setCommentItemErrors(prev => ({
@@ -170,9 +192,18 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, delet
         }
     };
 
+    const handleEditCommentBlur = async (commentId, currentText) => {
+        const formattedText = formatLinksWithNewLines(currentText || "");
+        if (formattedText !== (currentText || "")) {
+            await handleEditCommentTextChange(commentId, formattedText);
+        }
+        setEditingCommentId(null);
+    };
+
     const handleCommentSubmit = async (e) => {
         e.preventDefault();
-        const hasText = newCommentText.trim().length > 0;
+        const formattedCommentText = formatLinksWithNewLines(newCommentText);
+        const hasText = formattedCommentText.trim().length > 0;
         const hasAttachments = commentAttachments.length > 0;
 
         if (!hasText && !hasAttachments) return;
@@ -183,8 +214,8 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, delet
         let createdComment = null;
 
         try {
-            const commentResponse = await createTaskComment(taskId, { comment: newCommentText, hasAttachments });
-            const createdComment = commentResponse.data?.comment;
+            const commentResponse = await createTaskComment(taskId, { comment: formattedCommentText, hasAttachments });
+            createdComment = commentResponse.data?.comment;
 
             if (hasAttachments && createdComment?.id) {
                 const commentAttachmentData = new FormData();
@@ -197,7 +228,6 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, delet
 
             await handleSync();
         } catch (err) {
-            // cleanup empty comment if attachment upload failed and no text was submitted
             if (!hasText && createdComment?.id) {
                 try {
                     await deleteComment(createdComment.id);
@@ -236,6 +266,66 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, delet
         }
     };
 
+    const renderAttachmentsBlock = (attachments, allowDelete) => {
+        if (!attachments || attachments.length === 0) return null;
+
+        return (
+            <div className="comment-attachments">
+                {attachments.map((a) => (
+                    <div key={a.id} className="attachment-chip">
+                        {allowDelete ? (
+                            deletingAttachmentId === a.id ? (
+                                createPortal(
+                                    <div className="confirmation-overlay">
+                                        <div className="confirmation-div">
+                                            <p>
+                                                Delete{" "}
+                                                <a href={a.fileUrl} target="_blank" rel="noopener noreferrer" className="file-name">
+                                                    {a.fileName}
+                                                </a>
+                                                ?
+                                            </p>
+                                            <div className="confirmation-actions">
+                                                <button type="button" className="positive"
+                                                    onClick={() => {
+                                                        handleAttachmentDelete(a.id);
+                                                        setDeletingAttachmentId(null);
+                                                    }}
+                                                >
+                                                    Yes
+                                                </button>
+                                                <button type="button" className="negative" onClick={() => setDeletingAttachmentId(null)}>
+                                                    No
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>,
+                                    document.getElementById("content") || document.body
+                                )
+                            ) : (
+                                <>
+                                    <button type="button" onClick={() => setDeletingAttachmentId(a.id)}>
+                                        <DeleteIcon size={iconSize} />
+                                    </button>
+                                    <a href={a.fileUrl} target="_blank" rel="noopener noreferrer" className="file-name">
+                                        {a.fileName}
+                                    </a>
+                                </>
+                            )
+                        ) : (
+                            <>
+                                <AttachmentIcon size={iconSize} />
+                                <a href={a.fileUrl} target="_blank" rel="noopener noreferrer" className="file-name">
+                                    {a.fileName}
+                                </a>
+                            </>
+                        )}
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
     return (
         <div className="task-comments">
             <h4>Comments</h4>
@@ -247,6 +337,9 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, delet
                 <div className="comments-list">
                     {comments.map((c) => {
                         const isAuthor = c.user?.id === user?.id;
+                        const canEdit = isAuthor && !deletedTask;
+                        const isEditing = canEdit && editingCommentId === c.id;
+
                         return (
                             <div key={c.id} className="comment-item">
                                 <div className="comment-header">
@@ -261,7 +354,7 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, delet
                                                 .slice(0, -4)}
                                         </span>
                                     )}
-                                    {isAuthor && !deletedTask && (
+                                    {canEdit && (
                                         <button type="button" className="delete-comment-btn" onClick={() => setDeletingCommentId(c.id)}>
                                             <DeleteIcon size={iconSize} />
                                         </button>
@@ -286,58 +379,29 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, delet
                                         document.getElementById("content") || document.body
                                     )}
 
-                                {isAuthor && !deletedTask ? (
+                                {isEditing ? (
                                     <>
                                         <div className="textarea-wrapper">
-                                            <textarea className="comment-text-input" value={c.comment || ""}
-                                                onChange={(e) => handleEditCommentTextChange(c.id, e.target.value)}
+                                            <textarea
+                                                ref={(el) => {
+                                                    if (el) {
+                                                        commentTextareaRefs.current[c.id] = el;
+                                                    } else {
+                                                        delete commentTextareaRefs.current[c.id];
+                                                    }
+                                                }}
+                                                className="comment-text-input"
+                                                value={c.comment || ""}
+                                                id={`comment-${c.id}-edit`}
+                                                rows={1}
+                                                autoFocus
+                                                onChange={(e) => {
+                                                    handleEditCommentTextChange(c.id, e.target.value);
+                                                    requestAnimationFrame(() => resizeCommentTextarea(c.id));
+                                                }}
+                                                onBlur={(e) => handleEditCommentBlur(c.id, e.target.value)}
                                             />
-                                            {c.attachments && c.attachments.length > 0 && (
-                                                <div className="comment-attachments">
-                                                    {c.attachments.map((a) => (
-                                                        <div key={a.id} className="attachment-chip">
-                                                            {deletingAttachmentId === a.id ? (
-                                                                createPortal(
-                                                                    <div className="confirmation-overlay">
-                                                                        <div className="confirmation-div">
-                                                                            <p>
-                                                                                Delete{" "}
-                                                                                <a href={a.fileUrl} target="_blank" rel="noopener noreferrer" className="file-name">
-                                                                                    {a.fileName}
-                                                                                </a>
-                                                                                ?
-                                                                            </p>
-                                                                            <div className="confirmation-actions">
-                                                                                <button type="button" className="positive"
-                                                                                    onClick={() => {
-                                                                                        handleAttachmentDelete(a.id);
-                                                                                        setDeletingAttachmentId(null);
-                                                                                    }}
-                                                                                >
-                                                                                    Yes
-                                                                                </button>
-                                                                                <button type="button" className="negative" onClick={() => setDeletingAttachmentId(null)}>
-                                                                                    No
-                                                                                </button>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>,
-                                                                    document.getElementById("content") || document.body
-                                                                )
-                                                            ) : (
-                                                                <>
-                                                                    <button type="button" onClick={() => setDeletingAttachmentId(a.id)}>
-                                                                        <DeleteIcon size={iconSize} />
-                                                                    </button>
-                                                                    <a href={a.fileUrl} target="_blank" rel="noopener noreferrer" className="file-name">
-                                                                        {a.fileName}
-                                                                    </a>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                                            {renderAttachmentsBlock(c.attachments, true)}
                                             <label htmlFor={`edit-comment-attachment-${c.id}`} className="attachment-label">
                                                 <AttachmentIcon size={iconSize} />
                                             </label>
@@ -352,19 +416,18 @@ function TaskCommentsComponent({ taskId, user, iconSize, onCommentUpdated, delet
                                     </>
                                 ) : (
                                     <>
-                                        <p className="comment-text">{c.comment || ""}</p>
-                                        {c.attachments && c.attachments.length > 0 && (
-                                            <div className="comment-attachments">
-                                                {c.attachments.map((a) => (
-                                                    <div key={a.id} className="attachment-chip">
-                                                        <AttachmentIcon size={iconSize} />
-                                                        <a href={a.fileUrl} target="_blank" rel="noopener noreferrer" className="file-name">
-                                                            {a.fileName}
-                                                        </a>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
+                                        <div
+                                            className="comment-text"
+                                            onClick={canEdit ? () => setEditingCommentId(c.id) : undefined}
+                                        >
+                                            <URLComponent
+                                                text={formatLinksWithNewLines(c.comment || "")}
+                                                placeholder=""
+                                                mobile={isMobile}
+                                            />
+                                        </div>
+                                        {renderAttachmentsBlock(c.attachments, canEdit)}
+                                        {commentItemErrors[c.id] && <p className="error comment-item-error">{commentItemErrors[c.id]}</p>}
                                     </>
                                 )}
                                 <hr />

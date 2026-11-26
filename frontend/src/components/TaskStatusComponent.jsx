@@ -1,7 +1,7 @@
 import StatusIcon from "./icons/StatusIcon.jsx";
 import { Droppable } from "@hello-pangea/dnd";
 
-function TaskStatusComponent({ status, filter, length, children, size }) {
+function TaskStatusComponent({ status, filter, length, hasMore = false, children, size }) {
     const hidden = filter && filter !== status.id;
 
     return (
@@ -13,8 +13,8 @@ function TaskStatusComponent({ status, filter, length, children, size }) {
                     <StatusIcon status={status.status} size={size} />
                     {status.status.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
                 </h4>
-                <p>{length}</p>
-            </div><br />
+                <p>{length}{hasMore ? "+" : ""}</p>
+            </div>
             <Droppable droppableId={String(status.id)}>
                 {(provided, snapshot) => (
                     <div ref={provided.innerRef} {...provided.droppableProps}

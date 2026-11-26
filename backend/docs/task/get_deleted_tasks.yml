@@ -3,7 +3,7 @@ tags:
 
 description: >
   Retrieve deleted tasks. 
-  Results can be filtered by title, description, assigned user, status, priority, project, date of creation and due date. 
+  Results can be filtered by title, description, assigned user, status, priority, project, date of creation and due date, and paginated with page and perPage. 
   Requires an active session cookie and an account with the admin role.
 
 security:
@@ -93,6 +93,23 @@ parameters:
     type: integer
     example: 1
     description: ID of the user to filter by
+  - name: page
+    in: query
+    required: false
+    type: integer
+    default: 1
+    minimum: 1
+    example: 1
+    description: Page number of results to retrieve
+  - name: perPage
+    in: query
+    required: false
+    type: integer
+    default: 75
+    minimum: 1
+    maximum: 150
+    example: 75
+    description: Number of tasks to return per page (up to 150)
 
 responses:
   200:
@@ -244,6 +261,17 @@ responses:
                         lastName:
                           type: string
                           example: Smith
+              has_more:
+                type: boolean
+                example: true
+                description: Whether additional deleted tasks are available on subsequent pages
+              has_more_by_status:
+                type: object
+                example:
+                  "1": true
+                  "2": false
+                description: Whether additional deleted tasks exist for each status ID
+
   401:
     description: Unauthorized (missing or invalid session cookie)
   403:

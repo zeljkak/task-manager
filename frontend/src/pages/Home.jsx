@@ -32,13 +32,29 @@ export default function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [hasMoreByStatus, setHasMoreByStatus] = useState({});
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
+
+  const pageRef = useRef(1);
+  const hasMoreRef = useRef(false);
+  const fetchingRef = useRef(false);
 
   const {resetMyTasksKey, isMobile, users = [], statuses = [], priorities = [], projects = []} = useOutletContext();
   const iconSize = isMobile ? 34 : 24;
 
   const prevResetKeyRef = useRef(resetMyTasksKey);
+
+  useEffect(() => {
+    pageRef.current = page;
+  }, [page]);
+
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
 
   const filters = useMemo(() => {
     const current = {...DEFAULT_FILTERS};
@@ -83,27 +99,58 @@ export default function Home() {
     setSearchParams({assignedToId: "all"}, {replace: true});
   };
 
-  const loadTasks = useCallback(async () => {
-    setLoading(true);
+  const fetchTasksPage = useCallback(async (pageNum = 1, isNewFilter = false) => {
+    if (fetchingRef.current && !isNewFilter) return;
+    fetchingRef.current = true;
     setError("");
+
+    if (isNewFilter) {
+      setInitialLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+
     try {
       const apiFilters = {
         ...filters,
-        assignedToId: filters.assignedToId === "all" ? "" : filters.assignedToId
+        assignedToId: filters.assignedToId === "all" ? "" : filters.assignedToId,
+        page: pageNum,
+        perPage: 75,
       };
 
       // call getDeletedTasks when isDeleted is active/true
       const data = filters.isDeleted
       ? await getDeletedTasks(apiFilters)
       : await getTasks(apiFilters);
-      setTasks(data.tasks || []);
+
+      const newTasks = data.tasks || [];
+      const more = Boolean(data.hasMore ?? data.has_more);
+      const moreByStatus = data.hasMoreByStatus ?? data.has_more_by_status ?? {};
+
+      setTasks((prev) => {
+        if (isNewFilter || pageNum === 1) return newTasks;
+        const existingIds = new Set(prev.map((item) => item.id));
+        const uniqueNewTasks = newTasks.filter((item) => !existingIds.has(item.id));
+        return [...prev, ...uniqueNewTasks];
+      });
+
+      setHasMoreByStatus(moreByStatus);
+      setHasMore(more);
+      setPage(pageNum);
     } catch (err) {
       console.error("Failed to load tasks:", err);
       setError(err.response?.data?.error || "Failed to load tasks");
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
+      setLoadingMore(false);
+      fetchingRef.current = false;
     }
   }, [filters]);
+
+  const fetchTasksPageRef = useRef(fetchTasksPage);
+  useEffect(() => {
+    fetchTasksPageRef.current = fetchTasksPage;
+  }, [fetchTasksPage]);
 
   const handleDragEnd = async (result) => {
     const { destination, source, draggableId } = result;
@@ -149,7 +196,7 @@ export default function Home() {
       });
     } catch (err) {
       console.error("Failed to update status on drag drop:", err);
-      loadTasks();
+      fetchTasksPage(1, true);
     }
   };
 
@@ -161,66 +208,82 @@ export default function Home() {
   }, [resetMyTasksKey, setSearchParams]);
 
   useEffect(() => {
-    loadTasks();
-  }, [loadTasks]);
+    fetchTasksPage(1, true);
+  }, [fetchTasksPage]);
+
+  useEffect(() => {
+    const scrollContainer = document.getElementById("content") || window;
+
+    const handleVerticalScroll = () => {
+      const target =
+        scrollContainer === window
+          ? document.documentElement
+          : scrollContainer;
+
+      const { scrollTop, scrollHeight, clientHeight } = target;
+      const isBottom = scrollHeight - scrollTop - clientHeight <= 150;
+
+      if (isBottom && hasMoreRef.current && !fetchingRef.current) {
+        const nextPage = pageRef.current + 1;
+        fetchTasksPageRef.current(nextPage, false);
+      }
+    };
+
+    scrollContainer.addEventListener("scroll", handleVerticalScroll);
+    return () => scrollContainer.removeEventListener("scroll", handleVerticalScroll);
+  }, []);
 
   return (
-      <>
-        <TaskFilterComponent
-            filters={filters}
-            onFilterChange={updateFilters}
-            onClearAll={clearAllFilters}
-            isMobile={isMobile}
-            options={{users, statuses, priorities, projects}}
-            buttonOnCreated={loadTasks}
-        />
+    <>
+      <TaskFilterComponent filters={filters} onFilterChange={updateFilters}
+        onClearAll={clearAllFilters} isMobile={isMobile}
+        options={{users, statuses, priorities, projects}}
+        buttonOnCreated={() => fetchTasksPage(1, true)}
+      />
 
-        {loading ? (
-            <div className="spinner">
-              <p>Loading tasks...</p>
+      {initialLoading ? (
+        <div className="spinner">
+          <p>Loading tasks...</p>
+        </div>
+      ) : error ? (
+        <div className="error-message">
+          <p className="error">{error}</p>
+        </div>
+      ) : (
+        <>
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <div id="all-tasks">
+              {statuses.map(taskStatus => {
+                const filteredTasks = tasks.filter(task => task.statusId === taskStatus.id);
+
+                return (
+                  <TaskStatusComponent key={taskStatus.id} status={taskStatus}
+                    filter={filters.statusId} length={filteredTasks.length}
+                    hasMore={Boolean(hasMoreByStatus[taskStatus.id])} size={iconSize}
+                  >
+                    {filteredTasks.map((task, index) => {
+                      const canEdit = Boolean(
+                        user && (
+                        task?.createdBy?.id === user.id ||
+                          task?.assignedTo?.id === user.id ||
+                          user.roleId === 1
+                        )
+                      );
+
+                      return (
+                        <TaskCardComponent key={task.id} task={task}
+                          index={index} canEdit={canEdit}
+                        />
+                      );
+                    })}
+                  </TaskStatusComponent>
+                );
+              })}
             </div>
-        ) : error ? (
-            <div className="error-message">
-              <p className="error">{error}</p>
-            </div>
-        ) : (
-            <DragDropContext onDragEnd={handleDragEnd}>
-              <div id="all-tasks">
-                {statuses.map(taskStatus => {
-                  const filteredTasks = tasks.filter(task => task.statusId === taskStatus.id);
-
-                  return (
-                      <TaskStatusComponent
-                          key={taskStatus.id}
-                          status={taskStatus}
-                          filter={filters.statusId}
-                          length={filteredTasks.length}
-                          size={iconSize}
-                      >
-                        {filteredTasks.map((task, index) => {
-                          const canEdit = Boolean(
-                            user && (
-                              task?.createdBy?.id === user.id ||
-                              task?.assignedTo?.id === user.id ||
-                              user.roleId === 1
-                            )
-                          );
-
-                          return (
-                            <TaskCardComponent
-                                key={task.id}
-                                task={task}
-                                index={index}
-                                canEdit={canEdit}
-                            />
-                          );
-                        })}
-                      </TaskStatusComponent>
-                  );
-                })}
-              </div>
-            </DragDropContext>
-        )}
-      </>
+          </DragDropContext>
+          {loadingMore && <p className="loading">Loading more tasks...</p>}
+        </>
+      )}
+    </>
   );
 };
